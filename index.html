@@ -1082,14 +1082,15 @@ async function guardarAccion() {
   const estado=document.getElementById('na-estado').value;
   if(estado)fields['fldih7FiODAgw5VUQ']=estado;
   if(window.currentUser)fields['fld3zzwUDvBMI6MM6']=window.currentUser;
+  const hitoId=document.getElementById('na-hito').value;
+  if(hitoId)fields['fldCOYdEKtUZxj1pP']=[hitoId];
   const fecha=document.getElementById('na-fecha').value;
   const resp=document.getElementById('na-responsable').value.trim();
   const notas=document.getElementById('na-notas').value.trim();
   if(fecha)fields['fldNuW8uW209WnDEz']=fecha;
-  if(resp)fields['fldVvsvhZC5hJJaDs']=resp;
-  if(notas)fields['fldVvsvhZC5hJJaDs2']=notas;
+  if(resp)fields['fldZwLpH7KAXqCc8R']=resp;
+  if(notas)fields['fld1MIQ4vnBTqsqDg']=notas;
   try {
-    console.log('Enviando a Airtable:', JSON.stringify({fields,typecast:true}));
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
