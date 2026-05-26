@@ -1079,8 +1079,7 @@ async function guardarAccion() {
   document.getElementById('na-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
   const hitoId=document.getElementById('na-hito').value;
-  const now2=new Date().toISOString();
-  const fields={Name:nombre,'Tipo de acción':tipo,Estado:document.getElementById('na-estado').value,'Ingresado por':window.currentUser||'','Fecha de ingreso':now2};
+  const fields={Name:nombre,'Tipo de acción':tipo,Estado:document.getElementById('na-estado').value,'Ingresado por':window.currentUser||''};
   if(hitoId)fields['Hito vinculado']=[hitoId];
   const fecha=document.getElementById('na-fecha').value;
   const resp=document.getElementById('na-responsable').value.trim();
