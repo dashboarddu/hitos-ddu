@@ -15,7 +15,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
 #login-screen { position: fixed; inset: 0; background: url(fondo.jpg) center/cover no-repeat; display: flex; align-items: center; justify-content: center; z-index: 999; }
-.login-screen-overlay { position: absolute; inset: 0; background: rgba(15,40,80,0.25); backdrop-filter: blur(2px); }
 .login-box { position: relative; z-index: 1; background: rgba(255,255,255,0.97); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 .login-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
@@ -120,7 +119,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 <body>
 
 <div id="login-screen">
-  <div class="login-screen-overlay"></div>
   <div class="login-box">
     <div class="login-title" style="font-size:24px;margin-bottom:20px">Gestor de hitos comunicacionales DDU</div>
     <label class="login-label">Ingresa tu correo</label>
