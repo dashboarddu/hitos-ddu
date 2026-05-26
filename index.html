@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor de Hitos DDU 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2335;
+    --border: #2a2f45;
+    --text: #e8eaf0;
+    --text-dim: #6b7280;
+    --accent: #4f7cff;
+    --accent2: #00d4a0;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --prog1: #4f7cff;
+    --prog2: #00d4a0;
+    --prog3: #ff6b6b;
+    --prog4: #ffd166;
+    --prog5: #c084fc;
+    --prog6: #fb923c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; flex-direction: column; gap: 0;
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px;
+    animation: fadeUp 0.5s ease;
+  }
+  .login-logo {
+    font-family: 'Fraunces', serif; font-size: 13px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .login-title {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700;
+    color: var(--text); margin-bottom: 6px; line-height: 1.2;
+  }
+  .login-sub { font-size: 11px; color: var(--text-dim); margin-bottom: 32px; }
+  .login-label { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; display: block; letter-spacing: 0.1em; text-transform: uppercase; }
+  .login-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: var(--accent); }
+  .login-btn {
+    width: 100%; margin-top: 16px; background: var(--accent);
+    border: none; border-radius: 8px; padding: 14px;
+    color: #fff; font-family: 'DM Mono', monospace; font-size: 13px;
+    font-weight: 500; cursor: pointer; letter-spacing: 0.05em;
+    transition: opacity 0.2s;
+  }
+  .login-btn:hover { opacity: 0.85; }
+  .login-error { color: var(--accent3); font-size: 12px; margin-top: 10px; display: none; }
+  .login-hint { font-size: 11px; color: var(--text-dim); margin-top: 20px; text-align: center; }
+
+  /* HEADER */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; display: flex; align-items: center;
+    justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-logo { font-family: 'Fraunces', serif; font-size: 11px; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; }
+  .header-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--text); }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .badge-user { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--text-dim); }
+  .btn-refresh { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); overflow-x: auto; }
+  .tab { padding: 8px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; color: var(--text-dim); border: 1px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { color: var(--accent); background: rgba(79,124,255,0.1); border-color: rgba(79,124,255,0.3); }
+
+  /* FILTERS */
+  .filters { padding: 12px 24px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .filter-select {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 11px; outline: none; cursor: pointer;
+  }
+
+  /* MAIN CONTENT */
+  .content { padding: 24px; flex: 1; }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; position: relative; overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  .stat-card::before { content: ''; position: absolute; inset: 0; opacity: 0.05; }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--accent2); }
+  .stat-card.red::before { background: var(--accent3); }
+  .stat-card.yellow::before { background: var(--accent4); }
+  .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 700; line-height: 1; }
+  .stat-card.blue .stat-value { color: var(--accent); }
+  .stat-card.green .stat-value { color: var(--accent2); }
+  .stat-card.red .stat-value { color: var(--accent3); }
+  .stat-card.yellow .stat-value { color: var(--accent4); }
+
+  /* PROGRESS */
+  .progress-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .progress-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+  .progress-pct { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: var(--accent2); }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.8s ease; width: 0%; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media(max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* CHART CARD */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .chart-title { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar-label { font-size: 11px; color: var(--text-dim); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .bar-count { font-size: 11px; color: var(--text-dim); width: 24px; text-align: right; flex-shrink: 0; }
+
+  /* GANTT */
+  .gantt-container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  .gantt-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; display: flex; justify-content: space-between; align-items: center; }
+  .gantt-scroll { overflow-x: auto; }
+  .gantt-table { width: max-content; min-width: 100%; border-collapse: collapse; }
+  .gantt-table th { padding: 8px 6px; font-size: 10px; color: var(--text-dim); text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 400; letter-spacing: 0.05em; background: var(--surface); position: sticky; top: 0; }
+  .gantt-table th.act-col { text-align: left; min-width: 200px; position: sticky; left: 0; z-index: 2; }
+  .gantt-table th.prog-col { min-width: 80px; text-align: left; position: sticky; left: 200px; z-index: 2; }
+  .gantt-table td { padding: 0; border-bottom: 1px solid rgba(42,47,69,0.5); }
+  .gantt-table td.act-col { padding: 8px 12px; min-width: 200px; position: sticky; left: 0; background: var(--surface); z-index: 1; cursor: pointer; }
+  .gantt-table td.prog-col { padding: 6px 8px; min-width: 80px; position: sticky; left: 200px; background: var(--surface); z-index: 1; }
+  .gantt-table tr:hover td { background: var(--surface2) !important; }
+  .act-name { font-size: 11px; color: var(--text); line-height: 1.3; }
+  .act-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .week-cell { width: 20px; text-align: center; cursor: pointer; padding: 4px 2px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; border: 1px solid var(--border); }
+  .dot.filled { border-color: transparent; }
+  .prog-tag { font-size: 9px; padding: 2px 6px; border-radius: 10px; white-space: nowrap; font-weight: 500; }
+  .month-sep { border-left: 1px solid var(--border) !important; }
+
+  /* LIST */
+  .list-container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+  .list-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; display: flex; justify-content: space-between; }
+  .list-table { width: 100%; border-collapse: collapse; }
+  .list-table th { padding: 10px 16px; font-size: 10px; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 400; }
+  .list-table td { padding: 12px 16px; font-size: 12px; border-bottom: 1px solid rgba(42,47,69,0.4); vertical-align: middle; }
+  .list-table tr:hover td { background: var(--surface2); }
+  .status-badge { display: inline-block; font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .status-sin { background: rgba(107,114,128,0.2); color: var(--text-dim); }
+  .status-plan { background: rgba(79,124,255,0.15); color: var(--accent); }
+  .status-conf { background: rgba(0,212,160,0.15); color: var(--accent2); }
+  .status-real { background: rgba(0,212,160,0.25); color: var(--accent2); }
+  .comp-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+  /* CALENDAR */
+  .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media(max-width: 768px) { .calendar-grid { grid-template-columns: 1fr; } }
+  .month-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .month-name { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+  .month-hito { font-size: 11px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,47,69,0.5); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .month-hito:last-child { border-bottom: none; }
+  .month-hito-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .month-count { font-size: 10px; color: var(--text-dim); text-align: center; padding: 8px; }
+
+  /* LOADING */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-dim); font-size: 12px; gap: 12px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .hidden { display: none !important; }
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">MINVU · DDU</div>
+    <div class="login-title">Monitor de Hitos<br>Comunicacionales</div>
+    <div class="login-sub">2026 — División de Desarrollo Urbano</div>
+    <label class="login-label">Correo institucional</label>
+    <input class="login-input" type="email" id="email-input" placeholder="nombre@minvu.cl" autocomplete="email">
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Solo se permite acceso con correo @minvu.cl</div>
+    <div class="login-hint">Acceso restringido a equipos MINVU</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="header-logo">DDU · 2026</div>
+      <div class="header-title">Monitor de Hitos Comunicacionales</div>
+    </div>
+    <div class="header-right">
+      <span class="badge-user" id="user-badge">—</span>
+      <button class="btn-refresh" onclick="loadData()">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+    <div class="tab" onclick="switchTab('gantt')">Gantt</div>
+    <div class="tab" onclick="switchTab('calendario')">Calendario</div>
+    <div class="tab" onclick="switchTab('lista')">Lista</div>
+    <div class="tab" onclick="switchTab('comunas')">Por Comuna</div>
+  </div>
+
+  <div class="filters">
+    <select class="filter-select" id="fil-programa" onchange="applyFilters()"><option value="">Todos los programas</option></select>
+    <select class="filter-select" id="fil-region" onchange="applyFilters()"><option value="">Todas las regiones</option></select>
+    <select class="filter-select" id="fil-tipo" onchange="applyFilters()"><option value="">Todos los tipos</option></select>
+    <select class="filter-select" id="fil-estado" onchange="applyFilters()">
+      <option value="">Todos los estados</option>
+      <option value="Sin fecha">Sin fecha</option>
+      <option value="Planificado">Planificado</option>
+      <option value="Confirmado">Confirmado</option>
+      <option value="Realizado">Realizado</option>
+    </select>
+  </div>
+
+  <div class="content">
+    <div id="loading-indicator" class="loading"><div class="spinner"></div> Cargando hitos desde Airtable...</div>
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view">
+      <div class="stats-grid">
+        <div class="stat-card blue" style="animation-delay:0.0s"><div class="stat-label">Total hitos</div><div class="stat-value" id="s-total">0</div></div>
+        <div class="stat-card green" style="animation-delay:0.1s"><div class="stat-label">Realizados</div><div class="stat-value" id="s-real">0</div></div>
+        <div class="stat-card yellow" style="animation-delay:0.2s"><div class="stat-label">Confirmados</div><div class="stat-value" id="s-conf">0</div></div>
+        <div class="stat-card red" style="animation-delay:0.3s"><div class="stat-label">Sin fecha</div><div class="stat-value" id="s-sin">0</div></div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Progreso general</span>
+          <span class="progress-pct" id="s-pct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card"><div class="chart-title">Por programa</div><div id="chart-programa"></div></div>
+        <div class="chart-card"><div class="chart-title">Por tipo de hito</div><div id="chart-tipo"></div></div>
+      </div>
+      <div class="two-col">
+        <div class="chart-card"><div class="chart-title">Por región</div><div id="chart-region"></div></div>
+        <div class="chart-card"><div class="chart-title">Por comuna (top 10)</div><div id="chart-comuna"></div></div>
+      </div>
+    </div>
+
+    <!-- GANTT -->
+    <div id="view-gantt" class="view">
+      <div class="gantt-container">
+        <div class="gantt-header"><span>Cronograma por semana</span><span id="gantt-count" style="color:var(--accent)"></span></div>
+        <div class="gantt-scroll"><table class="gantt-table" id="gantt-table"></table></div>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div id="view-calendario" class="view">
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
+    <!-- LISTA -->
+    <div id="view-lista" class="view">
+      <div class="list-container">
+        <div class="list-header"><span>Todos los hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Mes</th><th>Semana</th><th>Estado</th></tr></thead>
+            <tbody id="list-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMUNAS -->
+    <div id="view-comunas" class="view">
+      <div class="list-container">
+        <div class="list-header"><span>Hitos por comuna</span><span id="comunas-count" style="color:var(--accent)"></span></div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>Comuna</th><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th></tr></thead>
+            <tbody id="comunas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const TOKEN = 'patuKzVNDOcCP7Qjb.0aece7b1fd04894391affce85512158abac284066d9340d49e8719d3eda70b5a';
+const BASE_ID = 'appR8Mu9RCtQpIrG7';
+const TABLE_ID = 'tblOZl2hmUBMHnnaL';
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const SEMANAS = ['S1','S2','S3','S4'];
+
+const PROG_COLORS = {
+  'Pequeñas Localidades': '#4f7cff',
+  'Quiero mi Barrio': '#00d4a0',
+  'Regeneración de Conjuntos': '#ff6b6b',
+  'Planes Urbanos Habitacionales': '#ffd166',
+  'Zonas de Interés Público': '#c084fc',
+  'Unidad de Proyecto': '#fb923c'
+};
+
+let allHitos = [];
+let filtered = [];
+let activeTab = 'dashboard';
+
+// LOGIN
+function doLogin() {
+  const email = document.getElementById('email-input').value.trim().toLowerCase();
+  const err = document.getElementById('login-error');
+  if (!email.endsWith('@minvu.cl')) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  document.getElementById('user-badge').textContent = email.split('@')[0];
+  loadData();
+}
+document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// LOAD DATA
+async function loadData() {
+  document.getElementById('loading-indicator').style.display = 'flex';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  
+  try {
+    let records = [];
+    let offset = null;
+    do {
+      let url = `https://api.airtable.com/v1/${BASE_ID}/${TABLE_ID}?pageSize=100`;
+      if (offset) url += `&offset=${offset}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+      const data = await res.json();
+      records = records.concat(data.records);
+      offset = data.offset;
+    } while (offset);
+
+    allHitos = records.map(r => ({
+      id: r.id,
+      n: r.fields['N°'] || 0,
+      actividad: r.fields['Actividad'] || '',
+      descripcion: r.fields['Descripción'] || '',
+      comuna: r.fields['Comuna'] || '',
+      region: r.fields['Región'] || '',
+      programa: r.fields['Programa'] || '',
+      tipo_hito: r.fields['Tipo de hito'] || '',
+      mes: r.fields['Mes'] || '',
+      semana: r.fields['Semana'] || '',
+      estado: r.fields['Estado'] || 'Sin fecha',
+      completitud: r.fields['Completitud'] || '🔴 Sin fecha'
+    }));
+
+    buildFilters();
+    applyFilters();
+    document.getElementById('loading-indicator').style.display = 'none';
+    document.getElementById(`view-${activeTab}`).classList.add('active');
+  } catch(e) {
+    document.getElementById('loading-indicator').innerHTML = '<span style="color:var(--accent3)">Error al cargar datos. Verifica el token.</span>';
+  }
+}
+
+function buildFilters() {
+  const progs = [...new Set(allHitos.map(h=>h.programa).filter(Boolean))].sort();
+  const regs = [...new Set(allHitos.map(h=>h.region).filter(Boolean))].sort();
+  const tipos = [...new Set(allHitos.map(h=>h.tipo_hito).filter(Boolean))].sort();
+  
+  const filP = document.getElementById('fil-programa');
+  const filR = document.getElementById('fil-region');
+  const filT = document.getElementById('fil-tipo');
+  
+  filP.innerHTML = '<option value="">Todos los programas</option>' + progs.map(p=>`<option value="${p}">${p}</option>`).join('');
+  filR.innerHTML = '<option value="">Todas las regiones</option>' + regs.map(r=>`<option value="${r}">${r}</option>`).join('');
+  filT.innerHTML = '<option value="">Todos los tipos</option>' + tipos.map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+function applyFilters() {
+  const p = document.getElementById('fil-programa').value;
+  const r = document.getElementById('fil-region').value;
+  const t = document.getElementById('fil-tipo').value;
+  const e = document.getElementById('fil-estado').value;
+  
+  filtered = allHitos.filter(h => {
+    if (p && h.programa !== p) return false;
+    if (r && h.region !== r) return false;
+    if (t && h.tipo_hito !== t) return false;
+    if (e && h.estado !== e) return false;
+    return true;
+  });
+  
+  renderAll();
+}
+
+function renderAll() {
+  renderDashboard();
+  renderGantt();
+  renderCalendar();
+  renderList();
+  renderComunas();
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const total = filtered.length;
+  const real = filtered.filter(h=>h.estado==='Realizado').length;
+  const conf = filtered.filter(h=>h.estado==='Confirmado').length;
+  const sin = filtered.filter(h=>h.estado==='Sin fecha').length;
+  const pct = total ? Math.round(real/total*100) : 0;
+  
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-real').textContent = real;
+  document.getElementById('s-conf').textContent = conf;
+  document.getElementById('s-sin').textContent = sin;
+  document.getElementById('s-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  
+  renderBarChart('chart-programa', countBy('programa'), PROG_COLORS);
+  renderBarChart('chart-tipo', countBy('tipo_hito'), {});
+  renderBarChart('chart-region', countBy('region'), {});
+  const comunaCount = countBy('comuna');
+  const top10 = Object.entries(comunaCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  renderBarChart('chart-comuna', Object.fromEntries(top10), {});
+}
+
+function countBy(field) {
+  const counts = {};
+  filtered.forEach(h => { const v = h[field] || 'Sin datos'; counts[v] = (counts[v]||0)+1; });
+  return Object.fromEntries(Object.entries(counts).sort((a,b)=>b[1]-a[1]));
+}
+
+function renderBarChart(id, data, colors) {
+  const el = document.getElementById(id);
+  const max = Math.max(...Object.values(data), 1);
+  el.innerHTML = Object.entries(data).slice(0,10).map(([k,v]) => {
+    const color = colors[k] || '#4f7cff';
+    const pct = Math.round(v/max*100);
+    return `<div class="bar-row">
+      <div class="bar-label" title="${k}">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="bar-count">${v}</div>
+    </div>`;
+  }).join('');
+}
+
+// GANTT
+function renderGantt() {
+  const table = document.getElementById('gantt-table');
+  document.getElementById('gantt-count').textContent = filtered.length + ' hitos';
+  
+  let html = '<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
+  MESES.forEach((m,mi) => {
+    SEMANAS.forEach((s,si) => {
+      const cls = si===0 ? 'month-sep' : '';
+      html += `<th class="${cls}" style="font-size:9px">${si===0?m.slice(0,3):''}<br>${s}</th>`;
+    });
+  });
+  html += '</tr></thead><tbody>';
+  
+  filtered.slice(0,80).forEach(h => {
+    const color = PROG_COLORS[h.programa] || '#6b7280';
+    const shortProg = {
+      'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB',
+      'Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH',
+      'Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP'
+    };
+    html += `<tr><td class="act-col"><div class="act-name">${h.n}. ${h.actividad}</div><div class="act-meta">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
+    html += `<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">${shortProg[h.programa]||h.programa.slice(0,4)}</span></td>`;
+    
+    MESES.forEach((m,mi) => {
+      SEMANAS.forEach((s,si) => {
+        const isThis = h.mes===m && h.semana===s;
+        const cls = si===0 ? 'week-cell month-sep' : 'week-cell';
+        const dotCls = isThis ? 'dot filled' : 'dot';
+        const dotStyle = isThis ? `background:${color}` : '';
+        html += `<td class="${cls}"><div class="${dotCls}" style="${dotStyle}"></div></td>`;
+      });
+    });
+    html += '</tr>';
+  });
+  
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+// CALENDAR
+function renderCalendar() {
+  const grid = document.getElementById('calendar-grid');
+  grid.innerHTML = MESES.map(m => {
+    const hitos = filtered.filter(h=>h.mes===m).sort((a,b)=>(a.semana||'').localeCompare(b.semana||''));
+    const count = hitos.length;
+    let inner = count === 0
+      ? `<div class="month-count">Sin hitos</div>`
+      : hitos.slice(0,5).map(h => {
+          const color = PROG_COLORS[h.programa] || '#6b7280';
+          return `<div class="month-hito">
+            <span class="month-hito-name" title="${h.actividad}">${h.actividad}</span>
+            <span style="font-size:9px;color:${color};white-space:nowrap">${h.semana||'—'}</span>
+          </div>`;
+        }).join('') + (count>5?`<div class="month-count">+${count-5} más</div>`:'');
+    
+    return `<div class="month-card">
+      <div class="month-name">${m} <span style="font-size:12px;color:var(--accent);font-family:'DM Mono'">${count}</span></div>
+      ${inner}
+    </div>`;
+  }).join('');
+}
+
+// LIST
+function renderList() {
+  const body = document.getElementById('list-body');
+  document.getElementById('list-count').textContent = filtered.length + ' hitos';
+  const sorted = [...filtered].sort((a,b)=>a.n-b.n);
+  body.innerHTML = sorted.map(h => {
+    const stCls = h.estado==='Realizado'?'status-real':h.estado==='Confirmado'?'status-conf':h.estado==='Planificado'?'status-plan':'status-sin';
+    const color = PROG_COLORS[h.programa]||'#6b7280';
+    return `<tr>
+      <td style="color:var(--text-dim);font-size:11px">${h.n}</td>
+      <td>${h.actividad}</td>
+      <td><span style="font-size:10px;color:${color}">${h.programa}</span></td>
+      <td style="font-size:11px;color:var(--text-dim)">${h.region}</td>
+      <td style="font-size:11px;color:var(--text-dim)">${h.mes||'—'}</td>
+      <td style="font-size:11px;color:var(--text-dim)">${h.semana||'—'}</td>
+      <td><span class="status-badge ${stCls}">${h.estado}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// COMUNAS
+function renderComunas() {
+  const body = document.getElementById('comunas-body');
+  document.getElementById('comunas-count').textContent = filtered.length + ' hitos';
+  const sorted = [...filtered].sort((a,b)=>(a.comuna||'').localeCompare(b.comuna||''));
+  let lastComuna = null;
+  body.innerHTML = sorted.map(h => {
+    const stCls = h.estado==='Realizado'?'status-real':h.estado==='Confirmado'?'status-conf':h.estado==='Planificado'?'status-plan':'status-sin';
+    const color = PROG_COLORS[h.programa]||'#6b7280';
+    const comunaCell = h.comuna !== lastComuna
+      ? `<td style="font-weight:500;color:var(--text)">${h.comuna||'Sin comuna'}</td>`
+      : `<td style="color:var(--text-dim);font-size:10px">↳</td>`;
+    lastComuna = h.comuna;
+    return `<tr>
+      ${comunaCell}
+      <td style="font-size:11px">${h.actividad}</td>
+      <td><span style="font-size:10px;color:${color}">${h.programa}</span></td>
+      <td style="font-size:11px;color:var(--text-dim)">${h.mes||'—'}</td>
+      <td style="font-size:11px;color:var(--text-dim)">${h.semana||'—'}</td>
+      <td><span class="status-badge ${stCls}">${h.estado}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// TABS
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['dashboard','gantt','calendario','lista','comunas'][i]===tab);
+  });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${tab}`).classList.add('active');
+}
+</script>
+</body>
+</html>
