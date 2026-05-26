@@ -403,8 +403,9 @@ async function fetchAll(tableId) {
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText} — ${url}`);
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
+    if (data.error) throw new Error(`Airtable: ${data.error.type} — ${data.error.message}`);
     records = records.concat(data.records || []);
     offset = data.offset;
   } while(offset);
