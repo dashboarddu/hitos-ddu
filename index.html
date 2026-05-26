@@ -242,9 +242,34 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
         <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha estimada</th><th>Responsable</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha estimada</th><th>Responsable</th><th>Estado</th><th>Editar</th></tr></thead>
             <tbody id="acciones-body"></tbody>
           </table>
+        </div>
+      </div>
+      <div class="edit-panel" id="edit-accion-panel">
+        <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-accion-title">Editando acción</div>
+        <div id="edit-accion-success" class="alert-success" style="margin-bottom:12px">✓ Guardado correctamente</div>
+        <div class="form-grid">
+          <div class="form-field full"><label class="login-label">Nombre de la acción</label><input class="login-input" id="edit-accion-nombre" placeholder="Nombre"></div>
+          <div class="form-field"><label class="login-label">Tipo de acción</label>
+            <select class="fsel" id="edit-accion-tipo">
+              <option value="">—</option>
+              <option>Nota de prensa</option><option>Post en RRSS</option>
+              <option>Campaña interna</option><option>Comunicación institucional</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="login-label">Estado</label>
+            <select class="fsel" id="edit-accion-estado">
+              <option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable" placeholder="Responsable"></div>
+          <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
+          <button class="login-btn" onclick="cerrarEdicionAccion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
         </div>
       </div>
     </div>
@@ -982,7 +1007,10 @@ function renderAcciones() {
   document.getElementById('a-pend').textContent=allAcciones.filter(a=>a.estado==='Planificada').length;
   document.getElementById('acciones-count').textContent=total+' acciones';
   const stA={'Realizada':'status-real','En curso':'status-conf','Planificada':'status-plan','Cancelada':'status-sin'};
-  document.getElementById('acciones-body').innerHTML=allAcciones.map(a=>`<tr><td>${a.accion}</td><td style="font-size:12px">${a.tipo||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.fecha||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.responsable||'—'}</td><td><span class="status-badge ${stA[a.estado]||'status-sin'}">${a.estado}</span></td></tr>`).join('');
+  document.getElementById('acciones-body').innerHTML=allAcciones.map(a=>{
+    const nombre=a.accion.replace(/'/g,"\\'");
+    return `<tr><td>${a.accion}</td><td style="font-size:12px">${a.tipo||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.fecha||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.responsable||'—'}</td><td><span class="status-badge ${stA[a.estado]||'status-sin'}">${a.estado}</span></td><td><button class="edit-btn" onclick="abrirEdicionAccion('${a.id}','${nombre}','${a.tipo||''}','${a.estado||''}','${a.responsable||''}','${a.fecha||''}')">Editar</button></td></tr>`;
+  }).join('');
 }
 
 function renderCompletitud() {
@@ -1101,6 +1129,53 @@ async function guardarAccion() {
   } catch(e){console.error('Error completo:',e);document.getElementById('na-error').textContent='Error: '+e.message;document.getElementById('na-error').style.display='block';btn.textContent='Guardar acción';btn.disabled=false;}
 }
 
+
+let editingAccionId = null;
+
+function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
+  editingAccionId = id;
+  document.getElementById('edit-accion-title').textContent = 'Editando: ' + nombre;
+  document.getElementById('edit-accion-nombre').value = nombre;
+  document.getElementById('edit-accion-tipo').value = tipo;
+  document.getElementById('edit-accion-estado').value = estado;
+  document.getElementById('edit-accion-responsable').value = responsable;
+  document.getElementById('edit-accion-fecha').value = fecha;
+  document.getElementById('edit-accion-success').style.display = 'none';
+  document.getElementById('edit-accion-panel').style.display = 'block';
+  document.getElementById('edit-accion-panel').scrollIntoView({behavior:'smooth'});
+}
+
+function cerrarEdicionAccion() {
+  document.getElementById('edit-accion-panel').style.display = 'none';
+  editingAccionId = null;
+}
+
+async function guardarEdicionAccion() {
+  if (!editingAccionId) return;
+  const btn = document.querySelector('#edit-accion-panel .login-btn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  const fields = {};
+  const nombre = document.getElementById('edit-accion-nombre').value.trim();
+  const tipo = document.getElementById('edit-accion-tipo').value;
+  const estado = document.getElementById('edit-accion-estado').value;
+  const resp = document.getElementById('edit-accion-responsable').value.trim();
+  const fecha = document.getElementById('edit-accion-fecha').value;
+  if (nombre) fields['fldkkXtPbgqOeBdX4'] = nombre;
+  if (tipo) fields['fldfaXORc1xUaWZa3'] = tipo;
+  if (estado) fields['fldih7FiODAgw5VUQ'] = estado;
+  if (resp) fields['fldZwLpH7KAXqCc8R'] = resp;
+  if (fecha) fields['fldNuW8uW209WnDEz'] = fecha;
+  if (window.currentUser) fields['fld3zzwUDvBMI6MM6'] = window.currentUser;
+  try {
+    await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}/${editingAccionId}`, {method:'PATCH', body:JSON.stringify({fields, typecast:true})});
+    document.getElementById('edit-accion-success').style.display = 'block';
+    btn.textContent = 'Guardar cambios'; btn.disabled = false;
+    await loadData();
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.textContent = 'Guardar cambios'; btn.disabled = false;
+  }
+}
 function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
