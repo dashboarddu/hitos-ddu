@@ -398,7 +398,7 @@ document.getElementById('email-input').addEventListener('keydown', e => { if(e.k
 async function fetchAll(tableId) {
   let records=[], offset=null;
   do {
-    let url = `https://api.airtable.com/v1/${BASE_ID}/${tableId}?pageSize=100`;
+    let url = `https://airtable-proxy.carlosgonzalezisla.workers.dev/v1/${BASE_ID}/${tableId}?pageSize=100`;
     if (offset) url += `&offset=${offset}`;
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
@@ -580,7 +580,7 @@ async function guardarEdicion() {
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
   try {
-    const res=await fetch(`https://api.airtable.com/v1/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{
+    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v1/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{
       method:'PATCH', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
       body:JSON.stringify({fields})
     });
@@ -610,7 +610,7 @@ async function guardarHito() {
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
   try {
-    const res=await fetch(`https://api.airtable.com/v1/${BASE_ID}/${TABLE_HITOS}`,{
+    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v1/${BASE_ID}/${TABLE_HITOS}`,{
       method:'POST', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
       body:JSON.stringify({fields})
     });
@@ -639,7 +639,7 @@ async function guardarAccion() {
   if(fecha)fields['Fecha estimada']=fecha; if(resp)fields['Responsable']=resp;
   if(dias)fields['Días respecto al hito']=parseInt(dias); if(notas)fields['Notas']=notas;
   try {
-    const res=await fetch(`https://api.airtable.com/v1/${BASE_ID}/${TABLE_ACCIONES}`,{
+    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v1/${BASE_ID}/${TABLE_ACCIONES}`,{
       method:'POST', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
       body:JSON.stringify({fields})
     });
