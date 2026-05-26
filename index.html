@@ -968,6 +968,8 @@ async function guardarEdicion() {
   const desc=document.getElementById('edit-descripcion').value;
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
+  fields['Ingresado por']=window.currentUser||'';
+  fields['Fecha de ingreso']=new Date().toISOString();
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields})});
     document.getElementById('edit-success').style.display='block';
@@ -984,7 +986,8 @@ async function guardarHito() {
   if(!actividad||!programa||!tipo){document.getElementById('nh-error').textContent='Completa los campos obligatorios.';document.getElementById('nh-error').style.display='block';return;}
   document.getElementById('nh-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
-  const fields={Actividad:actividad,Programa:programa,'Tipo de hito':tipo};
+  const now=new Date().toISOString();
+  const fields={Actividad:actividad,Programa:programa,'Tipo de hito':tipo,'Ingresado por':window.currentUser||'','Fecha de ingreso':now};
   const region=document.getElementById('nh-region').value;
   const comuna=document.getElementById('nh-comuna').value;
   const mes=document.getElementById('nh-mes').value;
@@ -994,6 +997,8 @@ async function guardarHito() {
   if(region)fields['Región']=region; if(comuna)fields['Comuna']=comuna;
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
+  fields['Ingresado por']=window.currentUser||'';
+  fields['Fecha de ingreso']=new Date().toISOString();
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields})});
     document.getElementById('nh-success').style.display='block';
@@ -1013,7 +1018,8 @@ async function guardarAccion() {
   document.getElementById('na-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
   const hitoId=document.getElementById('na-hito').value;
-  const fields={Name:nombre,'Tipo de acción':tipo,Estado:document.getElementById('na-estado').value};
+  const now2=new Date().toISOString();
+  const fields={Name:nombre,'Tipo de acción':tipo,Estado:document.getElementById('na-estado').value,'Ingresado por':window.currentUser||'','Fecha de ingreso':now2};
   if(hitoId)fields['Hito vinculado']=[hitoId];
   const fecha=document.getElementById('na-fecha').value;
   const resp=document.getElementById('na-responsable').value.trim();
