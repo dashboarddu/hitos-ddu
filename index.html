@@ -14,8 +14,9 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
-#login-screen { position: fixed; inset: 0; background: #1565c0; display: flex; align-items: center; justify-content: center; z-index: 999; }
-.login-box { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+#login-screen { position: fixed; inset: 0; background: url(fondo.jpg) center/cover no-repeat; display: flex; align-items: center; justify-content: center; z-index: 999; }
+.login-screen-overlay { position: absolute; inset: 0; background: rgba(15,40,80,0.25); backdrop-filter: blur(2px); }
+.login-box { position: relative; z-index: 1; background: rgba(255,255,255,0.97); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 .login-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .login-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; }
@@ -119,6 +120,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 <body>
 
 <div id="login-screen">
+  <div class="login-screen-overlay"></div>
   <div class="login-box">
     <div class="login-title" style="font-size:24px;margin-bottom:20px">Gestor de hitos comunicacionales DDU</div>
     <label class="login-label">Ingresa tu correo</label>
@@ -133,7 +135,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   <header>
     <div style="display:flex;align-items:center;gap:12px">
       <span class="header-logo">DDU · 2026</span>
-      <span class="header-title">Monitor de Hitos Comunicacionales</span>
+      <span class="header-title">Gestión de hitos comunicacionales</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="badge-user" id="user-badge">—</span>
@@ -147,10 +149,10 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
-    <div class="tab" onclick="switchTab('acciones')">Acciones de prensa</div>
-    <div class="tab green" onclick="switchTab('nuevo-hito')">+ Nuevo hito</div>
-    <div class="tab purple" onclick="switchTab('nueva-accion')">+ Nueva acción</div>
-    <div class="tab red" onclick="switchTab('completitud')">⚠ Completitud</div>
+    <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
+    <div class="tab red" onclick="switchTab('completitud')">Completa o modifica hito</div>
+    <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
+    <div class="tab purple" onclick="switchTab('nueva-accion')">Acción comunicacional</div>
   </div>
 
   <div class="filters">
@@ -654,7 +656,7 @@ async function guardarAccion() {
 
 function switchTab(tab) {
   activeTab=tab;
-  const tabs=['dashboard','gantt','calendario','lista','comunas','acciones','nuevo-hito','nueva-accion','completitud'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
