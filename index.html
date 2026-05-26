@@ -335,19 +335,47 @@ let filtered = [];
 let activeTab = 'dashboard';
 
 // LOGIN
-function doLogin() {
+const SHEET_ID = '1zRsvpQK04H6c6oODD3zNGIMvqjfgDwc71qMmSjWXyuQ';
+
+async function doLogin() {
   const email = document.getElementById('email-input').value.trim().toLowerCase();
   const err = document.getElementById('login-error');
+  const btn = document.querySelector('.login-btn');
+
   if (!email.endsWith('@minvu.cl')) {
+    err.textContent = 'Solo se permite acceso con correo @minvu.cl';
     err.style.display = 'block';
     return;
   }
+
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
   err.style.display = 'none';
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').style.flexDirection = 'column';
-  document.getElementById('user-badge').textContent = email.split('@')[0];
-  loadData();
+
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const correos = text.split('\n').map(r => r.replace(/"/g,'').trim().toLowerCase()).filter(Boolean);
+    
+    if (correos.includes(email)) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      document.getElementById('app').style.flexDirection = 'column';
+      document.getElementById('user-badge').textContent = email.split('@')[0];
+      loadData();
+    } else {
+      err.textContent = 'Tu correo no está autorizado. Contacta al administrador.';
+      err.style.display = 'block';
+      btn.textContent = 'Ingresar';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    err.textContent = 'Error al verificar acceso. Intenta de nuevo.';
+    err.style.display = 'block';
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
+  }
 }
 document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
