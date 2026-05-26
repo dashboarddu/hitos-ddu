@@ -395,16 +395,26 @@ function doLogin() {
 }
 document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
+const PROXY = 'https://airtable-proxy.carlosgonzalezisla.workers.dev';
+
+async function airtableFetch(path, options={}) {
+  const airtableUrl = encodeURIComponent(`https://api.airtable.com/v0${path}`);
+  const proxyUrl = `${PROXY}?url=${airtableUrl}`;
+  const res = await fetch(proxyUrl, {
+    method: options.method || 'GET',
+    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: options.body || undefined,
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
 async function fetchAll(tableId) {
   let records=[], offset=null;
   do {
-    let url = `https://airtable-proxy.carlosgonzalezisla.workers.dev/v0/${BASE_ID}/${tableId}?pageSize=100`;
-    if (offset) url += `&offset=${offset}`;
-    const res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText} — ${url}`);
-    const data = await res.json();
+    let path = `/${BASE_ID}/${tableId}?pageSize=100`;
+    if (offset) path += `&offset=${offset}`;
+    const data = await airtableFetch(path);
     if (data.error) throw new Error(`Airtable: ${data.error.type} — ${data.error.message}`);
     records = records.concat(data.records || []);
     offset = data.offset;
@@ -581,11 +591,7 @@ async function guardarEdicion() {
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
   try {
-    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v0/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{
-      method:'PATCH', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
-      body:JSON.stringify({fields})
-    });
-    if(!res.ok)throw new Error('Error al guardar');
+    const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields})});
     document.getElementById('edit-success').style.display='block';
     btn.textContent='Guardar cambios';btn.disabled=false;
     await loadData();
@@ -611,11 +617,7 @@ async function guardarHito() {
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
   try {
-    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v0/${BASE_ID}/${TABLE_HITOS}`,{
-      method:'POST', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
-      body:JSON.stringify({fields})
-    });
-    if(!res.ok)throw new Error('Error al guardar');
+    const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields})});
     document.getElementById('nh-success').style.display='block';
     ['nh-actividad','nh-region','nh-comuna','nh-descripcion'].forEach(id=>document.getElementById(id).value='');
     ['nh-programa','nh-tipo','nh-mes','nh-semana'].forEach(id=>document.getElementById(id).value='');
@@ -640,11 +642,7 @@ async function guardarAccion() {
   if(fecha)fields['Fecha estimada']=fecha; if(resp)fields['Responsable']=resp;
   if(dias)fields['Días respecto al hito']=parseInt(dias); if(notas)fields['Notas']=notas;
   try {
-    const res=await fetch(`https://airtable-proxy.carlosgonzalezisla.workers.dev/v0/${BASE_ID}/${TABLE_ACCIONES}`,{
-      method:'POST', headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},
-      body:JSON.stringify({fields})
-    });
-    if(!res.ok)throw new Error('Error al guardar');
+    const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-dias','na-notas'].forEach(id=>document.getElementById(id).value='');
     ['na-tipo','na-fecha'].forEach(id=>document.getElementById(id).value='');
