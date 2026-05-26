@@ -1078,14 +1078,15 @@ async function guardarAccion() {
   document.getElementById('na-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
   const fields={'fldkkXtPbgqOeBdX4':nombre};
-  if(tipo)fields['Tipo de acción']=tipo;
+  if(tipo)fields['fldfaXORc1xUaWZa3']=tipo;
   const estado=document.getElementById('na-estado').value;
-  if(estado)fields['Estado']=estado;
-  if(window.currentUser)fields['Ingresado por']=window.currentUser;
+  if(estado)fields['fldih7FiODAgw5VUQ']=estado;
+  if(window.currentUser)fields['fld3zzwUDvBMI6MM6']=window.currentUser;
   const fecha=document.getElementById('na-fecha').value;
   const resp=document.getElementById('na-responsable').value.trim();
   const notas=document.getElementById('na-notas').value.trim();
-  if(fecha)fields['Fecha estimada']=fecha; if(resp)fields['Responsable']=resp;
+  if(fecha)fields['fldNuW8uW209WnDEz']=fecha;
+  if(resp)fields['Responsable']=resp;
   if(notas)fields['Notas']=notas;
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
