@@ -152,6 +152,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="tab red" onclick="switchTab('completitud')">Completa o modifica hito</div>
     <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
     <div class="tab purple" onclick="switchTab('nueva-accion')">Acción comunicacional</div>
+    <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa link</div>
   </div>
 
   <div class="filters">
@@ -688,9 +689,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
             <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="na-responsable" placeholder="Nombre del responsable"></div>
             <div class="form-field"><label class="login-label">Días respecto al hito</label><input class="login-input" type="number" id="na-dias" placeholder="Ej: -7, 0, +3"></div>
-            <div class="form-field"><label class="login-label">Link de registro</label><input class="login-input" id="na-link" placeholder="https://youtube.com/... o https://..."></div>
-            <div class="form-field"><label class="login-label">Etiqueta del link</label><input class="login-input" id="na-link-etiqueta" placeholder="Ej: YouTube, Nota CNN, Drive"></div>
-            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" placeholder="Observaciones adicionales" style="resize:vertical"></textarea></div>
+<div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" placeholder="Observaciones adicionales" style="resize:vertical"></textarea></div>
           </div>
           <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#7c3aed">Guardar acción</button>
         </div>
@@ -733,6 +732,25 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       </div>
     </div>
 
+
+    <!-- LINKS -->
+    <div id="view-links" class="view">
+      <div class="form-card">
+        <div class="section-header"><span>Registrar links de registro</span></div>
+        <div class="form-body">
+          <div id="lk-success" class="alert-success">✓ Links guardados correctamente</div>
+          <div id="lk-error" class="alert-error"></div>
+          <div class="form-field full">
+            <label class="login-label">Hito o acción vinculada *</label>
+            <select class="fsel" id="lk-hito"><option value="">Seleccionar hito...</option></select>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);margin:-8px 0 4px">Puedes ingresar hasta 10 links por registro</div>
+          <div id="lk-fields" style="display:flex;flex-direction:column;gap:10px"></div>
+          <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#0891b2;border:1px solid #0891b2;margin-top:-4px">+ Agregar otro link</button>
+          <button class="login-btn" id="btn-lk" onclick="guardarLinks()" style="background:#0891b2">Guardar links</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1033,15 +1051,11 @@ async function guardarAccion() {
   const notas=document.getElementById('na-notas').value.trim();
   if(fecha)fields['Fecha estimada']=fecha; if(resp)fields['Responsable']=resp;
   if(dias)fields['Días respecto al hito']=parseInt(dias); if(notas)fields['Notas']=notas;
-  const link=document.getElementById('na-link').value.trim();
-  const etiqueta=document.getElementById('na-link-etiqueta').value.trim();
-  if(link)fields['Link']=link;
-  if(etiqueta)fields['Etiqueta del link']=etiqueta;
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-dias','na-notas'].forEach(id=>document.getElementById(id).value='');
-    ['na-tipo','na-fecha','na-link','na-link-etiqueta'].forEach(id=>document.getElementById(id).value='');
+    ['na-tipo','na-fecha'].forEach(id=>document.getElementById(id).value='');
     btn.textContent='Guardar acción';btn.disabled=false;
     setTimeout(()=>document.getElementById('na-success').style.display='none',3000);
     await loadData();
@@ -1055,7 +1069,63 @@ function cerrarSesion() {
   document.getElementById('login-error').style.display = 'none';
 }
 
+
+function addLinkRow() {
+  const container = document.getElementById('lk-fields');
+  if (container.children.length >= 10) return;
+  const idx = container.children.length + 1;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 2fr;gap:8px;align-items:center';
+  div.innerHTML = `<input class="login-input" placeholder="Etiqueta (ej: YouTube)" id="lk-etiqueta-${idx}">
+    <input class="login-input" placeholder="https://..." id="lk-url-${idx}">`;
+  container.appendChild(div);
+}
+
+async function guardarLinks() {
+  const hitoId = document.getElementById('lk-hito').value;
+  if (!hitoId) { document.getElementById('lk-error').textContent='Selecciona un hito.'; document.getElementById('lk-error').style.display='block'; return; }
+  const container = document.getElementById('lk-fields');
+  const links = [];
+  for (let i = 1; i <= container.children.length; i++) {
+    const et = document.getElementById(`lk-etiqueta-${i}`)?.value.trim();
+    const url = document.getElementById(`lk-url-${i}`)?.value.trim();
+    if (url) links.push({ etiqueta: et||url, url });
+  }
+  if (!links.length) { document.getElementById('lk-error').textContent='Agrega al menos un link.'; document.getElementById('lk-error').style.display='block'; return; }
+  document.getElementById('lk-error').style.display='none';
+  const btn = document.getElementById('btn-lk');
+  btn.textContent='Guardando...'; btn.disabled=true;
+  const fields = { 'Notas': links.map(l=>`${l.etiqueta}: ${l.url}`).join('\n'), 'Ingresado por': window.currentUser||'', 'Fecha de ingreso': new Date().toISOString() };
+  if (links[0]) fields['Link'] = links[0].url;
+  if (links[0]) fields['Etiqueta del link'] = links[0].etiqueta;
+  try {
+    await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`, { method:'POST', body: JSON.stringify({ fields }) });
+    document.getElementById('lk-success').style.display='block';
+    document.getElementById('lk-fields').innerHTML='';
+    document.getElementById('lk-hito').value='';
+    addLinkRow();
+    btn.textContent='Guardar links'; btn.disabled=false;
+    setTimeout(()=>document.getElementById('lk-success').style.display='none',3000);
+    await loadData();
+  } catch(e) {
+    document.getElementById('lk-error').textContent='Error: '+e.message;
+    document.getElementById('lk-error').style.display='block';
+    btn.textContent='Guardar links'; btn.disabled=false;
+  }
+}
 function switchTab(tab) {
+  if (tab === 'links') {
+    const sel = document.getElementById('lk-hito');
+    if (sel && allHitos.length > 0 && sel.options.length <= 1) {
+      allHitos.sort((a,b)=>a.n-b.n).forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = `${h.n}. ${h.actividad} (${h.programa})`;
+        sel.appendChild(opt);
+      });
+    }
+    if (document.getElementById('lk-fields').children.length === 0) addLinkRow();
+  }
   if (tab === 'nueva-accion') {
     const sel = document.getElementById('na-hito');
     if (sel && allHitos.length > 0 && sel.options.length <= 1) {
@@ -1068,7 +1138,7 @@ function switchTab(tab) {
     }
   }
   activeTab=tab;
-  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion','links'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
