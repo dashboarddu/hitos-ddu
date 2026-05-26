@@ -138,6 +138,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div style="display:flex;align-items:center;gap:8px">
       <span class="badge-user" id="user-badge">—</span>
       <button class="btn-sm" onclick="loadData()">↻ Actualizar</button>
+      <button class="btn-sm" onclick="cerrarSesion()" style="color:var(--accent3);border-color:var(--accent3)">⏻ Salir</button>
     </div>
   </header>
 
@@ -650,6 +651,13 @@ async function guardarAccion() {
     setTimeout(()=>document.getElementById('na-success').style.display='none',3000);
     await loadData();
   } catch(e){document.getElementById('na-error').textContent='Error: '+e.message;document.getElementById('na-error').style.display='block';btn.textContent='Guardar acción';btn.disabled=false;}
+}
+
+function cerrarSesion() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('email-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
 }
 
 function switchTab(tab) {
