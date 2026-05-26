@@ -153,6 +153,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
     <div class="tab purple" onclick="switchTab('nueva-accion')">Acción comunicacional</div>
     <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa link</div>
+    <div class="tab" style="color:#be185d" onclick="switchTab('gantt-acciones')">📅 Gantt acciones</div>
   </div>
 
   <div class="filters">
@@ -784,6 +785,15 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
         </div>
       </div>
     </div>
+
+    <!-- GANTT ACCIONES -->
+    <div id="view-gantt-acciones" class="view">
+      <div class="gantt-container">
+        <div class="section-header"><span>Cronograma de acciones comunicacionales</span><span id="ga-count" style="color:#be185d"></span></div>
+        <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;font-size:12px" id="ga-legend"></div>
+        <div class="gantt-scroll"><table class="gantt-table" id="gantt-acciones-table"></table></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -905,7 +915,7 @@ function applyFilters() {
   renderAll();
 }
 
-function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderAcciones();renderCompletitud();}
+function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderAcciones();renderCompletitud();renderGanttAcciones();}
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
@@ -1176,6 +1186,70 @@ async function guardarEdicionAccion() {
     btn.textContent = 'Guardar cambios'; btn.disabled = false;
   }
 }
+
+function renderGanttAcciones() {
+  const table = document.getElementById('gantt-acciones-table');
+  if (!table) return;
+  const TIPO_COLORS = {
+    'Nota de prensa': '#1565c0',
+    'Post en RRSS': '#be185d',
+    'Campaña interna': '#0d9a6e',
+    'Comunicación institucional': '#f59e0b',
+    'Otro': '#6b7280'
+  };
+  const acciones = allAcciones.filter(a => a.fecha);
+  const sinFecha = allAcciones.filter(a => !a.fecha);
+  const todos = [...acciones, ...sinFecha];
+  document.getElementById('ga-count').textContent = todos.length + ' acciones';
+
+  // Legend
+  const legend = document.getElementById('ga-legend');
+  const tipos = [...new Set(allAcciones.map(a=>a.tipo).filter(Boolean))];
+  legend.innerHTML = tipos.map(t => {
+    const color = TIPO_COLORS[t] || '#6b7280';
+    return `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>${t}</span>`;
+  }).join('');
+
+  // Build header
+  const sm = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
+  MESES.forEach((m,mi) => SEMANAS.forEach((s,si) => {
+    html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
+  }));
+  html += '</tr></thead><tbody>';
+
+  // Sort by fecha
+  const sorted = [...allAcciones].sort((a,b) => {
+    if (a.fecha && b.fecha) return new Date(a.fecha) - new Date(b.fecha);
+    if (a.fecha) return -1;
+    if (b.fecha) return 1;
+    return 0;
+  });
+
+  sorted.forEach(a => {
+    const color = TIPO_COLORS[a.tipo] || '#6b7280';
+    const tipoShort = {'Nota de prensa':'NP','Post en RRSS':'RRSS','Campaña interna':'Camp','Comunicación institucional':'Inst','Otro':'Otro'};
+    html += `<tr><td class="act-col"><div class="act-name">${a.accion}</div></td>`;
+    html += `<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">${tipoShort[a.tipo]||a.tipo||'—'}</span></td>`;
+
+    MESES.forEach((m,mi) => {
+      SEMANAS.forEach((s,si) => {
+        let filled = false;
+        if (a.fecha) {
+          const d = new Date(a.fecha + 'T12:00:00');
+          const dMes = MESES[d.getMonth()];
+          const dDia = d.getDate();
+          const semIdx = dDia <= 7 ? 'S1' : dDia <= 14 ? 'S2' : dDia <= 21 ? 'S3' : 'S4';
+          filled = dMes === m && semIdx === s;
+        }
+        html += `<td class="week-cell${si===0?' month-sep':''}"><div class="dot${filled?' filled':''}" style="${filled?`background:${color}`:''}"></div></td>`;
+      });
+    });
+    html += '</tr>';
+  });
+
+  table.innerHTML = html + '</tbody>';
+}
 function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -1252,7 +1326,7 @@ function switchTab(tab) {
     }
   }
   activeTab=tab;
-  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion','links'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
