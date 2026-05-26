@@ -1086,9 +1086,10 @@ async function guardarAccion() {
   const resp=document.getElementById('na-responsable').value.trim();
   const notas=document.getElementById('na-notas').value.trim();
   if(fecha)fields['fldNuW8uW209WnDEz']=fecha;
-  if(resp)fields['Responsable']=resp;
-  if(notas)fields['Notas']=notas;
+  if(resp)fields['fldVvsvhZC5hJJaDs']=resp;
+  if(notas)fields['fldVvsvhZC5hJJaDs2']=notas;
   try {
+    console.log('Enviando a Airtable:', JSON.stringify({fields,typecast:true}));
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-dias','na-notas'].forEach(id=>document.getElementById(id).value='');
@@ -1096,7 +1097,7 @@ async function guardarAccion() {
     btn.textContent='Guardar acción';btn.disabled=false;
     setTimeout(()=>document.getElementById('na-success').style.display='none',3000);
     await loadData();
-  } catch(e){document.getElementById('na-error').textContent='Error: '+e.message;document.getElementById('na-error').style.display='block';btn.textContent='Guardar acción';btn.disabled=false;}
+  } catch(e){console.error('Error completo:',e);document.getElementById('na-error').textContent='Error: '+e.message;document.getElementById('na-error').style.display='block';btn.textContent='Guardar acción';btn.disabled=false;}
 }
 
 function cerrarSesion() {
