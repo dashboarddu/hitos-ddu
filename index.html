@@ -158,6 +158,13 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   <div class="filters">
     <select class="filter-select" id="fil-programa" onchange="applyFilters()"><option value="">Todos los programas</option></select>
     <select class="filter-select" id="fil-region" onchange="applyFilters()"><option value="">Todas las regiones</option></select>
+    <select class="filter-select" id="fil-comuna" onchange="applyFilters()"><option value="">Todas las comunas</option></select>
+    <select class="filter-select" id="fil-mes" onchange="applyFilters()">
+      <option value="">Todos los meses</option>
+      <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
+      <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
+      <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+    </select>
     <select class="filter-select" id="fil-tipo" onchange="applyFilters()"><option value="">Todos los tipos</option></select>
     <select class="filter-select" id="fil-estado" onchange="applyFilters()">
       <option value="">Todos los estados</option>
@@ -258,7 +265,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
                 <option>Comunicaciones DDU</option><option>Unidad Digitalización SU</option>
                 <option>Infraestructura Verde</option><option>Parques Urbanos</option>
                 <option>Pavimentación Participativa</option><option>Espacios Públicos</option>
-                <option>Planificación y Normas Urbanas</option>
+                <option>Planificación y Normas Urbanas</option><option>Suelo</option>
               </select>
             </div>
             <div class="form-field"><label class="login-label">Tipo de hito *</label>
@@ -270,7 +277,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
                 <option>Publicación</option><option>Post redes sociales</option>
                 <option>Streaming</option><option>Minuta</option>
                 <option>Reportes de prensa</option><option>Minvuletín</option>
-                <option>Renders</option><option>Otros</option>
+                <option>Renders</option><option>Efeméride</option><option>Otros</option>
               </select>
             </div>
             <div class="form-field"><label class="login-label">Región</label>
@@ -659,6 +666,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
               <select class="fsel" id="nh-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
             </div>
             <div class="form-field full"><label class="login-label">Descripción</label><textarea class="login-input" id="nh-descripcion" rows="2" placeholder="Descripción adicional" style="resize:vertical"></textarea></div>
+            <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
           </div>
           <button class="login-btn" id="btn-nh" onclick="guardarHito()" style="background:var(--accent2)">Guardar hito</button>
         </div>
@@ -835,7 +843,8 @@ async function loadData() {
       region: r.fields['Región']||'', programa: r.fields['Programa']||'',
       tipo_hito: r.fields['Tipo de hito']||'', mes: r.fields['Mes']||'',
       semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
-      completitud: r.fields['Completitud']||'🔴 Sin fecha'
+      completitud: r.fields['Completitud']||'🔴 Sin fecha',
+      fecha_exacta: r.fields['Fecha hito']||''
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
@@ -856,15 +865,18 @@ function buildFilters() {
   const progs=[...new Set(allHitos.map(h=>h.programa).filter(Boolean))].sort();
   const regs=[...new Set(allHitos.map(h=>h.region).filter(Boolean))].sort();
   const tipos=[...new Set(allHitos.map(h=>h.tipo_hito).filter(Boolean))].sort();
+  const comunas=[...new Set(allHitos.map(h=>h.comuna).filter(Boolean))].sort();
   document.getElementById('fil-programa').innerHTML='<option value="">Todos los programas</option>'+progs.map(p=>`<option>${p}</option>`).join('');
   document.getElementById('fil-region').innerHTML='<option value="">Todas las regiones</option>'+regs.map(r=>`<option>${r}</option>`).join('');
+  document.getElementById('fil-comuna').innerHTML='<option value="">Todas las comunas</option>'+comunas.map(c=>`<option>${c}</option>`).join('');
   document.getElementById('fil-tipo').innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option>${t}</option>`).join('');
 }
 
 function applyFilters() {
   const p=document.getElementById('fil-programa').value, r=document.getElementById('fil-region').value;
+  const com=document.getElementById('fil-comuna').value, mes=document.getElementById('fil-mes').value;
   const t=document.getElementById('fil-tipo').value, e=document.getElementById('fil-estado').value;
-  filtered=allHitos.filter(h=>(!p||h.programa===p)&&(!r||h.region===r)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e));
+  filtered=allHitos.filter(h=>(!p||h.programa===p)&&(!r||h.region===r)&&(!com||h.comuna===com)&&(!mes||h.mes===mes)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e));
   renderAll();
 }
 
@@ -914,8 +926,14 @@ function renderGantt() {
 }
 
 function renderCalendar() {
-  document.getElementById('calendar-grid').innerHTML=MESES.map(m=>{
-    const hitos=filtered.filter(h=>h.mes===m).sort((a,b)=>(a.semana||'').localeCompare(b.semana||''));
+  document.getElementById('calendar-grid').innerHTML=MESES.map((m,mi)=>{
+    const hitos=filtered.filter(h=>{
+      if(h.fecha_exacta){const d=new Date(h.fecha_exacta);return d.getMonth()===mi;}
+      return h.mes===m;
+    }).sort((a,b)=>{
+      if(a.fecha_exacta&&b.fecha_exacta)return new Date(a.fecha_exacta)-new Date(b.fecha_exacta);
+      return (a.semana||'').localeCompare(b.semana||'');
+    });
     const inner=hitos.length===0?'<div class="month-empty">Sin hitos</div>':hitos.slice(0,5).map(h=>{
       const color=PROG_COLORS[h.programa]||'#6b7280';
       return `<div class="month-hito"><span class="month-hito-name" title="${h.actividad}">${h.actividad}</span><span style="font-size:10px;color:${color};font-weight:500;white-space:nowrap">${h.semana||'—'}</span></div>`;
@@ -1021,12 +1039,14 @@ async function guardarHito() {
   if(region)fields['Región']=region; if(comuna)fields['Comuna']=comuna;
   if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
   if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
+  const fechaExacta=document.getElementById('nh-fecha-exacta').value;
+  if(fechaExacta)fields['Fecha hito']=fechaExacta;
   fields['Ingresado por']=window.currentUser||'';
   fields['Fecha de ingreso']=new Date().toISOString();
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields})});
     document.getElementById('nh-success').style.display='block';
-    ['nh-actividad','nh-region','nh-comuna','nh-descripcion'].forEach(id=>document.getElementById(id).value='');
+    ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta'].forEach(id=>document.getElementById(id).value='');
     ['nh-programa','nh-tipo','nh-mes','nh-semana'].forEach(id=>document.getElementById(id).value='');
     btn.textContent='Guardar hito';btn.disabled=false;
     setTimeout(()=>document.getElementById('nh-success').style.display='none',3000);
