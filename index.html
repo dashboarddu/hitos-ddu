@@ -848,7 +848,7 @@ async function loadData() {
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
-      id: r.id, accion: r.fields['Name']||'Sin nombre',
+      id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
       tipo: (r.fields['Tipo de acción']||{}).name || r.fields['Tipo de acción'] || '',
       fecha: r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
       estado: (r.fields['Estado']||{}).name || r.fields['Estado'] || 'Planificada'
@@ -1077,7 +1077,7 @@ async function guardarAccion() {
   if(!nombre||!tipo){document.getElementById('na-error').textContent='Completa los campos obligatorios.';document.getElementById('na-error').style.display='block';return;}
   document.getElementById('na-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
-  const fields={'Name':nombre};
+  const fields={'Nombre acción':nombre};
   if(tipo)fields['Tipo de acción']=tipo;
   const estado=document.getElementById('na-estado').value;
   if(estado)fields['Estado']=estado;
@@ -1131,7 +1131,7 @@ async function guardarLinks() {
   document.getElementById('lk-error').style.display='none';
   const btn = document.getElementById('btn-lk');
   btn.textContent='Guardando...'; btn.disabled=true;
-  const fields = { 'Notas': links.map(l=>`${l.etiqueta}: ${l.url}`).join('\n'), 'Ingresado por': window.currentUser||'', 'Fecha de ingreso': new Date().toISOString() };
+  const fields = { 'Notas': links.map(l=>`${l.etiqueta}: ${l.url}`).join('\n'), 'Ingresado por': window.currentUser||'' };
   if (links[0]) fields['Link'] = links[0].url;
   if (links[0]) fields['Etiqueta del link'] = links[0].etiqueta;
   try {
