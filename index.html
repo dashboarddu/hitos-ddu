@@ -144,15 +144,15 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
-    <div class="tab" onclick="switchTab('gantt')">Gantt</div>
+    <div class="tab" onclick="switchTab('gantt')">Gantt general</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
     <div class="tab red" onclick="switchTab('completitud')">Completa o modifica hito</div>
     <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
-    <div class="tab purple" onclick="switchTab('nueva-accion')">Acción comunicacional</div>
-    <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa link</div>
+    <div class="tab purple" onclick="switchTab('nueva-accion')">Ingresa gestión comunicacional</div>
+    <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa links</div>
     <div class="tab" style="color:#be185d" onclick="switchTab('gantt-acciones')">📅 Gantt acciones</div>
   </div>
 
@@ -188,12 +188,12 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
       </div>
       <div class="two-col">
-        <div class="chart-card"><div class="chart-title">Por programa</div><div id="chart-programa"></div></div>
+        <div class="chart-card"><div class="chart-title">Por comuna (top 10)</div><div id="chart-comuna"></div></div>
         <div class="chart-card"><div class="chart-title">Por tipo de hito</div><div id="chart-tipo"></div></div>
       </div>
       <div class="two-col">
         <div class="chart-card"><div class="chart-title">Por región</div><div id="chart-region"></div></div>
-        <div class="chart-card"><div class="chart-title">Por comuna (top 10)</div><div id="chart-comuna"></div></div>
+        <div class="chart-card"><div class="chart-title">Por programa</div><div id="chart-programa"></div></div>
       </div>
     </div>
 
@@ -284,18 +284,23 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
           <div class="form-grid">
             <div class="form-field full"><label class="login-label">Actividad *</label><input class="login-input" id="nh-actividad" placeholder="Nombre del hito"></div>
             <div class="form-field"><label class="login-label">Programa *</label>
-              <select class="fsel" id="nh-programa"><option value="">Seleccionar...</option>
+              <select class="fsel" id="nh-programa" onchange="onProgramaChange()"><option value="">Seleccionar...</option>
                 <option>Pequeñas Localidades</option><option>Quiero mi Barrio</option>
                 <option>Regeneración de Conjuntos</option><option>Planes Urbanos Habitacionales</option>
                 <option>Zonas de Interés Público</option><option>Unidad de Proyecto</option>
                 <option>Comunicaciones DDU</option><option>Unidad Digitalización SU</option>
-                <option>Infraestructura Verde</option><option>Parques Urbanos</option>
+                <option>Infraestructura Verde</option>
+                <option>Parques Urbanos - Construcción y Mejoramiento</option>
+                <option>Parques Urbanos - Conservación</option>
                 <option>Pavimentación Participativa</option><option>Espacios Públicos</option>
                 <option>Planificación y Normas Urbanas</option><option>Suelo</option>
+                <option>Vialidad urbana</option><option>Infraestructura sanitaria</option>
+                <option>Reducción de riesgos desastres y ACC</option>
+                <option>PUI</option><option>PUE</option>
               </select>
             </div>
             <div class="form-field"><label class="login-label">Tipo de hito *</label>
-              <select class="fsel" id="nh-tipo"><option value="">Seleccionar...</option>
+              <select class="fsel" id="nh-tipo" onchange="onTipoHitoChange()"><option value="">Seleccionar...</option>
                 <option>Obras Habitacionales</option><option>Obras Espacio Público</option>
                 <option>Obras Equipamientos</option><option>Diálogos / Encuentros</option>
                 <option>Conmemoración</option><option>Seminarios</option>
@@ -307,8 +312,9 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
               </select>
             </div>
             <div class="form-field"><label class="login-label">Región</label>
-              <select class="fsel" id="nh-region">
+              <select class="fsel" id="nh-region" onchange="onRegionChange()">
                 <option value="">Seleccionar...</option>
+                <option>Nacional</option>
                 <option>Arica y Parinacota</option>
                 <option>Tarapacá</option>
                 <option>Antofagasta</option>
@@ -692,7 +698,27 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
               <select class="fsel" id="nh-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
             </div>
             <div class="form-field full"><label class="login-label">Descripción</label><textarea class="login-input" id="nh-descripcion" rows="2" placeholder="Descripción adicional" style="resize:vertical"></textarea></div>
-            <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
+            <div class="form-field" id="campo-reconstruccion" style="display:none">
+              <label class="login-label" style="color:var(--accent3)">⚠ Región Reconstrucción</label>
+              <select class="fsel" id="nh-region-reconstruccion">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-field" id="campo-qmb-20" style="display:none">
+              <label class="login-label" style="color:var(--accent2)">¿Es actividad 20 años QMB?</label>
+              <select class="fsel" id="nh-qmb-20">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-field" id="campo-etapa-obra" style="display:none">
+              <label class="login-label">Etapa de la obra</label>
+              <input class="login-input" id="nh-etapa-obra" placeholder="Ej: Diseño, Licitación, Ejecución, Recepción...">
+            </div>
+            <div class="form-field" id="campo-comuna" style="">
+              <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
+            </div>
           </div>
           <button class="login-btn" id="btn-nh" onclick="guardarHito()" style="background:var(--accent2)">Guardar hito</button>
         </div>
@@ -714,7 +740,9 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             <div class="form-field"><label class="login-label">Tipo de acción *</label>
               <select class="fsel" id="na-tipo"><option value="">Seleccionar...</option>
                 <option>Nota de prensa</option><option>Post en RRSS</option>
-                <option>Campaña interna</option><option>Comunicación institucional</option><option>Otro</option>
+                <option>Campaña interna</option><option>Comunicación institucional</option>
+                <option>Elaborar texto</option><option>Diseño</option>
+                <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
               </select>
             </div>
             <div class="form-field"><label class="login-label">Estado</label>
@@ -757,7 +785,26 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
           </div>
           <div class="form-field"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
-          <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
+          <div class="form-field" id="campo-reconstruccion" style="display:none">
+              <label class="login-label" style="color:var(--accent3)">⚠ Región Reconstrucción</label>
+              <select class="fsel" id="nh-region-reconstruccion">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-field" id="campo-qmb-20" style="display:none">
+              <label class="login-label" style="color:var(--accent2)">¿Es actividad 20 años QMB?</label>
+              <select class="fsel" id="nh-qmb-20">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-field" id="campo-etapa-obra" style="display:none">
+              <label class="login-label">Etapa de la obra</label>
+              <input class="login-input" id="nh-etapa-obra" placeholder="Ej: Diseño, Licitación, Ejecución, Recepción...">
+            </div>
+            <div class="form-field" id="campo-comuna" style="">
+              <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
@@ -879,7 +926,10 @@ async function loadData() {
       tipo_hito: r.fields['Tipo de hito']||'', mes: r.fields['Mes']||'',
       semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
-      fecha_exacta: r.fields['Fecha hito']||''
+      fecha_exacta: r.fields['Fecha hito']||'',
+      etapa_obra: r.fields['Etapa obra']||'',
+      region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
+      qmb20: r.fields['Actividad 20 años QMB']?.name||''
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
@@ -957,12 +1007,30 @@ function renderGantt() {
     return getVal(a)-getVal(b);
   });
   const sp={'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB','Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH','Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP'};
-  sorted.slice(0,100).forEach(h=>{
+  // Add acciones to gantt
+  const ganttItems = [...sorted];
+  ganttItems.slice(0,120).forEach(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     html+=`<tr><td class="act-col"><div class="act-name">${h.n}. ${h.actividad}</div><div class="act-meta">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
     MESES.forEach(m=>SEMANAS.forEach((s,si)=>{
       const f=h.mes===m&&h.semana===s;
+      html+=`<td class="week-cell${si===0?' month-sep':''}"><div class="dot${f?' filled':''}" style="${f?`background:${color}`:''}"></div></td>`;
+    }));
+    html+='</tr>';
+  });
+  // Add acciones comunicacionales
+  const TIPO_COLORS_G = {'Nota de prensa':'#1565c0','Post en RRSS':'#be185d','Campaña interna':'#0d9a6e','Comunicación institucional':'#f59e0b','Elaborar texto':'#7c3aed','Diseño':'#0891b2','Revisión de maqueta':'#ea580c','En VB':'#065f46','Otro':'#6b7280'};
+  allAcciones.filter(a=>a.fecha).forEach(a=>{
+    const color=TIPO_COLORS_G[a.tipo]||'#6b7280';
+    const d=new Date(a.fecha+'T12:00:00');
+    const dMes=MESES[d.getMonth()];
+    const dDia=d.getDate();
+    const dSem=dDia<=7?'S1':dDia<=14?'S2':dDia<=21?'S3':'S4';
+    html+=`<tr style="background:#fafafa"><td class="act-col"><div class="act-name" style="color:#6b7280;font-style:italic">📣 ${a.accion}</div><div class="act-meta">${a.tipo||'Acción'}</div></td>`;
+    html+=`<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">Acc</span></td>`;
+    MESES.forEach(m=>SEMANAS.forEach((s,si)=>{
+      const f=dMes===m&&dSem===s;
       html+=`<td class="week-cell${si===0?' month-sep':''}"><div class="dot${f?' filled':''}" style="${f?`background:${color}`:''}"></div></td>`;
     }));
     html+='</tr>';
@@ -991,7 +1059,7 @@ function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-
 
 function renderList() {
   document.getElementById('list-count').textContent=filtered.length+' hitos';
-  document.getElementById('list-body').innerHTML=[...filtered].sort((a,b)=>a.n-b.n).map(h=>{
+  document.getElementById('list-body').innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     return `<tr><td style="color:var(--text-dim);font-size:12px">${h.n}</td><td>${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.region}</td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td></tr>`;
   }).join('');
@@ -1099,7 +1167,16 @@ async function guardarHito() {
   if(desc)fields['fldvKIJ8NxQWyeHVq']=desc;
   if(fechaExacta)fields['fldHCAMOsbuzrwzcc']=fechaExacta;
   if(window.currentUser)fields['fld6itvj3qMvFxouw']=window.currentUser;
+  const etapaObra=document.getElementById('nh-etapa-obra').value.trim();
+  if(etapaObra)fields['fldrkTGiKMJ81NIfs']=etapaObra;
+  const regionRecons=document.getElementById('campo-reconstruccion').style.display!=='none'?document.getElementById('nh-region-reconstruccion').value:'';
+  if(regionRecons)fields['fld0zi9xajijPq5yi']=regionRecons;
+  const qmb20=document.getElementById('campo-qmb-20').style.display!=='none'?document.getElementById('nh-qmb-20').value:'';
+  if(qmb20)fields['fldfyWuIDpPAZoPVF']=qmb20;
   try {
+    // Calculate next N°
+    const maxN = allHitos.length > 0 ? Math.max(...allHitos.map(h=>h.n||0)) + 1 : 1;
+    fields['fldNsze1hA9QYWn1x'] = maxN;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('nh-success').style.display='block';
     ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta'].forEach(id=>document.getElementById(id).value='');
@@ -1251,6 +1328,38 @@ function renderGanttAcciones() {
   });
 
   table.innerHTML = html + '</tbody>';
+}
+
+function onRegionChange() {
+  const region = document.getElementById('nh-region').value;
+  const comunaRow = document.getElementById('campo-comuna');
+  const reconstruccion = ['Valparaíso','Ñuble','Biobío'];
+  // Hide/show comuna
+  if (comunaRow) {
+    if (region === 'Nacional') {
+      document.getElementById('nh-comuna').value = '';
+      document.getElementById('nh-comuna').disabled = true;
+      document.getElementById('nh-comuna').style.opacity = '0.4';
+    } else {
+      document.getElementById('nh-comuna').disabled = false;
+      document.getElementById('nh-comuna').style.opacity = '1';
+    }
+  }
+  // Show/hide Región Reconstrucción
+  const campoRecons = document.getElementById('campo-reconstruccion');
+  if (campoRecons) campoRecons.style.display = reconstruccion.includes(region) ? 'flex' : 'none';
+}
+
+function onTipoHitoChange() {
+  const tipo = document.getElementById('nh-tipo').value;
+  const campoEtapa = document.getElementById('campo-etapa-obra');
+  if (campoEtapa) campoEtapa.style.display = tipo.includes('Obras') ? 'flex' : 'none';
+}
+
+function onProgramaChange() {
+  const prog = document.getElementById('nh-programa').value;
+  const campoQMB = document.getElementById('campo-qmb-20');
+  if (campoQMB) campoQMB.style.display = prog === 'Quiero mi Barrio' ? 'flex' : 'none';
 }
 function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
