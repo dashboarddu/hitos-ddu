@@ -114,6 +114,11 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .view { display: none; } .view.active { display: block; }
+.content.tint-green { background: rgba(13,154,110,0.07) !important; }
+.content.tint-purple { background: rgba(124,58,237,0.07) !important; }
+.content.tint-red { background: rgba(229,57,53,0.07) !important; }
+.content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
+.content.tint-pink { background: rgba(190,24,93,0.07) !important; }
 </style>
 </head>
 <body>
@@ -977,8 +982,10 @@ function buildFilters() {
   const regs=[...new Set(allHitos.map(h=>h.region).filter(Boolean))].sort();
   const tipos=[...new Set(allHitos.map(h=>h.tipo_hito).filter(Boolean))].sort();
   const comunas=[...new Set(allHitos.map(h=>h.comuna).filter(Boolean))].sort();
-  document.getElementById('fil-programa').innerHTML='<option value="">Todos los programas</option>'+progs.map(p=>`<option>${p}</option>`).join('');
-  document.getElementById('fil-region').innerHTML='<option value="">Todas las regiones</option>'+regs.map(r=>`<option>${r}</option>`).join('');
+  const PROGRAMAS_FIJOS = ['Pequeñas Localidades','Quiero mi Barrio','Regeneración de Conjuntos','Planes Urbanos Habitacionales','Zonas de Interés Público','Unidad de Proyecto','Comunicaciones DDU','Unidad Digitalización SU','Infraestructura Verde','Parques Urbanos - Construcción y Mejoramiento','Parques Urbanos - Conservación','Pavimentación Participativa','Espacios Públicos','Planificación y Normas Urbanas','Suelo','Vialidad urbana','Infraestructura sanitaria','Reducción de riesgos desastres y ACC','PUI','PUE'];
+  document.getElementById('fil-programa').innerHTML='<option value="">Todos los programas</option>'+PROGRAMAS_FIJOS.map(p=>`<option>${p}</option>`).join('');
+  const REGIONES_FIJAS = ['Nacional','Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana','O\'Higgins','Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes','Central','Arica'];
+  document.getElementById('fil-region').innerHTML='<option value="">Todas las regiones</option>'+REGIONES_FIJAS.map(r=>`<option>${r}</option>`).join('');
   document.getElementById('fil-comuna').innerHTML='<option value="">Todas las comunas</option>'+comunas.map(c=>`<option>${c}</option>`).join('');
   document.getElementById('fil-tipo').innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option>${t}</option>`).join('');
 }
@@ -1019,9 +1026,10 @@ function renderDashboard() {
 function renderGantt() {
   const table=document.getElementById('gantt-table');
   document.getElementById('gantt-count').textContent=filtered.length+' hitos';
-  const sm=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES_GANTT=MESES.slice(2);
+  const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
-  MESES.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
+  MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
   const MES_IDX={'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
   const SEM_IDX={'S1':1,'S2':2,'S3':3,'S4':4};
@@ -1040,15 +1048,16 @@ function renderGantt() {
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     html+=`<tr><td class="act-col"><div class="act-name">${h.n}. ${h.actividad}</div><div class="act-meta">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
-    MESES.forEach(m=>SEMANAS.forEach((s,si)=>{
+    const MESES_G=MESES.slice(2);
+    MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
       const f=h.mes===m&&h.semana===s;
-      html+=`<td class="week-cell${si===0?' month-sep':''}"><div class="dot${f?' filled':''}" style="${f?`background:${color}`:''}"></div></td>`;
+      html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
     }));
     html+='</tr>';
   });
-  // Add acciones comunicacionales
+  const progFilter = document.getElementById('fil-programa').value;
   const TIPO_COLORS_G = {'Nota de prensa':'#1565c0','Post en RRSS':'#be185d','Campaña interna':'#0d9a6e','Comunicación institucional':'#f59e0b','Elaborar texto':'#7c3aed','Diseño':'#0891b2','Revisión de maqueta':'#ea580c','En VB':'#065f46','Otro':'#6b7280'};
-  allAcciones.filter(a=>a.fecha).forEach(a=>{
+  (progFilter ? [] : allAcciones.filter(a=>a.fecha)).forEach(a=>{
     const color=TIPO_COLORS_G[a.tipo]||'#6b7280';
     const d=new Date(a.fecha+'T12:00:00');
     const dMes=MESES[d.getMonth()];
@@ -1056,9 +1065,10 @@ function renderGantt() {
     const dSem=dDia<=7?'S1':dDia<=14?'S2':dDia<=21?'S3':'S4';
     html+=`<tr style="background:#fafafa"><td class="act-col"><div class="act-name" style="color:#6b7280;font-style:italic">📣 ${a.accion}</div><div class="act-meta">${a.tipo||'Acción'}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">Acc</span></td>`;
-    MESES.forEach(m=>SEMANAS.forEach((s,si)=>{
+    const MESES_GA=MESES.slice(2);
+    MESES_GA.forEach(m=>SEMANAS.forEach((s,si)=>{
       const f=dMes===m&&dSem===s;
-      html+=`<td class="week-cell${si===0?' month-sep':''}"><div class="dot${f?' filled':''}" style="${f?`background:${color}`:''}"></div></td>`;
+      html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
     }));
     html+='</tr>';
   });
@@ -1121,7 +1131,7 @@ function renderAcciones() {
 function renderCompletitud() {
   const incompletos=filtered.filter(h=>!h.completitud.includes('Completo'));
   document.getElementById('comp-count').textContent=incompletos.length+' incompletos';
-  document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>a.n-b.n).map(h=>{
+  document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>b.n-a.n).map(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const desc=h.descripcion.replace(/'/g,"\\'"), act=h.actividad.replace(/'/g,"\\'");
     return `<tr><td style="color:var(--text-dim);font-size:12px">${h.n}</td><td style="font-size:13px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
@@ -1343,9 +1353,10 @@ function renderGanttAcciones() {
   }).join('');
 
   // Build header
-  const sm = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES_GA2=MESES.slice(2);
+  const sm = ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
-  MESES.forEach((m,mi) => SEMANAS.forEach((s,si) => {
+  MESES_GA2.forEach((m,mi) => SEMANAS.forEach((s,si) => {
     html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
   }));
   html += '</tr></thead><tbody>';
@@ -1490,6 +1501,9 @@ function switchTab(tab) {
     }
   }
   activeTab=tab;
+  const _ct = document.querySelector('.content');
+  const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
+  _ct.className = 'content ' + (_tm[tab]||'');
   const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
