@@ -27,7 +27,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .login-btn:hover { opacity: 0.88; } .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .login-error { color: var(--accent3); font-size: 12px; margin-top: 8px; display: none; }
 .login-hint { font-size: 11px; color: var(--text-dim); margin-top: 16px; text-align: center; }
-#app { display: none; flex-direction: column; min-height: 100vh; }
+#app { display: none; flex-direction: column; min-height: 100vh; background: url(DJI_0984.jpeg) center/cover fixed no-repeat; }
 header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
 .header-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 12px; }
 .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
@@ -44,12 +44,12 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .filter-select { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; outline: none; cursor: pointer; }
 .content { padding: 20px 24px; flex: 1; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.stat-card { background: rgba(255,255,255,0.92); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
 .stat-value { font-size: 32px; font-weight: 600; line-height: 1; }
 .stat-card.blue .stat-value { color: var(--accent); } .stat-card.green .stat-value { color: var(--accent2); }
 .stat-card.yellow .stat-value { color: var(--accent4); } .stat-card.red .stat-value { color: var(--accent3); }
-.progress-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.progress-section { background: rgba(255,255,255,0.92); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow); }
 .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .progress-label { font-size: 12px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
 .progress-pct { font-size: 18px; font-weight: 600; color: var(--accent2); }
@@ -57,14 +57,14 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.8s ease; width: 0%; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 @media(max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
-.chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.chart-card { background: rgba(255,255,255,0.92); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .chart-title { font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
 .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .bar-label { font-size: 11px; color: var(--text-dim); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
 .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
 .bar-count { font-size: 11px; color: var(--text-dim); width: 24px; text-align: right; flex-shrink: 0; font-weight: 500; }
-.gantt-container { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
+.gantt-container { background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
 .section-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; display: flex; justify-content: space-between; align-items: center; }
 .gantt-scroll { overflow-x: auto; }
 .gantt-table { width: max-content; min-width: 100%; border-collapse: collapse; }
@@ -82,7 +82,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .dot.filled { border-color: transparent; }
 .month-sep { border-left: 1px solid var(--border) !important; }
 .prog-tag { font-size: 10px; padding: 2px 7px; border-radius: 10px; white-space: nowrap; font-weight: 500; }
-.list-container { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
+.list-container { background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
 .list-table { width: 100%; border-collapse: collapse; }
 .list-table th { padding: 10px 16px; font-size: 11px; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; background: var(--bg); }
 .list-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -93,14 +93,14 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .status-conf { background: #d1fae5; color: #065f46; } .status-real { background: #bbf7d0; color: #065f46; }
 .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
 @media(max-width: 768px) { .calendar-grid { grid-template-columns: 1fr; } }
-.month-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+.month-card { background: rgba(255,255,255,0.92); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
 .month-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .month-count-badge { font-size: 11px; background: var(--accent); color: white; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
 .month-hito { font-size: 11px; color: var(--text-dim); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .month-hito:last-child { border-bottom: none; }
 .month-hito-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
 .month-empty { font-size: 11px; color: var(--text-dim); text-align: center; padding: 12px 0; }
-.form-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; max-width: 640px; }
+.form-card { background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; max-width: 640px; }
 .form-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-field { display: flex; flex-direction: column; gap: 6px; }
@@ -143,11 +143,12 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   </header>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+    <div class="tab active" onclick="switchTab('dashboard')">Vista general</div>
     <div class="tab" onclick="switchTab('gantt')">Gantt general</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
+    <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
     <div class="tab red" onclick="switchTab('completitud')">Completa o modifica hito</div>
     <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
@@ -833,6 +834,20 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       </div>
     </div>
 
+
+    <!-- RECONSTRUCCION -->
+    <div id="view-reconstruccion" class="view">
+      <div class="list-container">
+        <div class="section-header"><span>🔴 Hitos en Regiones de Reconstrucción</span><span id="recons-count" style="color:var(--accent3)"></span></div>
+        <div style="padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim)">Valparaíso · Ñuble · Biobío</div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Reconstrucción</th></tr></thead>
+            <tbody id="recons-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <!-- GANTT ACCIONES -->
     <div id="view-gantt-acciones" class="view">
       <div class="gantt-container">
@@ -934,9 +949,9 @@ async function loadData() {
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
-      tipo: (r.fields['Tipo de acción']||{}).name || r.fields['Tipo de acción'] || '',
-      fecha: r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
-      estado: (r.fields['Estado']||{}).name || r.fields['Estado'] || 'Planificada'
+      tipo: (r.fields['fldfaXORc1xUaWZa3']||{}).name || (r.fields['Tipo de acción']||{}).name || '',
+      fecha: r.fields['fldNuW8uW209WnDEz']||r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
+      estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada'
     }));
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
@@ -965,7 +980,7 @@ function applyFilters() {
   renderAll();
 }
 
-function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderAcciones();renderCompletitud();renderGanttAcciones();}
+function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderReconstruccion();renderAcciones();renderCompletitud();renderGanttAcciones();}
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
@@ -1267,6 +1282,28 @@ async function guardarEdicionAccion() {
   }
 }
 
+
+function renderReconstruccion() {
+  const REGIONES_RECONS = ['Valparaíso','Ñuble','Biobío'];
+  const hitos = filtered.filter(h => REGIONES_RECONS.includes(h.region));
+  document.getElementById('recons-count').textContent = hitos.length + ' hitos';
+  document.getElementById('recons-body').innerHTML = hitos.sort((a,b)=>a.n-b.n).map(h => {
+    const color = PROG_COLORS[h.programa]||'#6b7280';
+    const bg = PROG_BG[h.programa]||'#f3f4f6';
+    const recons = h.region_reconstruccion === 'Sí' ? '<span style="color:var(--accent3);font-weight:600">✓ Sí</span>' : '—';
+    return `<tr>
+      <td style="color:var(--text-dim);font-size:12px">${h.n}</td>
+      <td>${h.actividad}</td>
+      <td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td>
+      <td style="font-size:12px;color:var(--accent3);font-weight:500">${h.region}</td>
+      <td style="font-size:12px;color:var(--text-dim)">${h.comuna||'—'}</td>
+      <td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td>
+      <td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td>
+      <td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td>
+      <td>${recons}</td>
+    </tr>`;
+  }).join('');
+}
 function renderGanttAcciones() {
   const table = document.getElementById('gantt-acciones-table');
   if (!table) return;
@@ -1438,7 +1475,7 @@ function switchTab(tab) {
     }
   }
   activeTab=tab;
-  const tabs=['dashboard','gantt','calendario','lista','comunas','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
