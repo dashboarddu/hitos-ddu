@@ -1175,7 +1175,8 @@ async function guardarHito() {
   if(qmb20)fields['fldfyWuIDpPAZoPVF']=qmb20;
   try {
     // Calculate next N°
-    const maxN = allHitos.length > 0 ? Math.max(...allHitos.map(h=>h.n||0)) + 1 : 1;
+    const validNums = allHitos.map(h=>h.n||0).filter(n=>n>0);
+    const maxN = validNums.length > 0 ? Math.max(...validNums) + 1 : 1;
     fields['fldNsze1hA9QYWn1x'] = maxN;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('nh-success').style.display='block';
