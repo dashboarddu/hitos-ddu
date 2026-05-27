@@ -1080,15 +1080,27 @@ async function guardarHito() {
   if(!actividad||!programa||!tipo){document.getElementById('nh-error').textContent='Completa los campos obligatorios.';document.getElementById('nh-error').style.display='block';return;}
   document.getElementById('nh-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
-  const now=new Date().toISOString();
-  const fields={Actividad:actividad,Programa:programa,'Tipo de hito':tipo,'Ingresado por':window.currentUser||'','Fecha de ingreso':now};
-
-  fields['Ingresado por']=window.currentUser||'';
-  fields['Fecha de ingreso']=new Date().toISOString();
-  const fe=document.getElementById('edit-fecha-exacta').value;
-  if(fe)fields['Fecha hito']=fe;
+  const fields={};
+  fields['fldk1LWv1Irs7D9oC']=actividad;
+  fields['fldKob7fwDHBVv8Y1']=programa;
+  fields['fldH9oSjGM7Hsrv97']=tipo;
+  const region=document.getElementById('nh-region').value;
+  const comuna=document.getElementById('nh-comuna').value;
+  const mes=document.getElementById('nh-mes').value;
+  const semana=document.getElementById('nh-semana').value;
+  const estado=document.getElementById('nh-estado').value;
+  const desc=document.getElementById('nh-descripcion').value.trim();
+  const fechaExacta=document.getElementById('nh-fecha-exacta').value;
+  if(region)fields['fldHTl3HWbuU3VTnI']=region;
+  if(comuna)fields['fldytB7aU74V51QIi']=comuna;
+  if(mes)fields['fldEPJCSeb1TJ5vLW']=mes;
+  if(semana)fields['fldxtYwfGjAdWsdLm']=semana;
+  if(estado)fields['fld5PRmGASv84BASc']=estado;
+  if(desc)fields['fldvKIJ8NxQWyeHVq']=desc;
+  if(fechaExacta)fields['fldHCAMOsbuzrwzcc']=fechaExacta;
+  if(window.currentUser)fields['fld6itvj3qMvFxouw']=window.currentUser;
   try {
-    const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields})});
+    const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('nh-success').style.display='block';
     ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta'].forEach(id=>document.getElementById(id).value='');
     ['nh-programa','nh-tipo','nh-mes','nh-semana'].forEach(id=>document.getElementById(id).value='');
