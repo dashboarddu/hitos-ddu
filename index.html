@@ -114,6 +114,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .view { display: none; } .view.active { display: block; }
+.btn-back { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text-dim); cursor:pointer; margin-bottom:16px; font-family:'Inter',sans-serif; transition:all 0.2s; }
+.btn-back:hover { border-color:var(--accent); color:var(--accent); }
 
 /* TOOLTIP */
 .hito-tooltip {
@@ -180,6 +182,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="tab purple" onclick="switchTab('nueva-accion')">Ingresa gestión comunicacional</div>
     <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa links</div>
     <div class="tab" style="color:#be185d" onclick="switchTab('gantt-acciones')">📅 Gantt acciones</div>
+    <div class="tab" style="color:#dc2626" onclick="switchTab('eliminar-hito')">🗑 Eliminar hito</div>
   </div>
 
   <div class="filters">
@@ -878,6 +881,33 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       </div>
     </div>
   </div>
+    <!-- ELIMINAR HITO -->
+    <div id="view-eliminar-hito" class="view">
+      <div class="form-card" style="border-color:#fee2e2">
+        <div class="section-header" style="background:#fff5f5"><span style="color:#dc2626">🗑 Eliminar hito</span></div>
+        <div class="form-body">
+          <div id="el-success" class="alert-success">✓ Hito eliminado correctamente</div>
+          <div id="el-error" class="alert-error"></div>
+          <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:12px;font-size:13px;color:#991b1b;margin-bottom:4px">
+            ⚠ Esta acción es permanente. El hito será eliminado de Airtable y no se puede deshacer.
+          </div>
+          <div class="form-field full">
+            <label class="login-label">Buscar y seleccionar hito *</label>
+            <input class="login-input" id="el-search" placeholder="Escribe para buscar..." oninput="filterEliminar()">
+            <select class="fsel" id="el-hito-select" size="6" style="margin-top:6px;height:180px">
+              <option value="">— Escribe para buscar hitos —</option>
+            </select>
+          </div>
+          <div id="el-preview" style="display:none;background:#f8f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;margin-top:4px"></div>
+          <div class="form-field full">
+            <label class="login-label">Confirma tu correo para autorizar la eliminación *</label>
+            <input class="login-input" id="el-email" type="email" placeholder="nombre@minvu.cl">
+          </div>
+          <button class="login-btn" id="btn-eliminar" onclick="eliminarHito()" style="background:#dc2626">Confirmar eliminación</button>
+        </div>
+      </div>
+    </div>
+
 </div>
 
 <div class="hito-tooltip" id="hito-tooltip"></div>
@@ -1135,10 +1165,12 @@ function renderCalendar() {
   const MESES_CAL = [...MESES.slice(2), ...MESES.slice(0,6).map(m=>m+' (2027)')];
   document.getElementById('calendar-grid').innerHTML=MESES_CAL.map((m,mi)=>{
     const baseMes = m.replace(' (2027)','');
+    const realMesIdx = mi < 10 ? mi+2 : mi-10; // Mar=2, Apr=3...Dec=11, Jan=0, Feb=1...
     const hitos=filtered.filter(h=>{
-      if(h.fecha_exacta){const d=new Date(h.fecha_exacta);
-        const mesIdx = mi < 10 ? mi+2 : mi-10;
-        return d.getMonth()===mesIdx;}
+      if(h.fecha_exacta){
+        const d=new Date(h.fecha_exacta+'T12:00:00');
+        return d.getMonth()===realMesIdx;
+      }
       return h.mes===baseMes;
     }).sort((a,b)=>{
       if(a.fecha_exacta&&b.fecha_exacta)return new Date(a.fecha_exacta)-new Date(b.fecha_exacta);
@@ -1192,8 +1224,8 @@ function renderAcciones() {
 }
 
 function renderCompletitud() {
-  const incompletos=filtered.filter(h=>!h.completitud.includes('Completo')&&!h.completitud.includes('Falta descripción'));
-  document.getElementById('comp-count').textContent=incompletos.length+' incompletos';
+  const incompletos=[...filtered];
+  document.getElementById('comp-count').textContent=incompletos.length+' hitos';
   document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>b.n-a.n).map((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const desc=h.descripcion.replace(/'/g,"\\'"), act=h.actividad.replace(/'/g,"\\'");
@@ -1543,6 +1575,66 @@ function goToListaFilter(estado) {
   applyFilters();
   switchTab('lista');
 }
+
+
+function filterEliminar() {
+  const q = document.getElementById('el-search').value.toLowerCase();
+  const sel = document.getElementById('el-hito-select');
+  sel.innerHTML = '';
+  const matches = allHitos.filter(h => h.actividad.toLowerCase().includes(q) || (h.programa||'').toLowerCase().includes(q));
+  if (!matches.length) {
+    sel.innerHTML = '<option value="">Sin resultados</option>';
+    return;
+  }
+  matches.slice(0,30).forEach(h => {
+    const opt = document.createElement('option');
+    opt.value = h.id;
+    opt.textContent = h.n + '. ' + h.actividad + ' (' + (h.programa||'') + ')';
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => {
+    const h = allHitos.find(x=>x.id===sel.value);
+    const prev = document.getElementById('el-preview');
+    if (h) {
+      prev.style.display='block';
+      prev.innerHTML = '<strong>'+h.n+'. '+h.actividad+'</strong><br><span style="color:var(--text-dim)">'+h.programa+' · '+h.region+(h.comuna?' · '+h.comuna:'')+'</span>';
+    } else prev.style.display='none';
+  };
+}
+
+async function eliminarHito() {
+  const hitoId = document.getElementById('el-hito-select').value;
+  const email = document.getElementById('el-email').value.trim().toLowerCase().replace(/[^a-z0-9@._-]/g,'');
+  const errEl = document.getElementById('el-error');
+  if (!hitoId) { errEl.textContent='Selecciona un hito.'; errEl.style.display='block'; return; }
+  if (!CORREOS_AUTORIZADOS.includes(email)) { errEl.textContent='Correo no autorizado.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  const btn = document.getElementById('btn-eliminar');
+  btn.textContent='Eliminando...'; btn.disabled=true;
+  try {
+    await airtableFetch('/'+BASE_ID+'/'+TABLE_HITOS+'/'+hitoId, {method:'DELETE'});
+    document.getElementById('el-success').style.display='block';
+    document.getElementById('el-search').value='';
+    document.getElementById('el-hito-select').innerHTML='';
+    document.getElementById('el-preview').style.display='none';
+    document.getElementById('el-email').value='';
+    btn.textContent='Confirmar eliminación'; btn.disabled=false;
+    setTimeout(()=>document.getElementById('el-success').style.display='none',3000);
+    await loadData();
+  } catch(e) {
+    errEl.textContent='Error: '+e.message; errEl.style.display='block';
+    btn.textContent='Confirmar eliminación'; btn.disabled=false;
+  }
+}
+function goHome() {
+  // Reset all filters
+  ['fil-programa','fil-region','fil-comuna','fil-mes','fil-tipo','fil-estado','fil-anio'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  applyFilters();
+  switchTab('dashboard');
+}
 function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
@@ -1622,7 +1714,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones','eliminar-hito'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
