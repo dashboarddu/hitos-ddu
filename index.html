@@ -208,10 +208,10 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 
     <div id="view-dashboard" class="view">
       <div class="stats-grid">
-        <div class="stat-card blue"><div class="stat-label">Total hitos</div><div class="stat-value" id="s-total">0</div></div>
-        <div class="stat-card green"><div class="stat-label">Realizados</div><div class="stat-value" id="s-real">0</div></div>
-        <div class="stat-card yellow"><div class="stat-label">Confirmados</div><div class="stat-value" id="s-conf">0</div></div>
-        <div class="stat-card red"><div class="stat-label">Sin fecha</div><div class="stat-value" id="s-sin">0</div></div>
+        <div class="stat-card blue" onclick="goToListaFilter('')" style="cursor:pointer" title="Ver todos los hitos"><div class="stat-label">Total hitos</div><div class="stat-value" id="s-total">0</div></div>
+        <div class="stat-card blue" onclick="goToListaFilter('Planificado')" style="cursor:pointer;background:rgba(255,255,255,0.92)" title="Ver planificados"><div class="stat-label" style="color:#1565c0">Planificados</div><div class="stat-value" id="s-plan" style="color:#1565c0">0</div></div>
+        <div class="stat-card green" onclick="goToListaFilter('Realizado')" style="cursor:pointer" title="Ver realizados"><div class="stat-label">Realizados</div><div class="stat-value" id="s-real">0</div></div>
+        <div class="stat-card red" onclick="goToListaFilter('Sin fecha')" style="cursor:pointer" title="Ver sin fecha"><div class="stat-label">Sin fecha</div><div class="stat-value" id="s-sin">0</div></div>
       </div>
       <div class="progress-section">
         <div class="progress-header"><span class="progress-label">Progreso general</span><span class="progress-pct" id="s-pct">0%</span></div>
@@ -1057,10 +1057,10 @@ function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
-  const conf=filtered.filter(h=>h.estado==='Confirmado').length, sin=filtered.filter(h=>h.estado==='Sin fecha').length;
+  const plan=filtered.filter(h=>h.estado==='Planificado').length, sin=filtered.filter(h=>h.estado==='Sin fecha').length;
   const pct=total?Math.round(real/total*100):0;
   document.getElementById('s-total').textContent=total; document.getElementById('s-real').textContent=real;
-  document.getElementById('s-conf').textContent=conf; document.getElementById('s-sin').textContent=sin;
+  document.getElementById('s-plan').textContent=plan; document.getElementById('s-sin').textContent=sin;
   document.getElementById('s-pct').textContent=pct+'%'; document.getElementById('progress-fill').style.width=pct+'%';
   const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
   function countBy(field){const c={};filtered.forEach(h=>{const v=h[field]||'Sin datos';c[v]=(c[v]||0)+1;});return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));}
@@ -1132,10 +1132,14 @@ function renderGantt() {
 }
 
 function renderCalendar() {
-  document.getElementById('calendar-grid').innerHTML=MESES.map((m,mi)=>{
+  const MESES_CAL = [...MESES.slice(2), ...MESES.slice(0,6).map(m=>m+' (2027)')];
+  document.getElementById('calendar-grid').innerHTML=MESES_CAL.map((m,mi)=>{
+    const baseMes = m.replace(' (2027)','');
     const hitos=filtered.filter(h=>{
-      if(h.fecha_exacta){const d=new Date(h.fecha_exacta);return d.getMonth()===mi;}
-      return h.mes===m;
+      if(h.fecha_exacta){const d=new Date(h.fecha_exacta);
+        const mesIdx = mi < 10 ? mi+2 : mi-10;
+        return d.getMonth()===mesIdx;}
+      return h.mes===baseMes;
     }).sort((a,b)=>{
       if(a.fecha_exacta&&b.fecha_exacta)return new Date(a.fecha_exacta)-new Date(b.fecha_exacta);
       return (a.semana||'').localeCompare(b.semana||'');
@@ -1145,7 +1149,7 @@ function renderCalendar() {
       const ttCal=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
           return `<div class="month-hito" ${ttCal} style="cursor:pointer"><span class="month-hito-name">${h.actividad}</span><span style="font-size:10px;color:${color};font-weight:500;white-space:nowrap">${h.semana||'—'}</span></div>`;
     }).join('')+(hitos.length>5?`<div class="month-empty">+${hitos.length-5} más</div>`:'');
-    return `<div class="month-card"><div class="month-name">${m}<span class="month-count-badge">${hitos.length}</span></div>${inner}</div>`;
+    return `<div class="month-card"><div class="month-name">${m.replace(' (2027)',' <span style="font-size:10px;color:var(--text-dim)">2027</span>')}<span class="month-count-badge">${hitos.length}</span></div>${inner}</div>`;
   }).join('');
 }
 
@@ -1531,6 +1535,13 @@ function hideTooltip() {
 function tooltipAttrs(h) {
   const safe = JSON.stringify(h).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
   return `onmouseenter="showTooltip(event, JSON.parse(this.dataset.h))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()" data-h='${JSON.stringify(h).replace(/'/g,"&#39;")}'`;
+}
+
+function goToListaFilter(estado) {
+  const sel = document.getElementById('fil-estado');
+  if (sel) sel.value = estado;
+  applyFilters();
+  switchTab('lista');
 }
 function cerrarSesion() {
   document.getElementById('app').style.display = 'none';
