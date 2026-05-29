@@ -955,7 +955,7 @@ async function loadData() {
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
-      tipo: (r.fields['fldfaXORc1xUaWZa3']||{}).name || (r.fields['Tipo de acción']||{}).name || '',
+      tipo: r.fields['fldfaXORc1xUaWZa3']?.name || r.fields['fldfaXORc1xUaWZa3'] || r.fields['Tipo de acción']?.name || '',
       fecha: r.fields['fldNuW8uW209WnDEz']||r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
       estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada'
     }));
