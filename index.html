@@ -1347,7 +1347,7 @@ function renderGanttAcciones() {
   if(gaCount) gaCount.textContent = todos.length + ' acciones';
 
   // Legend
-  const legend = document.getElementById('ga-legend');
+  const gaLegend = document.getElementById('ga-legend');
   const tipos = [...new Set(allAcciones.map(a=>a.tipo).filter(Boolean))];
   if(gaLegend) gaLegend.innerHTML = tipos.map(t => {
     const color = TIPO_COLORS[t] || '#6b7280';
