@@ -799,7 +799,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       <!-- Edit panel - hidden by default, shown when Editar is clicked -->
       <div class="edit-panel" id="edit-panel" style="display:none;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
-        <div id="edit-success" class="alert-success" style="margin-bottom:12px">✓ Guardado correctamente</div>
+        <div id="edit-success" class="alert-success" style="margin-bottom:12px;cursor:pointer" onclick="goHome()">✓ Guardado correctamente — <u>regresar a la vista general</u></div>
         <div class="form-grid">
           <div class="form-field"><label class="login-label">Mes</label>
             <select class="fsel" id="edit-mes"><option value="">Sin fecha</option>
@@ -829,7 +829,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
         </div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid #fee2e2">
           <button class="login-btn" onclick="marcarEliminado()" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;width:100%">🗑 Marcar como eliminado</button>
-          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center">El hito se conserva en Airtable pero desaparece de todas las vistas</div>
         </div>
       </div>
       <!-- Table -->
@@ -1269,7 +1268,7 @@ function filterComp() {
 
 async function marcarEliminado() {
   if (!editingId) return;
-  if (!confirm('¿Marcar este hito como eliminado? Desaparecerá de todas las vistas pero se conservará en Airtable.')) return;
+  if (!confirm('¿Marcar este hito como eliminado?')) return;
   const btn = document.querySelector('#edit-panel .login-btn[onclick="marcarEliminado()"]');
   btn.textContent = 'Procesando...'; btn.disabled = true;
   try {
