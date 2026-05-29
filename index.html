@@ -35,7 +35,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .btn-sm { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
 .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 .tabs { display: flex; gap: 0; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--white); overflow-x: auto; }
-.tab { padding: 12px 14px; font-size: 13px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+.tab { padding: 8px 10px; font-size: 11px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
 .tab:hover { color: var(--text); } .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .tab.green { color: var(--accent2); } .tab.green.active { border-bottom-color: var(--accent2); color: var(--accent2); }
 .tab.purple { color: #7c3aed; } .tab.purple.active { border-bottom-color: #7c3aed; color: #7c3aed; }
@@ -77,7 +77,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .gantt-table tr:hover td { background: var(--bg) !important; }
 .act-name { font-size: 12px; color: var(--text); line-height: 1.3; }
 .act-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-.week-cell { width: 20px; text-align: center; padding: 4px 2px; }
+.week-cell { width: 16px; text-align: center; padding: 2px 1px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; border: 1px solid var(--border); background: var(--bg); }
 .dot.filled { border-color: transparent; }
 .month-sep { border-left: 1px solid var(--border) !important; }
@@ -961,7 +961,7 @@ async function loadData() {
       semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
       fecha_exacta: r.fields['Fecha hito']||'',
-      anio: r.fields['flduVeHhof40ePRez']?.name||r.fields['Año']?.name||'',
+      anio: (r.fields['flduVeHhof40ePRez']||{}).name||(r.fields['Año']||{}).name||'',
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
@@ -1033,7 +1033,7 @@ function renderGantt() {
   const MESES_GANTT=MESES.slice(2);
   const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
-  MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
+  MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:16px;font-size:8px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
   const MES_IDX={'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
   const SEM_IDX={'S1':1,'S2':2,'S3':3,'S4':4};
@@ -1133,7 +1133,7 @@ function renderAcciones() {
 }
 
 function renderCompletitud() {
-  const incompletos=filtered.filter(h=>!h.completitud.includes('Completo'));
+  const incompletos=filtered.filter(h=>!h.completitud.includes('Completo')&&!h.completitud.includes('Falta descripción'));
   document.getElementById('comp-count').textContent=incompletos.length+' incompletos';
   document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>b.n-a.n).map(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
@@ -1153,7 +1153,7 @@ function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   document.getElementById('edit-fecha-exacta').value=h?h.fecha_exacta:'';
   document.getElementById('edit-success').style.display='none';
   document.getElementById('edit-panel').style.display='block';
-  document.getElementById('edit-panel').scrollIntoView({behavior:'smooth'});
+  document.getElementById('view-completitud').scrollIntoView({behavior:'smooth'});
 }
 
 function cerrarEdicion(){document.getElementById('edit-panel').style.display='none';editingId=null;}
@@ -1361,7 +1361,7 @@ function renderGanttAcciones() {
   const sm = ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
   MESES_GA2.forEach((m,mi) => SEMANAS.forEach((s,si) => {
-    html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
+    html += `<th class="${si===0?'month-sep':''}" style="min-width:16px;font-size:8px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
   }));
   html += '</tr></thead><tbody>';
 
