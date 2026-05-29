@@ -774,7 +774,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     </div>
 
     <div id="view-completitud" class="view">
-      <div class="edit-panel" id="edit-panel">
+      <!-- Edit panel - hidden by default, shown when Editar is clicked -->
+      <div class="edit-panel" id="edit-panel" style="display:none;margin-bottom:16px">
         <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
         <div id="edit-success" class="alert-success" style="margin-bottom:12px">✓ Guardado correctamente</div>
         <div class="form-grid">
@@ -792,30 +793,24 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
           </div>
           <div class="form-field"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
-          <div class="form-field" id="campo-reconstruccion" style="display:none">
-              <label class="login-label" style="color:var(--accent3)">⚠ Región Reconstrucción</label>
-              <select class="fsel" id="nh-region-reconstruccion">
-                <option value="Sí">Sí</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-            <div class="form-field" id="campo-qmb-20" style="display:none">
-              <label class="login-label" style="color:var(--accent2)">¿Es actividad 20 años QMB?</label>
-              <select class="fsel" id="nh-qmb-20">
-                <option value="Sí">Sí</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-            <div class="form-field" id="campo-etapa-obra" style="display:none">
-              <label class="login-label">Etapa de la obra</label>
-              <input class="login-input" id="nh-etapa-obra" placeholder="Ej: Diseño, Licitación, Ejecución, Recepción...">
-            </div>
-            <div class="form-field" id="campo-comuna" style="">
-              <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
+          <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
           <button class="login-btn" onclick="cerrarEdicion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="list-container">
+        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Hitos con datos incompletos <span id="comp-count" style="color:var(--accent3)"></span></span>
+          <input type="text" id="comp-search" placeholder="🔍 Buscar..." oninput="filterComp()" style="border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;outline:none;width:200px">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
+            <tbody id="comp-body"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -952,7 +947,7 @@ async function loadData() {
       semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
       fecha_exacta: r.fields['Fecha hito']||'',
-      anio: typeof r.fields['flduVeHhof40ePRez']==='object'?(r.fields['flduVeHhof40ePRez']||{}).name||'':r.fields['flduVeHhof40ePRez']||'',
+      anio: r.fields['flduVeHhof40ePRez'] ? (typeof r.fields['flduVeHhof40ePRez']==='object' ? r.fields['flduVeHhof40ePRez'].name||'' : String(r.fields['flduVeHhof40ePRez'])) : '',
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
@@ -1039,9 +1034,10 @@ function renderGantt() {
   const sp={'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB','Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH','Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP'};
   // Add acciones to gantt
   const ganttItems = [...sorted];
-  ganttItems.slice(0,120).forEach(h=>{
+  ganttItems.slice(0,150).forEach((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
-    html+=`<tr><td class="act-col"><div class="act-name">${h.n}. ${h.actividad}</div><div class="act-meta">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
+    const rowStyle=idx%2===0?'':'background:#f8f9fc;';
+    html+=`<tr style="${rowStyle}"><td class="act-col" style="max-width:220px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n}. ${h.actividad}</div><div class="act-meta" style="white-space:nowrap">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
     const MESES_G=MESES.slice(2);
     MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
@@ -1145,7 +1141,7 @@ function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   document.getElementById('edit-fecha-exacta').value=h?h.fecha_exacta:'';
   document.getElementById('edit-success').style.display='none';
   document.getElementById('edit-panel').style.display='block';
-  window.scrollTo({top: document.getElementById('view-completitud').offsetTop - 60, behavior:'smooth'});
+  setTimeout(()=>document.getElementById('view-completitud').scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 
 
@@ -1336,6 +1332,8 @@ function renderReconstruccion() {
 function renderGanttAcciones() {
   const table = document.getElementById('gantt-acciones-table');
   if (!table) return;
+  const gaCount = document.getElementById('ga-count');
+  if (!gaCount) return;
   const TIPO_COLORS = {
     'Nota de prensa': '#1565c0',
     'Post en RRSS': '#be185d',
@@ -1346,12 +1344,12 @@ function renderGanttAcciones() {
   const acciones = allAcciones.filter(a => a.fecha);
   const sinFecha = allAcciones.filter(a => !a.fecha);
   const todos = [...acciones, ...sinFecha];
-  document.getElementById('ga-count').textContent = todos.length + ' acciones';
+  if(gaCount) gaCount.textContent = todos.length + ' acciones';
 
   // Legend
   const legend = document.getElementById('ga-legend');
   const tipos = [...new Set(allAcciones.map(a=>a.tipo).filter(Boolean))];
-  legend.innerHTML = tipos.map(t => {
+  if(gaLegend) gaLegend.innerHTML = tipos.map(t => {
     const color = TIPO_COLORS[t] || '#6b7280';
     return `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>${t}</span>`;
   }).join('');
