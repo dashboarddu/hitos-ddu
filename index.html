@@ -901,13 +901,14 @@ const PROG_BG = {'Pequeñas Localidades':'#dbeafe','Quiero mi Barrio':'#d1fae5',
 let allHitos=[], allAcciones=[], filtered=[], activeTab='dashboard', editingId=null;
 
 function doLogin() {
-  const email = document.getElementById('email-input').value.trim().toLowerCase();
+  const email = document.getElementById('email-input').value.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '');
   const err = document.getElementById('login-error');
   if (!email.endsWith('@minvu.cl')) {
     err.textContent = 'Solo se permite acceso con correo @minvu.cl';
     err.style.display = 'block'; return;
   }
-  if (!CORREOS_AUTORIZADOS.includes(email)) {
+  const emailClean = email.replace(/[^a-z0-9@._-]/g, '');
+  if (!CORREOS_AUTORIZADOS.includes(emailClean)) {
     err.textContent = 'Tu correo no está autorizado. Contacta al administrador.';
     err.style.display = 'block'; return;
   }
