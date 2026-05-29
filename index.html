@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestor de Hitos DDU 2026</title>
+<title>Monitor de Hitos DDU 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -881,8 +881,50 @@ const CORREOS_AUTORIZADOS = [
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SEMANAS = ['S1','S2','S3','S4'];
-const PROG_COLORS = {'Pequeñas Localidades':'#1565c0','Quiero mi Barrio':'#0d9a6e','Regeneración de Conjuntos':'#e53935','Planes Urbanos Habitacionales':'#f59e0b','Zonas de Interés Público':'#7c3aed','Unidad de Proyecto':'#ea580c'};
-const PROG_BG = {'Pequeñas Localidades':'#dbeafe','Quiero mi Barrio':'#d1fae5','Regeneración de Conjuntos':'#fee2e2','Planes Urbanos Habitacionales':'#fef3c7','Zonas de Interés Público':'#ede9fe','Unidad de Proyecto':'#ffedd5'};
+const PROG_COLORS = {
+  'Pequeñas Localidades':'#1565c0',
+  'Quiero mi Barrio':'#0d9a6e',
+  'Regeneración de Conjuntos':'#e53935',
+  'Planes Urbanos Habitacionales':'#f59e0b',
+  'Zonas de Interés Público':'#7c3aed',
+  'Unidad de Proyecto':'#ea580c',
+  'Comunicaciones DDU':'#0891b2',
+  'Unidad Digitalización SU':'#6366f1',
+  'Infraestructura Verde':'#16a34a',
+  'Parques Urbanos - Construcción y Mejoramiento':'#15803d',
+  'Parques Urbanos - Conservación':'#4ade80',
+  'Pavimentación Participativa':'#78716c',
+  'Espacios Públicos':'#db2777',
+  'Planificación y Normas Urbanas':'#9333ea',
+  'Suelo':'#b45309',
+  'Vialidad urbana':'#0369a1',
+  'Infraestructura sanitaria':'#0e7490',
+  'Reducción de riesgos desastres y ACC':'#dc2626',
+  'PUI':'#7c3aed',
+  'PUE':'#6d28d9'
+};
+const PROG_BG = {
+  'Pequeñas Localidades':'#dbeafe',
+  'Quiero mi Barrio':'#d1fae5',
+  'Regeneración de Conjuntos':'#fee2e2',
+  'Planes Urbanos Habitacionales':'#fef3c7',
+  'Zonas de Interés Público':'#ede9fe',
+  'Unidad de Proyecto':'#ffedd5',
+  'Comunicaciones DDU':'#e0f2fe',
+  'Unidad Digitalización SU':'#e0e7ff',
+  'Infraestructura Verde':'#dcfce7',
+  'Parques Urbanos - Construcción y Mejoramiento':'#bbf7d0',
+  'Parques Urbanos - Conservación':'#f0fdf4',
+  'Pavimentación Participativa':'#f5f5f4',
+  'Espacios Públicos':'#fce7f3',
+  'Planificación y Normas Urbanas':'#f3e8ff',
+  'Suelo':'#fef3c7',
+  'Vialidad urbana':'#e0f2fe',
+  'Infraestructura sanitaria':'#cffafe',
+  'Reducción de riesgos desastres y ACC':'#fee2e2',
+  'PUI':'#ede9fe',
+  'PUE':'#ddd6fe'
+};
 
 let allHitos=[], allAcciones=[], filtered=[], activeTab='dashboard', editingId=null;
 
@@ -1037,7 +1079,7 @@ function renderGantt() {
   ganttItems.slice(0,150).forEach((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowStyle=idx%2===0?'':'background:#f8f9fc;';
-    html+=`<tr style="${rowStyle}"><td class="act-col" style="max-width:220px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n}. ${h.actividad}</div><div class="act-meta" style="white-space:nowrap">${h.tipo_hito}${h.comuna?' · '+h.comuna:''}</div></td>`;
+    html+=`<tr style="${rowStyle}"><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n}. ${h.actividad}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
     const MESES_G=MESES.slice(2);
     MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
