@@ -774,15 +774,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     </div>
 
     <div id="view-completitud" class="view">
-      <div class="list-container">
-        <div class="section-header"><span>Hitos con datos incompletos</span><span id="comp-count" style="color:var(--accent3)"></span></div>
-        <div style="overflow-x:auto">
-          <table class="list-table">
-            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
-            <tbody id="comp-body"></tbody>
-          </table>
-        </div>
-      </div>
       <div class="edit-panel" id="edit-panel">
         <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
         <div id="edit-success" class="alert-success" style="margin-bottom:12px">✓ Guardado correctamente</div>
@@ -961,7 +952,7 @@ async function loadData() {
       semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
       fecha_exacta: r.fields['Fecha hito']||'',
-      anio: (r.fields['flduVeHhof40ePRez']||{}).name||(r.fields['Año']||{}).name||'',
+      anio: typeof r.fields['flduVeHhof40ePRez']==='object'?(r.fields['flduVeHhof40ePRez']||{}).name||'':r.fields['flduVeHhof40ePRez']||'',
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
@@ -1135,10 +1126,11 @@ function renderAcciones() {
 function renderCompletitud() {
   const incompletos=filtered.filter(h=>!h.completitud.includes('Completo')&&!h.completitud.includes('Falta descripción'));
   document.getElementById('comp-count').textContent=incompletos.length+' incompletos';
-  document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>b.n-a.n).map(h=>{
+  document.getElementById('comp-body').innerHTML=incompletos.sort((a,b)=>b.n-a.n).map((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const desc=h.descripcion.replace(/'/g,"\\'"), act=h.actividad.replace(/'/g,"\\'");
-    return `<tr><td style="color:var(--text-dim);font-size:12px">${h.n}</td><td style="font-size:13px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
+    const rowBg=idx%2===0?'':'background:#f8f9fc;';
+    return `<tr style="${rowBg}"><td style="color:var(--text-dim);font-size:12px;white-space:nowrap">${h.n}</td><td style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
   }).join('');
 }
 
@@ -1153,9 +1145,17 @@ function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   document.getElementById('edit-fecha-exacta').value=h?h.fecha_exacta:'';
   document.getElementById('edit-success').style.display='none';
   document.getElementById('edit-panel').style.display='block';
-  document.getElementById('view-completitud').scrollIntoView({behavior:'smooth'});
+  window.scrollTo({top: document.getElementById('view-completitud').offsetTop - 60, behavior:'smooth'});
 }
 
+
+function filterComp() {
+  const q = document.getElementById('comp-search').value.toLowerCase();
+  const rows = document.getElementById('comp-body').querySelectorAll('tr');
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
 function cerrarEdicion(){document.getElementById('edit-panel').style.display='none';editingId=null;}
 
 async function guardarEdicion() {
