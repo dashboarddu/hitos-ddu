@@ -114,6 +114,24 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .view { display: none; } .view.active { display: block; }
+
+.success-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9998; animation: fadeIn 0.2s ease;
+}
+.success-card {
+  background: var(--white); border-radius: 16px; padding: 40px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  max-width: 380px; width: 90%;
+}
+.success-icon { font-size: 48px; margin-bottom: 16px; }
+.success-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.success-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 24px; }
+.success-btn { background: var(--accent2); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; }
+.success-btn:hover { opacity: 0.88; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 .btn-back { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text-dim); cursor:pointer; margin-bottom:16px; font-family:'Inter',sans-serif; transition:all 0.2s; }
 .btn-back:hover { border-color:var(--accent); color:var(--accent); }
 
@@ -919,6 +937,14 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 </div>
 
 <div class="hito-tooltip" id="hito-tooltip"></div>
+<div class="success-overlay" id="success-overlay" style="display:none">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Guardado correctamente</div>
+    <div class="success-sub" id="success-sub"></div>
+    <button class="success-btn" onclick="closeSuccessAndGoHome()">← Regresar a la Vista general</button>
+  </div>
+</div>
 
 <script>
 const TOKEN = 'patDHeJFWQWEhBUlA.d7ceabab8ead6330f0f278f1f63466b68be5c017481bb432e3ec70d28cd2a4d0';
@@ -1087,7 +1113,7 @@ function applyFilters() {
   const com=document.getElementById('fil-comuna').value, mes=document.getElementById('fil-mes').value;
   const t=document.getElementById('fil-tipo').value, e=document.getElementById('fil-estado').value;
   const anio=document.getElementById('fil-anio').value;
-  filtered=allHitos.filter(h=>(!p||h.programa===p)&&(!r||h.region===r)&&(!com||h.comuna===com)&&(!mes||h.mes===mes)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e)&&(!anio||h.anio===anio));
+  filtered=allHitos.filter(h=>h.estado!=='Eliminado'&&(!p||h.programa===p)&&(!r||h.region===r)&&(!com||h.comuna===com)&&(!mes||h.mes===mes)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e)&&(!anio||h.anio===anio));
   renderAll();
 }
 
@@ -1302,9 +1328,10 @@ async function guardarEdicion() {
   if(fe)fields['Fecha hito']=fe;
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});
-    document.getElementById('edit-success').style.display='block';
+    cerrarEdicion();
     btn.textContent='Guardar cambios';btn.disabled=false;
     await loadData();
+    showSuccess('Los cambios fueron guardados correctamente');
   } catch(e){btn.textContent='Guardar cambios';btn.disabled=false;alert('Error: '+e.message);}
 }
 
@@ -1652,6 +1679,16 @@ async function eliminarHito() {
     errEl.textContent='Error: '+e.message; errEl.style.display='block';
     btn.textContent='Confirmar eliminación'; btn.disabled=false;
   }
+}
+
+function showSuccess(subtitle) {
+  document.getElementById('success-sub').textContent = subtitle || '';
+  document.getElementById('success-overlay').style.display = 'flex';
+}
+
+function closeSuccessAndGoHome() {
+  document.getElementById('success-overlay').style.display = 'none';
+  goHome();
 }
 function goHome() {
   // Reset all filters
