@@ -1145,7 +1145,7 @@ function renderGantt() {
   const table=document.getElementById('gantt-table');
   document.getElementById('gantt-count').textContent=filtered.length+' hitos';
   const MESES_GANTT=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
-  const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar'];
+  const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene 27','Feb 27','Mar 27'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
   MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
@@ -1171,7 +1171,8 @@ function renderGantt() {
     const MESES_G=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
     MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
       const mBase=m.replace(' 27','');
-      const f=h.mes===mBase&&h.semana===s&&(m.includes('27')?h.anio==='2027':h.anio!=='2027'||!h.anio);
+      const is2027col=m.includes('27');
+      const f=h.mes===mBase&&h.semana===s&&(is2027col?(h.anio==='2027'):(h.anio==='2026'||h.anio===''));
       html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
     }));
     html+='</tr>';
