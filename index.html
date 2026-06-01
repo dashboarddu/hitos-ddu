@@ -1144,8 +1144,8 @@ function renderDashboard() {
 function renderGantt() {
   const table=document.getElementById('gantt-table');
   document.getElementById('gantt-count').textContent=filtered.length+' hitos';
-  const MESES_GANTT=MESES.slice(2);
-  const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES_GANTT=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
+  const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
   MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:16px;font-size:8px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
@@ -1168,9 +1168,10 @@ function renderGantt() {
     const tAttr=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
     html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n}. ${h.actividad}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
-    const MESES_G=MESES.slice(2);
+    const MESES_G=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
     MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
-      const f=h.mes===m&&h.semana===s;
+      const mBase=m.replace(' 27','');
+      const f=h.mes===mBase&&h.semana===s&&(m.includes('27')?h.anio==='2027':h.anio!=='2027'||!h.anio);
       html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
     }));
     html+='</tr>';
@@ -1185,9 +1186,10 @@ function renderGantt() {
     const dSem=dDia<=7?'S1':dDia<=14?'S2':dDia<=21?'S3':'S4';
     html+=`<tr style="background:#fafafa"><td class="act-col"><div class="act-name" style="color:#6b7280;font-style:italic">📣 ${a.accion}</div><div class="act-meta">${a.tipo||'Acción'}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">Acc</span></td>`;
-    const MESES_GA=MESES.slice(2);
+    const MESES_GA=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
     MESES_GA.forEach(m=>SEMANAS.forEach((s,si)=>{
-      const f=dMes===m&&dSem===s;
+      const mBase=m.replace(' 27','');
+      const f=dMes===mBase&&dSem===s;
       html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
     }));
     html+='</tr>';
