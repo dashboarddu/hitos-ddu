@@ -1199,7 +1199,7 @@ function renderGantt() {
 }
 
 function renderCalendar() {
-  const MESES_CAL = [...MESES.slice(2), ...MESES.slice(0,6).map(m=>m+' (2027)')];
+  const MESES_CAL = [...MESES.slice(2), ...MESES.slice(0,3).map(m=>m+' (2027)')];
   document.getElementById('calendar-grid').innerHTML=MESES_CAL.map((m,mi)=>{
     const baseMes = m.replace(' (2027)','');
     const realMesIdx = mi < 10 ? mi+2 : mi-10; // Mar=2, Apr=3...Dec=11, Jan=0, Feb=1...
