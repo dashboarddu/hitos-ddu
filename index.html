@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor de Hitos DDU 2026</title>
+<title>Gestor de Hitos DDU 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1168,8 +1168,11 @@ function renderGantt() {
   const sorted=[...filtered].sort((a,b)=>{
     const getVal=h=>{
       if(h.fecha_exacta) return new Date(h.fecha_exacta).getTime();
-      if(h.mes) return (MES_IDX[h.mes]||99)*10+(SEM_IDX[h.semana]||5);
-      return 9999;
+      if(h.mes) {
+        const yr=parseInt(h.anio||'2026');
+        return yr*10000+(MES_IDX[h.mes]||99)*10+(SEM_IDX[h.semana]||5);
+      }
+      return 99999999;
     };
     return getVal(a)-getVal(b);
   });
