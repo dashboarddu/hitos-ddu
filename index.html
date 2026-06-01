@@ -1072,10 +1072,10 @@ async function loadData() {
       descripcion: r.fields['Descripción']||'', comuna: r.fields['Comuna']||'',
       region: r.fields['Región']||'', programa: r.fields['Programa']||'',
       tipo_hito: r.fields['Tipo de hito']||'', mes: r.fields['Mes']||'',
-      semana: r.fields['Semana']||'', estado: r.fields['Estado']||'Sin fecha',
+      semana: (()=>{ const v=r.fields['fldxtYwfGjAdWsdLm']; if(!v) return r.fields['Semana']||''; if(typeof v==='object') return v.name||''; return String(v); })(), estado: r.fields['Estado']||'Sin fecha',
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
       fecha_exacta: r.fields['Fecha hito']||'',
-      anio: (r.fields['flduVeHhof40ePRez'] && typeof r.fields['flduVeHhof40ePRez']==='object') ? r.fields['flduVeHhof40ePRez'].name : (r.fields['flduVeHhof40ePRez']||''),
+      anio: (()=>{ const v=r.fields['flduVeHhof40ePRez']; if(!v) return '2026'; if(typeof v==='object') return v.name||'2026'; return String(v); })(),
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
@@ -1601,7 +1601,7 @@ function showTooltip(e, h) {
     ${h.tipo_hito||h.tipo ? `<div class="tt-row"><span class="tt-label">Tipo</span><span>${h.tipo_hito||h.tipo}</span></div>` : ''}
     ${h.region ? `<div class="tt-row"><span class="tt-label">Región</span><span>${h.region}</span></div>` : ''}
     ${h.comuna ? `<div class="tt-row"><span class="tt-label">Comuna</span><span>${h.comuna}</span></div>` : ''}
-    ${h.mes ? `<div class="tt-row"><span class="tt-label">Fecha</span><span>${h.mes}${h.semana?' '+h.semana:''}</span></div>` : ''}
+    ${h.mes ? `<div class="tt-row"><span class="tt-label">Fecha</span><span>${h.mes}${h.semana?' '+h.semana:''}${h.anio?' '+h.anio:''}</span></div>` : ''}
     ${h.fecha_exacta ? `<div class="tt-row"><span class="tt-label">Fecha exacta</span><span>${h.fecha_exacta}</span></div>` : ''}
     ${h.estado ? `<div class="tt-row"><span class="tt-label">Estado</span><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></div>` : ''}
   `;
