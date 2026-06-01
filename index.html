@@ -1304,8 +1304,10 @@ async function marcarEliminado() {
       method:'PATCH',
       body: JSON.stringify({fields:{'fld5PRmGASv84BASc':'Eliminado'}, typecast:true})
     });
+    btn.textContent='🗑 Marcar como eliminado'; btn.disabled=false;
     cerrarEdicion();
     await loadData();
+    showSuccess('El hito fue marcado como eliminado');
   } catch(e) {
     alert('Error: '+e.message);
     btn.textContent='🗑 Marcar como eliminado'; btn.disabled=false;
