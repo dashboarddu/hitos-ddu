@@ -69,15 +69,15 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .gantt-scroll { overflow-x: auto; }
 .gantt-table { width: max-content; min-width: 100%; border-collapse: collapse; }
 .gantt-table th { padding: 6px 4px; font-size: 10px; color: var(--text-dim); text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 500; background: var(--bg); position: sticky; top: 0; }
-.gantt-table th.act-col { text-align: left; width: 20%; min-width: 160px; max-width: 280px; position: sticky; left: 0; z-index: 2; padding: 6px 12px; }
-.gantt-table th.prog-col { min-width: 80px; text-align: left; position: sticky; left: 200px; z-index: 2; }
+.gantt-table th.act-col { text-align: left; width: 15%; min-width: 140px; max-width: 200px; position: sticky; left: 0; z-index: 2; padding: 6px 12px; }
+.gantt-table th.prog-col { min-width: 50px; text-align: left; position: sticky; left: 200px; z-index: 2; }
 .gantt-table td { padding: 0; border-bottom: 1px solid var(--border); }
-.gantt-table td.act-col { padding: 8px 12px; width: 20%; min-width: 160px; max-width: 280px; position: sticky; left: 0; background: var(--white); z-index: 1; }
+.gantt-table td.act-col { padding: 8px 12px; width: 15%; min-width: 140px; max-width: 200px; position: sticky; left: 0; background: var(--white); z-index: 1; }
 .gantt-table td.prog-col { padding: 6px 8px; min-width: 80px; position: sticky; left: 200px; background: var(--white); z-index: 1; }
 .gantt-table tr:hover td { background: var(--bg) !important; }
 .act-name { font-size: 12px; color: var(--text); line-height: 1.3; }
 .act-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-.week-cell { width: 16px; text-align: center; padding: 2px 1px; }
+.week-cell { width: 22px; text-align: center; padding: 2px 1px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; border: 1px solid var(--border); background: var(--bg); }
 .dot.filled { border-color: transparent; }
 .month-sep { border-left: 1px solid var(--border) !important; }
@@ -1147,7 +1147,7 @@ function renderGantt() {
   const MESES_GANTT=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
   const sm=['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
-  MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:16px;font-size:8px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
+  MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
   const MES_IDX={'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
   const SEM_IDX={'S1':1,'S2':2,'S3':3,'S4':4};
@@ -1519,7 +1519,7 @@ function renderGanttAcciones() {
   const sm = ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
   MESES_GA2.forEach((m,mi) => SEMANAS.forEach((s,si) => {
-    html += `<th class="${si===0?'month-sep':''}" style="min-width:16px;font-size:8px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
+    html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
   }));
   html += '</tr></thead><tbody>';
 
