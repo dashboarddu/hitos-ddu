@@ -1166,7 +1166,7 @@ function renderGantt() {
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowStyle=idx%2===0?'':'background:#f8f9fc;';
     const tAttr=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
-    html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n}. ${h.actividad}</div></td>`;
+    html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.actividad}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
     const MESES_G=[...MESES.slice(2),'Enero 27','Febrero 27','Marzo 27'];
     MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
