@@ -42,7 +42,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .tab.red { color: var(--accent3); } .tab.red.active { border-bottom-color: var(--accent3); color: var(--accent3); }
 .filters { padding: 10px 24px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--white); border-bottom: 1px solid var(--border); }
 .filter-select { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; outline: none; cursor: pointer; }
-.content { padding: 20px 24px; flex: 1; }
+.content { padding: 12px 24px; flex: 1; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
@@ -1413,7 +1413,7 @@ function abrirDesdeListaEdicion(id, actividad, mes, semana, estado, descripcion)
 }
 function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   editingId=id;
-  document.getElementById('edit-title').textContent='Editando: '+actividad;
+  _sn('edit-title','Editando: '+actividad);
   document.getElementById('edit-mes').value=mes;
   document.getElementById('edit-semana').value=semana;
   document.getElementById('edit-estado').value=estado;
