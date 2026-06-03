@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestor de Hitos DDU 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Monitor de Hitos DDU 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #f4f6f8; --white: #ffffff; --border: #e0e4ea;
@@ -113,7 +113,89 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-dim); font-size: 13px; gap: 10px; }
 .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@media print {
+  header, .tabs, .filters, .btn-back, .edit-btn, .theme-toggle { display: none !important; }
+  .content { padding: 0 !important; }
+  .gantt-scroll { overflow: visible !important; }
+  body { background: white !important; color: black !important; }
+}
 .view { display: none; } .view.active { display: block; }
+.sub-tab { padding: 8px 14px; font-size: 12px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+.sub-tab:hover { color: var(--text); }
+.sub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sub-view { display: none; }
+.sub-view.active { display: block; }
+/* DARK THEME */
+body.dark {
+  --bg: #0f1117;
+  --white: #181c27;
+  --border: #2a3050;
+  --text: #e8eaf0;
+  --text-dim: #8892b0;
+  --accent: #4f7cff;
+  --accent2: #00d4a0;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --radius: 10px;
+  --shadow: 0 1px 8px rgba(0,0,0,0.4);
+}
+body.dark header,
+body.dark .tabs,
+body.dark .filters { background: #181c27 !important; border-color: #2a3050 !important; }
+body.dark .stat-card,
+body.dark .chart-card,
+body.dark .progress-section,
+body.dark .gantt-container,
+body.dark .list-container,
+body.dark .form-card,
+body.dark .month-card,
+body.dark .edit-panel,
+body.dark .acciones-card { background: #181c27 !important; border-color: #2a3050 !important; }
+body.dark .gantt-table td.act-col,
+body.dark .gantt-table td.prog-col,
+body.dark .gantt-table th { background: #181c27 !important; }
+body.dark .gantt-table tr:hover td { background: #1e2335 !important; }
+body.dark .list-table th { background: #1e2335 !important; }
+body.dark .list-table tr:hover td { background: #1e2335 !important; }
+body.dark .login-box { background: #181c27 !important; border-color: #2a3050 !important; }
+body.dark .login-input,
+body.dark .fsel,
+body.dark .filter-select { background: #1e2335 !important; border-color: #2a3050 !important; color: #e8eaf0 !important; }
+body.dark .progress-bar { background: #1e2335 !important; }
+body.dark .bar-track { background: #1e2335 !important; }
+body.dark .dot { background: #1e2335 !important; border-color: #2a3050 !important; }
+body.dark .success-card { background: #181c27 !important; }
+body.dark .hito-tooltip { background: #181c27 !important; border-color: #2a3050 !important; }
+
+/* TYPOGRAPHY */
+body { font-family: 'Outfit', sans-serif; }
+h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', serif; }
+.badge-user, td[style*="font-size:12px"] { font-family: 'DM Mono', monospace; }
+
+/* TOGGLE BUTTON */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-dim);
+  transition: all 0.2s;
+  font-family: 'Outfit', sans-serif;
+}
+.theme-toggle:hover { border-color: var(--accent); }
+
+/* SEMANTIC BADGES */
+.status-sin { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+.status-plan { background: rgba(79,124,255,0.12); color: #4f7cff; border: 1px solid rgba(79,124,255,0.3); }
+.status-conf { background: rgba(0,212,160,0.12); color: #00d4a0; border: 1px solid rgba(0,212,160,0.3); }
+.status-real { background: rgba(0,212,160,0.2); color: #00d4a0; border: 1px solid rgba(0,212,160,0.4); }
+
+/* TABLE - horizontal borders only */
+.list-table td { border-bottom: 1px solid var(--border); border-left: none; border-right: none; }
+.list-table th { border-bottom: 2px solid var(--border); border-left: none; border-right: none; }
+
 
 .success-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -183,6 +265,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div style="display:flex;align-items:center;gap:8px">
       <span class="badge-user" id="user-badge">—</span>
       <button class="btn-sm" onclick="loadData()">↻ Actualizar</button>
+      <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</button>
       <button class="btn-sm" onclick="cerrarSesion()" style="color:var(--accent3);border-color:var(--accent3)">⏻ Salir</button>
     </div>
   </header>
@@ -195,11 +278,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
-    <div class="tab red" onclick="switchTab('completitud')">Completa o modifica hito</div>
-    <div class="tab" onclick="switchTab('acciones')">Área Comunicaciones</div>
-    <div class="tab purple" onclick="switchTab('nueva-accion')">Ingresa gestión comunicacional</div>
-    <div class="tab" style="color:#0891b2" onclick="switchTab('links')">🔗 Ingresa links</div>
-    <div class="tab" style="color:#be185d" onclick="switchTab('gantt-acciones')">📅 Gantt acciones</div>
+    <div class="tab red" onclick="switchTab('completitud')">Edita hito</div>
+    <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
   </div>
 
   <div class="filters">
@@ -217,6 +297,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       <option value="">Todos los estados</option>
       <option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option>
     </select>
+    <button class="btn-sm" onclick="window.print()" style="margin-left:auto">🖨 PDF</button>
     <select class="filter-select" id="fil-anio" onchange="applyFilters()">
       <option value="">Todos los años</option>
       <option>2026</option><option>2027</option><option>2028</option>
@@ -263,7 +344,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
         <div class="section-header"><span>Todos los hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Año</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th></tr></thead>
+            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Año</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
             <tbody id="list-body"></tbody>
           </table>
         </div>
@@ -786,6 +867,19 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             </div>
             <div class="form-field" id="campo-comuna" style="">
               <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
+            <div class="form-field full" style="background:rgba(79,124,255,0.05);border:1px solid rgba(79,124,255,0.2);border-radius:8px;padding:12px">
+              <label class="login-label" style="color:var(--accent)">📅 Periodo (opcional — si el hito abarca un rango de fechas)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                <div><label class="login-label">Fecha inicio periodo</label><input class="login-input" type="date" id="nh-periodo-inicio"></div>
+                <div><label class="login-label">Fecha fin periodo</label><input class="login-input" type="date" id="nh-periodo-fin"></div>
+              </div>
+            </div>
+            <div class="form-field"><label class="login-label">Nivel de relevancia</label>
+              <select class="fsel" id="nh-relevancia">
+                <option value="">Sin definir</option>
+                <option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
+            </div>
             </div>
           </div>
           <button class="login-btn" id="btn-nh" onclick="guardarHito()" style="background:var(--accent2)">Guardar hito</button>
@@ -818,7 +912,14 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
             </div>
             <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
             <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="na-responsable" placeholder="Nombre del responsable"></div>
-<div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" placeholder="Observaciones adicionales" style="resize:vertical"></textarea></div>
+<div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
+              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="na-periodo-inicio"></div>
+                <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="na-periodo-fin"></div>
+              </div>
+            </div>
+            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" placeholder="Observaciones adicionales" style="resize:vertical"></textarea></div>
           </div>
           <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#7c3aed">Guardar acción</button>
         </div>
@@ -864,7 +965,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
       <!-- Table -->
       <div class="list-container">
         <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
-          <span>Hitos con datos incompletos <span id="comp-count" style="color:var(--accent3)"></span></span>
+          <span>Edita hito <span id="comp-count" style="color:var(--accent3)"></span></span>
           <input type="text" id="comp-search" placeholder="🔍 Buscar..." oninput="filterComp()" style="border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;outline:none;width:200px">
         </div>
         <div style="overflow-x:auto">
@@ -877,39 +978,6 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     </div>
 
 
-    <!-- LINKS -->
-    <div id="view-links" class="view">
-      <div class="form-card">
-        <div class="section-header"><span>Registrar links de registro</span></div>
-        <div class="form-body">
-          <div id="lk-success" class="alert-success">✓ Links guardados correctamente</div>
-          <div id="lk-error" class="alert-error"></div>
-          <div class="form-field full">
-            <label class="login-label">Hito o acción vinculada *</label>
-            <select class="fsel" id="lk-hito"><option value="">Seleccionar hito...</option></select>
-          </div>
-          <div style="font-size:12px;color:var(--text-dim);margin:-8px 0 4px">Puedes ingresar hasta 10 links por registro</div>
-          <div id="lk-fields" style="display:flex;flex-direction:column;gap:10px"></div>
-          <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#0891b2;border:1px solid #0891b2;margin-top:-4px">+ Agregar otro link</button>
-          <button class="login-btn" id="btn-lk" onclick="guardarLinks()" style="background:#0891b2">Guardar links</button>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- RECONSTRUCCION -->
-    <div id="view-reconstruccion" class="view">
-      <div class="list-container">
-        <div class="section-header"><span>🔴 Hitos en Regiones de Reconstrucción</span><span id="recons-count" style="color:var(--accent3)"></span></div>
-        <div style="padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim)">Valparaíso · Ñuble · Biobío</div>
-        <div style="overflow-x:auto">
-          <table class="list-table">
-            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Reconstrucción</th></tr></thead>
-            <tbody id="recons-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
     <!-- GANTT ACCIONES -->
     <div id="view-gantt-acciones" class="view">
       <div class="gantt-container">
@@ -954,7 +1022,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
     <div class="success-icon">✅</div>
     <div class="success-title">Guardado correctamente</div>
     <div class="success-sub" id="success-sub"></div>
-    <button class="success-btn" onclick="closeSuccessAndGoHome()">← Regresar a la Vista general</button>
+    <button class="success-btn" onclick="closeSuccessAndGoHome()" style="width:100%;margin-bottom:8px">← Regresar a la Vista general</button>
+    <button class="success-btn" onclick="closeSuccessAndEdit()" style="width:100%;background:var(--accent)">✏ Seguir editando</button>
   </div>
 </div>
 
@@ -995,8 +1064,7 @@ const CORREOS_AUTORIZADOS = [
   'rjretamal@minvu.cl',
   'dlabbe@minvu.cl',
   'jespinozac@minvu.cl',
-  'rrosasa@minvu.cl',
-  'jsilvat@minvu.cl'
+  'rrosasa@minvu.cl'
 ];
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1070,6 +1138,7 @@ function doLogin() {
 document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 const PROXY = 'https://airtable-proxy.carlosgonzalezisla.workers.dev';
+const AUTH_WORKER = 'https://hitos-ddu-auth.carlosgonzalezisla.workers.dev';
 
 async function airtableFetch(path, options={}) {
   const airtableUrl = encodeURIComponent(`https://api.airtable.com/v0${path}`);
@@ -1111,6 +1180,9 @@ async function loadData() {
       estado: (()=>{ const v=r.fields['Estado']; if(!v) return 'Sin fecha'; if(typeof v==='object') return v.name||'Sin fecha'; return String(v); })(),
       completitud: r.fields['Completitud']||'🔴 Sin fecha',
       fecha_exacta: r.fields['Fecha hito']||'',
+      periodo_inicio: r.fields['Fecha inicio periodo']||'',
+      periodo_fin: r.fields['Fecha fin periodo']||'',
+      relevancia: (r.fields['Nivel de relevancia']||{}).name||(r.fields['Relevancia']||{}).name||'',
       anio: (()=>{ const v=r.fields['Año']; if(!v) return '2026'; if(typeof v==='object'&&v!==null) return v.name||'2026'; if(typeof v==='string'&&v.length===4) return v; return '2026'; })(),
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
@@ -1119,9 +1191,12 @@ async function loadData() {
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
-      tipo: (r.fields['fldfaXORc1xUaWZa3'] && typeof r.fields['fldfaXORc1xUaWZa3']==='object') ? r.fields['fldfaXORc1xUaWZa3'].name : (r.fields['fldfaXORc1xUaWZa3']||''),
+      tipo: (()=>{ const v=r.fields['Tipo de acción']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
       fecha: r.fields['fldNuW8uW209WnDEz']||r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
-      estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada'
+      estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada',
+      prioridad: (r.fields['Prioridad']||{}).name||'',
+      periodo_inicio: r.fields['Fecha inicio periodo']||'',
+      periodo_fin: r.fields['Fecha fin periodo']||''
     }));
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
@@ -1208,9 +1283,19 @@ function renderGantt() {
     html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.actividad}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
     const MESES_G=MESES.slice(5,12);
-    MESES_G.forEach(m=>SEMANAS.forEach((s,si)=>{
+    MESES_G.forEach((m,gmi)=>SEMANAS.forEach((s,si)=>{
       const f=h.mes===m&&h.semana===s&&(h.anio==='2026'||h.anio==='');
-      html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${f?color:'transparent'};border:${f?'none':'1px solid #e0e4ea'}"></div></td>`;
+      // Check if cell falls within periodo
+      let inPeriod=false;
+      if(h.periodo_inicio&&h.periodo_fin){
+        const cellDate=new Date(2026, MESES.indexOf(m), si===0?1:si===1?8:si===2?15:22);
+        const pStart=new Date(h.periodo_inicio);
+        const pEnd=new Date(h.periodo_fin);
+        inPeriod=cellDate>=pStart&&cellDate<=pEnd;
+      }
+      const fill=f||inPeriod;
+      const opacity=inPeriod&&!f?'0.5':'1';
+      html+=`<td class="week-cell${si===0?' month-sep':''}"><div style="height:8px;border-radius:3px;margin:1px;background:${fill?color:'transparent'};border:${fill?'none':'1px solid #e0e4ea'};opacity:${opacity}"></div></td>`;
     }));
     html+='</tr>';
   });
@@ -1248,7 +1333,7 @@ function renderList() {
   document.getElementById('list-body').innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const ttL=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
-    return `<tr ${ttL}><td style="color:var(--text-dim);font-size:12px">${h.n}</td><td>${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.region}</td><td style="font-size:12px;color:var(--text-dim)">${h.anio||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td></tr>`;
+    return `<tr ${ttL}><td style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace">${h.n}</td><td>${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.region}</td><td style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${h.mes||''}','${h.semana||''}','${h.estado}','${(h.descripcion||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}')" >Editar</button></td></tr>`;
   }).join('');
 }
 
@@ -1290,6 +1375,10 @@ function renderCompletitud() {
   }).join('');
 }
 
+function abrirDesdeListaEdicion(id, actividad, mes, semana, estado, descripcion) {
+  switchTab('completitud');
+  setTimeout(() => abrirEdicion(id, actividad, mes, semana, estado, descripcion), 100);
+}
 function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   editingId=id;
   document.getElementById('edit-title').textContent='Editando: '+actividad;
@@ -1385,6 +1474,12 @@ async function guardarHito() {
   if(estado)fields['fld5PRmGASv84BASc']=estado;
   if(desc)fields['fldvKIJ8NxQWyeHVq']=desc;
   if(fechaExacta)fields['fldHCAMOsbuzrwzcc']=fechaExacta;
+  const periodoInicio=document.getElementById('nh-periodo-inicio').value;
+  const periodoFin=document.getElementById('nh-periodo-fin').value;
+  if(periodoInicio)fields['fldAtW6K6s3XVxIK5']=periodoInicio;
+  if(periodoFin)fields['fldsCdv4fMJnLyzJq']=periodoFin;
+  const relevancia=document.getElementById('nh-relevancia').value;
+  if(relevancia)fields['fldV18gWINsBste0w']=relevancia;
   const anio=document.getElementById('nh-anio').value;
   if(anio)fields['flduVeHhof40ePRez']=anio;
   if(window.currentUser)fields['fld6itvj3qMvFxouw']=window.currentUser;
@@ -1401,7 +1496,8 @@ async function guardarHito() {
     fields['fldNsze1hA9QYWn1x'] = maxN;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('nh-success').style.display='block';
-    ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta'].forEach(id=>document.getElementById(id).value='');
+    ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta','nh-periodo-inicio','nh-periodo-fin'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('nh-relevancia').value='';
     document.getElementById('nh-anio').value='';
     ['nh-programa','nh-tipo','nh-mes','nh-semana'].forEach(id=>document.getElementById(id).value='');
     btn.textContent='Guardar hito';btn.disabled=false;
@@ -1430,11 +1526,15 @@ async function guardarAccion() {
   if(fecha)fields['fldNuW8uW209WnDEz']=fecha;
   if(resp)fields['fldZwLpH7KAXqCc8R']=resp;
   if(notas)fields['fld1MIQ4vnBTqsqDg']=notas;
+  const naPeriodoInicio=document.getElementById('na-periodo-inicio').value;
+  const naPeriodoFin=document.getElementById('na-periodo-fin').value;
+  if(naPeriodoInicio)fields['fldQwyu5xvS64ecjX']=naPeriodoInicio;
+  if(naPeriodoFin)fields['fldW3PoQQKzz7783u']=naPeriodoFin;
   try {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-    ['na-tipo','na-fecha'].forEach(id=>document.getElementById(id).value='');
+    ['na-tipo','na-fecha','na-periodo-inicio','na-periodo-fin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     btn.textContent='Guardar acción';btn.disabled=false;
     setTimeout(()=>document.getElementById('na-success').style.display='none',3000);
     await loadData();
@@ -1452,6 +1552,8 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
   document.getElementById('edit-accion-estado').value = estado;
   document.getElementById('edit-accion-responsable').value = responsable;
   document.getElementById('edit-accion-fecha').value = fecha;
+  const ac=allAcciones.find(x=>x.id===id);
+  if(ac&&document.getElementById('edit-accion-prioridad')) document.getElementById('edit-accion-prioridad').value=ac.prioridad||'';
   document.getElementById('edit-accion-success').style.display = 'none';
   document.getElementById('edit-accion-panel').style.display = 'block';
   document.getElementById('edit-accion-panel').scrollIntoView({behavior:'smooth'});
@@ -1477,6 +1579,8 @@ async function guardarEdicionAccion() {
   if (estado) fields['fldih7FiODAgw5VUQ'] = estado;
   if (resp) fields['fldZwLpH7KAXqCc8R'] = resp;
   if (fecha) fields['fldNuW8uW209WnDEz'] = fecha;
+  const editPrio=document.getElementById('edit-accion-prioridad').value;
+  if(editPrio)fields['Prioridad']=editPrio;
   if (window.currentUser) fields['fld3zzwUDvBMI6MM6'] = window.currentUser;
   try {
     await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}/${editingAccionId}`, {method:'PATCH', body:JSON.stringify({fields, typecast:true})});
@@ -1710,9 +1814,27 @@ function showSuccess(subtitle) {
   document.getElementById('success-overlay').style.display = 'flex';
 }
 
+function closeSuccessAndEdit() {
+  document.getElementById('success-overlay').style.display = 'none';
+  switchTab('completitud');
+}
 function closeSuccessAndGoHome() {
   document.getElementById('success-overlay').style.display = 'none';
   goHome();
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('ddu-theme', isDark ? 'dark' : 'light');
+}
+// Apply saved theme on load
+if (localStorage.getItem('ddu-theme') === 'dark') {
+  document.body.classList.add('dark');
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = '☀️';
+  });
 }
 function goHome() {
   // Reset all filters
@@ -1774,6 +1896,76 @@ async function guardarLinks() {
     btn.textContent='Guardar links'; btn.disabled=false;
   }
 }
+
+function switchSubTab(sub) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sub-view').forEach(v => { v.style.display='none'; v.classList.remove('active'); });
+  const btn = document.getElementById('subtab-'+sub);
+  if(btn) btn.classList.add('active');
+  const view = document.getElementById(sub);
+  if(view) { view.style.display='block'; view.classList.add('active'); }
+
+  if(sub==='sub-nueva-accion') {
+    const sel=document.getElementById('na-hito');
+    if(sel&&allHitos.length>0&&sel.options.length<=1){
+      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
+        const opt=document.createElement('option');
+        opt.value=h.id; opt.textContent=`${h.n}. ${h.actividad} (${h.programa})`;
+        sel.appendChild(opt);
+      });
+    }
+  }
+  if(sub==='sub-links') {
+    const sel=document.getElementById('lk-hito');
+    if(sel&&allHitos.length>0&&sel.options.length<=1){
+      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
+        const opt=document.createElement('option');
+        opt.value=h.id; opt.textContent=`${h.n}. ${h.actividad} (${h.programa})`;
+        sel.appendChild(opt);
+      });
+    }
+    if(document.getElementById('lk-fields').children.length===0) addLinkRow();
+  }
+  if(sub==='sub-gantt-acciones') renderGanttAcciones();
+  if(sub==='sub-kpi') renderKPI();
+}
+
+function renderKPI() {
+  const total=allAcciones.length;
+  const real=allAcciones.filter(a=>a.estado==='Realizada').length;
+  const curso=allAcciones.filter(a=>a.estado==='En curso').length;
+  const pend=allAcciones.filter(a=>a.estado==='Planificada').length;
+  const pct=total?Math.round(real/total*100):0;
+  document.getElementById('kpi-total').textContent=total;
+  document.getElementById('kpi-real').textContent=real;
+  document.getElementById('kpi-curso').textContent=curso;
+  document.getElementById('kpi-pend').textContent=pend;
+  document.getElementById('kpi-pct').textContent=pct+'%';
+  document.getElementById('kpi-fill').style.width=pct+'%';
+
+  // Estado chart
+  const estados={'Planificada':pend,'En curso':curso,'Realizada':real,'Cancelada':allAcciones.filter(a=>a.estado==='Cancelada').length};
+  const colores={'Planificada':'#4f7cff','En curso':'#f59e0b','Realizada':'#00d4a0','Cancelada':'#6b7280'};
+  const maxE=Math.max(...Object.values(estados),1);
+  document.getElementById('kpi-estado-chart').innerHTML=Object.entries(estados).map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxE*100)}%;background:${colores[k]}"></div></div>
+      <div class="bar-count">${v}</div>
+    </div>`).join('');
+
+  // Prioridad chart
+  const prios={'Alta':0,'Media':0,'Baja':0,'Sin definir':0};
+  allAcciones.forEach(a=>{ const p=a.prioridad||'Sin definir'; if(prios[p]!==undefined) prios[p]++; else prios['Sin definir']++; });
+  const colP={'Alta':'#e53935','Media':'#f59e0b','Baja':'#0d9a6e','Sin definir':'#6b7280'};
+  const maxP=Math.max(...Object.values(prios),1);
+  document.getElementById('kpi-prioridad-chart').innerHTML=Object.entries(prios).map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxP*100)}%;background:${colP[k]}"></div></div>
+      <div class="bar-count">${v}</div>
+    </div>`).join('');
+}
 function switchTab(tab) {
   if (tab === 'links') {
     const sel = document.getElementById('lk-hito');
@@ -1799,10 +1991,11 @@ function switchTab(tab) {
     }
   }
   activeTab=tab;
+  if(tab==='area-com') { setTimeout(()=>{ if(!document.querySelector('.sub-tab.active')) switchSubTab('sub-acciones'); },50); }
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','acciones','nueva-accion','links','gantt-acciones'];
+  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','area-com'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
