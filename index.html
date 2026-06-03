@@ -148,6 +148,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   body { background: white !important; color: black !important; }
 }
 .view { display: none; } .view.active { display: block; }
+.list-filter-input { width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
+.list-filter-sel { width:100%;padding:3px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
 .sub-tab { padding: 8px 14px; font-size: 12px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
 .sub-tab:hover { color: var(--text); }
 .sub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -183,6 +185,15 @@ body.dark .gantt-table td.act-col,
 body.dark .gantt-table td.prog-col,
 body.dark .gantt-table th { background: #181c27 !important; }
 body.dark .gantt-table tr:hover td { background: #1e2335 !important; }
+body.dark .gantt-table td { color: var(--text) !important; }
+body.dark .act-name { color: var(--text) !important; }
+body.dark .act-meta { color: var(--text-dim) !important; }
+body.dark .list-table tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+body.dark .list-table td { color: var(--text); }
+body.dark .list-table th { color: var(--text-dim); background: #1e2335; }
+body.dark .gantt-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+body.dark .prog-tag { opacity: 0.9; }
+
 body.dark .list-table th { background: #1e2335 !important; }
 body.dark .list-table tr:hover td { background: #1e2335 !important; }
 body.dark .login-box { background: #181c27 !important; border-color: #2a3050 !important; }
@@ -301,6 +312,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard')">Vista general</div>
     <div class="tab" onclick="switchTab('gantt')">Gantt general</div>
+    <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">🗂 Kanban</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
@@ -310,43 +322,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
   </div>
 
-  <div class="filters">
-    <select class="filter-select" id="fil-programa" onchange="applyFilters()"><option value="">Todos los programas</option></select>
-    <select class="filter-select" id="fil-region" onchange="applyFilters()"><option value="">Todas las regiones</option></select>
-    <select class="filter-select" id="fil-comuna" onchange="applyFilters()"><option value="">Todas las comunas</option></select>
-    <select class="filter-select" id="fil-mes" onchange="applyFilters()">
-      <option value="">Todos los meses</option>
-      <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
-      <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
-      <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-    </select>
-    <select class="filter-select" id="fil-tipo" onchange="applyFilters()">
-      <option value="">Todos los tipos</option>
-      <option>Cierre programa</option><option>Circular</option><option>Conmemoración</option>
-      <option>Decreto</option><option>Diálogos / Encuentros</option><option>Efeméride</option>
-      <option>Inicio programa</option><option>Minuta</option><option>Minvuletín</option>
-      <option>Obras Equipamientos</option><option>Obras Espacio Público</option><option>Obras Habitacionales</option>
-      <option>Otro</option><option>PDL</option><option>Publicación</option><option>Reglamento</option>
-      <option>Renders</option><option>Reportes de prensa</option><option>Seminario</option><option>Streaming</option>
-    </select>
-    <select class="filter-select" id="fil-estado" onchange="applyFilters()">
-      <option value="">Todos los estados</option>
-      <option>Sin fecha</option>
-      <option>Planificado</option>
-      <option>Confirmado</option>
-      <option>Realizado</option>
-      <option>Planificado por la región</option>
-      <option>Planificado por Dpto. Comunicaciones Minvu</option>
-      <option>Planificado por el programa</option>
-      <option>Coordinado con Comunicaciones DGU</option>
-      <option>Coordinado con Comunicaciones DDU</option>
-      <option>Realizado con autoridades nacionales</option>
-      <option>Realizado con autoridades regionales</option>
-    </select>
-    <select class="filter-select" id="fil-anio" onchange="applyFilters()">
-      <option value="">Todos los años</option>
-      <option>2026</option><option>2027</option><option>2028</option>
-    </select>
+  <div class="filters" style="justify-content:flex-end">
     <button class="btn-sm" onclick="window.print()" style="margin-left:4px">🖨 PDF</button>
     <button class="btn-sm" onclick="limpiarFiltros()" style="margin-left:4px;color:var(--accent3);border-color:var(--accent3)">✕ Limpiar filtros</button>
   </div>
@@ -391,7 +367,28 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
         <div class="section-header"><span>Todos los hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Año</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
+            <thead>
+      <tr>
+        <th>N°</th><th>Actividad</th><th>Programa</th><th>Tipo</th>
+        <th>Región</th><th>Comuna</th><th>Año</th><th>Mes</th><th>Semana</th>
+        <th>Estado</th><th>Relevancia</th><th>Completitud</th><th>Editar</th>
+      </tr>
+      <tr style="background:var(--bg)">
+        <td></td>
+        <td><input class="list-filter-input" placeholder="Buscar..." oninput="applyListFilters()" id="lf-actividad"></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-programa"><option value="">Todos</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-tipo"><option value="">Todos</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-region"><option value="">Todas</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-comuna"><option value="">Todas</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-anio"><option value="">Todos</option><option>2026</option><option>2027</option><option>2028</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-mes"><option value="">Todos</option></select></td>
+        <td></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-estado"><option value="">Todos</option></select></td>
+        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-relevancia"><option value="">Todas</option><option>Alta</option><option>Media</option><option>Baja</option></select></td>
+        <td></td>
+        <td><button class="btn-sm" onclick="limpiarListFilters()" style="font-size:10px;padding:2px 6px">✕</button></td>
+      </tr>
+    </thead>
             <tbody id="list-body"></tbody>
           </table>
         </div>
@@ -943,6 +940,12 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     </div>
 
 
+
+    <!-- KANBAN -->
+    <div id="view-kanban" class="view">
+      <div class="section-header"><span>🗂 Kanban — Hitos por estado</span><span id="kanban-count" style="color:#9333ea"></span></div>
+      <div id="kanban-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;margin-top:8px"></div>
+    </div>
     <!-- RECONSTRUCCION -->
     <div id="view-reconstruccion" class="view">
       <div class="list-container">
@@ -970,15 +973,15 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       <!-- SUB: TABLA ACCIONES -->
       <div id="sub-acciones" class="sub-view active">
         <div class="stats-grid">
-          <div class="stat-card blue"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
-          <div class="stat-card green"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
-          <div class="stat-card yellow"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
-          <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
+          <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('')"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
+          <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada')"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
+          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('En desarrollo')"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
+          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada')"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
         </div>
         <div class="list-container">
           <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
           <div style="overflow-x:auto"><table class="list-table">
-            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Editar</th></tr></thead>
+            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Editar</th><th>Prioridad</th></tr></thead>
             <tbody id="acciones-body"></tbody>
           </table></div>
         </div>
@@ -1106,12 +1109,12 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
         </div>
       </div>
       <!-- SUB: KPI -->
-      <div id="sub-kpi" class="sub-view" style="display:none">
-        <div class="stats-grid" style="margin-bottom:20px">
-          <div class="stat-card blue"><div class="stat-label">Total</div><div class="stat-value" id="kpi-total">0</div></div>
-          <div class="stat-card green"><div class="stat-label">Realizadas</div><div class="stat-value" id="kpi-real">0</div></div>
-          <div class="stat-card yellow"><div class="stat-label">En curso</div><div class="stat-value" id="kpi-curso">0</div></div>
-          <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="kpi-pend">0</div></div>
+      <div id="sub-kpi" class="sub-view" style="display:none;padding-top:0">
+        <div class="stats-grid" style="margin-bottom:12px">
+          <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('');switchSubTab('sub-acciones')"><div class="stat-label">Total</div><div class="stat-value" id="kpi-total">0</div></div>
+          <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada');switchSubTab('sub-acciones')"><div class="stat-label">Realizadas</div><div class="stat-value" id="kpi-real">0</div></div>
+          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('En desarrollo');switchSubTab('sub-acciones')"><div class="stat-label">En curso</div><div class="stat-value" id="kpi-curso">0</div></div>
+          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada');switchSubTab('sub-acciones')"><div class="stat-label">Pendientes</div><div class="stat-value" id="kpi-pend">0</div></div>
         </div>
         <div class="two-col">
           <div class="chart-card"><div class="chart-title">KPI por Estado</div><div id="kpi-estado-chart"></div>
@@ -1133,7 +1136,8 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     <div class="success-title">Guardado correctamente</div>
     <div class="success-sub" id="success-sub"></div>
     <button class="success-btn" onclick="closeSuccessAndGoHome()" style="width:100%;margin-bottom:8px">← Regresar a la Vista general</button>
-    <button class="success-btn" onclick="closeSuccessAndEdit()" style="width:100%;background:var(--accent)">✏ Seguir editando</button>
+    <button class="success-btn" id="success-extra-btn" onclick="closeSuccessAndContinue()" style="width:100%;background:var(--accent2);display:none;margin-bottom:8px">➕ Seguir ingresando</button>
+    <button class="success-btn" onclick="closeSuccessAndEdit()" style="width:100%;background:var(--accent)">✏ Editar hito</button>
   </div>
 </div>
 
@@ -1341,7 +1345,7 @@ function applyFilters() {
 
 function _sn(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
 function renderAll(){
-  ['renderDashboard','renderGantt','renderCalendar','renderList','renderComunas','renderReconstruccion','renderAcciones','renderCompletitud'].forEach(fn=>{
+  ['renderDashboard','renderGantt','renderCalendar','renderList','renderKanban','renderComunas','renderReconstruccion','renderAcciones','renderCompletitud'].forEach(fn=>{
     try { window[fn](); } catch(e) { console.error(fn+' failed:',e.message); }
   });
 }
@@ -1392,7 +1396,7 @@ function renderGantt() {
   const sp={'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB','Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH','Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP'};
   // Add acciones to gantt
   const ganttItems = sorted.filter(h=>h.mes&&h.semana);
-  ganttItems.slice(0,150).forEach((h,idx)=>{
+  ganttItems.forEach((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowStyle=idx%2===0?'':'background:#f8f9fc;';
     const tAttr=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
@@ -1448,8 +1452,9 @@ function renderList() {
   _sn('list-count',filtered.length+' hitos');
   const _lb=document.getElementById('list-body');if(_lb)_lb.innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map(h=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
+    const rowAlt=idx%2===0?'':'background:rgba(255,255,255,0.04);';
     const ttL=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
-    return `<tr ${ttL}><td style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace">${h.n}</td><td>${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.region}</td><td style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${h.mes||''}','${h.semana||''}','${h.estado}','${(h.descripcion||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}')" >Editar</button></td></tr>`;
+    return `<tr ${ttL} style="${rowAlt}"><td style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace">${h.n}</td><td>${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.region}</td><td style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${h.mes||''}','${h.semana||''}','${h.estado}','${(h.descripcion||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}')" >Editar</button></td></tr>`;
   }).join('');
 }
 
@@ -1476,7 +1481,8 @@ function renderAcciones() {
   _set('acciones-count',total+' acciones');
   const stA={'Realizada':'status-real','En curso':'status-conf','Planificada':'status-plan','Cancelada':'status-sin'};
   const _abody=document.getElementById('acciones-body');if(!_abody)return;
-  _abody.innerHTML=allAcciones.map(a=>{
+  const sortedAcc=[...allAcciones].reverse();
+  _abody.innerHTML=sortedAcc.map(a=>{
     const nombre=a.accion.replace(/'/g,"\\'");
     return `<tr><td>${a.accion}</td><td style="font-size:12px">${a.tipo||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.fecha||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${a.responsable||'—'}</td><td><span class="status-badge ${stA[a.estado]||'status-sin'}">${a.estado}</span></td><td><button class="edit-btn" onclick="abrirEdicionAccion('${a.id}','${nombre}','${a.tipo||''}','${a.estado||''}','${a.responsable||''}','${a.fecha||''}')">Editar</button></td></tr>`;
   }).join('');
@@ -1488,7 +1494,7 @@ function renderCompletitud() {
   const _cpb=document.getElementById('comp-body');if(_cpb)_cpb.innerHTML=incompletos.sort((a,b)=>b.n-a.n).map((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const desc=h.descripcion.replace(/'/g,"\\'"), act=h.actividad.replace(/'/g,"\\'");
-    const rowBg=idx%2===0?'':'background:#f8f9fc;';
+    const rowBg=idx%2===0?'':'background:rgba(255,255,255,0.04);';
     return `<tr style="${rowBg}"><td style="color:var(--text-dim);font-size:12px;white-space:nowrap">${h.n}</td><td style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
   }).join('');
 }
@@ -1712,6 +1718,57 @@ async function guardarEdicionAccion() {
 }
 
 
+
+function renderKanban() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  const COLS = [
+    {key:'Sin fecha', label:'Sin fecha', color:'#6b7280'},
+    {key:'Planificado', label:'Planificado', color:'#4f7cff'},
+    {key:'Confirmado', label:'Confirmado', color:'#00d4a0'},
+    {key:'Realizado', label:'Realizado', color:'#00d4a0'},
+  ];
+  const REL_ORDER = {'Alta':0,'Media':1,'Baja':2,'':3};
+  const MES_IDX = {'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
+  const SEM_IDX = {'S1':1,'S2':2,'S3':3,'S4':4};
+  const relColor = {'Alta':'#e53935','Media':'#f59e0b','Baja':'#0d9a6e'};
+
+  const sortHitos = arr => [...arr].sort((a,b) => {
+    const relA = REL_ORDER[a.relevancia]??3;
+    const relB = REL_ORDER[b.relevancia]??3;
+    if(relA!==relB) return relA-relB;
+    const va = a.fecha_exacta ? new Date(a.fecha_exacta).getTime() : (parseInt(a.anio||'2026')*10000+(MES_IDX[a.mes]||99)*10+(SEM_IDX[a.semana]||5));
+    const vb = b.fecha_exacta ? new Date(b.fecha_exacta).getTime() : (parseInt(b.anio||'2026')*10000+(MES_IDX[b.mes]||99)*10+(SEM_IDX[b.semana]||5));
+    return va-vb;
+  });
+
+  _sn('kanban-count', filtered.length + ' hitos');
+
+  board.innerHTML = COLS.map(col => {
+    const hitos = sortHitos(filtered.filter(h => h.estado === col.key || (col.key==='Sin fecha'&&(h.estado==='Sin fecha'||!h.estado))));
+    const cards = hitos.map(h => {
+      const bg = PROG_BG[h.programa]||'#f3f4f6';
+      const pc = PROG_COLORS[h.programa]||'#6b7280';
+      const rel = h.relevancia ? `<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:${relColor[h.relevancia]}22;color:${relColor[h.relevancia]};font-weight:600">${h.relevancia}</span>` : '';
+      const fecha = h.fecha_exacta ? new Date(h.fecha_exacta+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}) : (h.mes?(h.mes+(h.semana?' '+h.semana:'')):'Sin fecha');
+      return `<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow 0.2s" onmouseenter="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.12)'" onmouseleave="this.style.boxShadow=''" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\'")}','${h.mes||''}','${h.semana||''}','${h.estado}','')">
+        <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;line-height:1.3">${h.actividad}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+          <span class="prog-tag" style="background:${bg};color:${pc};font-size:10px">${h.programa}</span>
+          ${rel}
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px;font-family:'DM Mono',monospace">${fecha}</div>
+      </div>`;
+    }).join('');
+    return `<div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid ${col.color}">
+        <span style="font-size:12px;font-weight:600;color:${col.color}">${col.label}</span>
+        <span style="font-size:10px;color:var(--text-dim);background:${col.color}22;padding:1px 7px;border-radius:10px">${hitos.length}</span>
+      </div>
+      <div>${cards}</div>
+    </div>`;
+  }).join('');
+}
 function renderReconstruccion() {
   const REGIONES_RECONS = ['Valparaíso','Ñuble','Biobío'];
   const hitos = filtered.filter(h => REGIONES_RECONS.includes(h.region));
@@ -1760,8 +1817,8 @@ function renderGanttAcciones() {
   }).join('');
 
   // Build header
-  const MESES_GA2=MESES.slice(2);
-  const sm = ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES_GA2=MESES.slice(5,12); // Jun-Dec only
+  const sm = ['Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
   MESES_GA2.forEach((m,mi) => SEMANAS.forEach((s,si) => {
     html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
@@ -1769,14 +1826,14 @@ function renderGanttAcciones() {
   html += '</tr></thead><tbody>';
 
   // Sort by fecha
-  const sorted = [...allAcciones].sort((a,b) => {
+  const sortedGA = [...allAcciones].sort((a,b) => {
     if (a.fecha && b.fecha) return new Date(a.fecha) - new Date(b.fecha);
     if (a.fecha) return -1;
     if (b.fecha) return 1;
     return 0;
   });
 
-  sorted.forEach(a => {
+  sortedGA.forEach(a => {
     const color = TIPO_COLORS[a.tipo] || '#6b7280';
     const tipoShort = {'Nota de prensa':'NP','Post en RRSS':'RRSS','Campaña interna':'Camp','Comunicación institucional':'Inst','Otro':'Otro'};
     html += `<tr><td class="act-col"><div class="act-name">${a.accion}</div></td>`;
@@ -1928,11 +1985,22 @@ async function eliminarHito() {
   }
 }
 
+
+function showSuccessHito() {
+  document.getElementById('success-sub').textContent = '';
+  document.getElementById('success-extra-btn').style.display = 'block';
+  document.getElementById('success-overlay').style.display = 'flex';
+}
 function showSuccess(subtitle) {
   document.getElementById('success-sub').textContent = subtitle || '';
   document.getElementById('success-overlay').style.display = 'flex';
 }
 
+function closeSuccessAndContinue() {
+  document.getElementById('success-overlay').style.display = 'none';
+  document.getElementById('success-extra-btn').style.display = 'none';
+  switchTab('nuevo-hito');
+}
 function closeSuccessAndEdit() {
   document.getElementById('success-overlay').style.display = 'none';
   switchTab('completitud');
@@ -1953,6 +2021,61 @@ if (localStorage.getItem('ddu-theme') === 'dark') {
   document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('theme-btn');
     if (btn) btn.textContent = '☀️';
+  });
+}
+
+
+function applyListFilters() {
+  const act=(document.getElementById('lf-actividad')||{}).value||'';
+  const prog=(document.getElementById('lf-programa')||{}).value||'';
+  const tipo=(document.getElementById('lf-tipo')||{}).value||'';
+  const reg=(document.getElementById('lf-region')||{}).value||'';
+  const com=(document.getElementById('lf-comuna')||{}).value||'';
+  const anio=(document.getElementById('lf-anio')||{}).value||'';
+  const mes=(document.getElementById('lf-mes')||{}).value||'';
+  const est=(document.getElementById('lf-estado')||{}).value||'';
+  const rel=(document.getElementById('lf-relevancia')||{}).value||'';
+  const rows=document.querySelectorAll('#list-body tr');
+  rows.forEach(row=>{
+    const ok=(!act||row.dataset.actividad?.includes(act.toLowerCase()))
+      &&(!prog||row.dataset.programa===prog)
+      &&(!tipo||row.dataset.tipo===tipo)
+      &&(!reg||row.dataset.region===reg)
+      &&(!com||row.dataset.comuna===com)
+      &&(!anio||row.cells[6]?.textContent===anio)
+      &&(!mes||row.dataset.mes===mes)
+      &&(!est||row.dataset.estado===est)
+      &&(!rel||row.dataset.relevancia===rel);
+    row.style.display=ok?'':'none';
+  });
+}
+
+function limpiarListFilters() {
+  ['lf-actividad','lf-programa','lf-tipo','lf-region','lf-comuna','lf-anio','lf-mes','lf-estado','lf-relevancia'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  applyListFilters();
+}
+
+function buildListFilters() {
+  const progs=[...new Set(filtered.map(h=>h.programa).filter(Boolean))].sort();
+  const tipos=[...new Set(filtered.map(h=>h.tipo_hito).filter(Boolean))].sort();
+  const regs=[...new Set(filtered.map(h=>h.region).filter(Boolean))].sort();
+  const coms=[...new Set(filtered.map(h=>h.comuna).filter(Boolean))].sort();
+  const meses=[...new Set(filtered.map(h=>h.mes).filter(Boolean))];
+  const ests=[...new Set(filtered.map(h=>h.estado).filter(Boolean))].sort();
+  const fill=(id,arr,label)=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=`<option value="">${label}</option>`+arr.map(v=>`<option>${v}</option>`).join('');};
+  fill('lf-programa',progs,'Todos');fill('lf-tipo',tipos,'Todos');
+  fill('lf-region',regs,'Todas');fill('lf-comuna',coms,'Todas');
+  fill('lf-mes',meses,'Todos');fill('lf-estado',ests,'Todos');
+}
+function filtrarAcciones(estado) {
+  const body = document.getElementById('acciones-body');
+  if (!body) return;
+  const rows = body.querySelectorAll('tr');
+  rows.forEach(row => {
+    if (!estado) { row.style.display = ''; return; }
+    row.style.display = row.textContent.includes(estado) ? '' : 'none';
   });
 }
 function limpiarFiltros() {
@@ -2025,6 +2148,15 @@ async function guardarLinks() {
 function switchSubTab(sub) {
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sub-view').forEach(v => { v.style.display='none'; v.classList.remove('active'); });
+  document.querySelectorAll('.btn-back-sub').forEach(b=>b.remove());
+  const subView=document.getElementById(sub);
+  if(subView) {
+    const back=document.createElement('button');
+    back.className='btn-back btn-back-sub';
+    back.innerHTML='⌂ Ir al inicio';
+    back.onclick=goHome;
+    subView.insertBefore(back, subView.firstChild);
+  }
   const btn = document.getElementById('subtab-'+sub);
   if(btn) btn.classList.add('active');
   const view = document.getElementById(sub);
@@ -2121,7 +2253,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','gantt','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','area-com'];
+  const tabs=['dashboard','gantt','calendario','lista','kanban','comunas','reconstruccion','nuevo-hito','completitud','area-com'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
