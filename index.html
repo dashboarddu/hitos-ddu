@@ -409,49 +409,6 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       </div>
     </div>
 
-    <div id="view-acciones" class="view">
-      <div class="stats-grid">
-        <div class="stat-card blue"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
-        <div class="stat-card green"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
-        <div class="stat-card yellow"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
-        <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
-      </div>
-      <div class="list-container">
-        <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
-        <div style="overflow-x:auto">
-          <table class="list-table">
-            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha estimada</th><th>Responsable</th><th>Estado</th><th>Editar</th></tr></thead>
-            <tbody id="acciones-body"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="edit-panel" id="edit-accion-panel">
-        <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-accion-title">Editando acción</div>
-        <div id="edit-accion-success" class="alert-success" style="margin-bottom:12px">✓ Guardado correctamente</div>
-        <div class="form-grid">
-          <div class="form-field full"><label class="login-label">Nombre de la acción</label><input class="login-input" id="edit-accion-nombre" placeholder="Nombre"></div>
-          <div class="form-field"><label class="login-label">Tipo de acción</label>
-            <select class="fsel" id="edit-accion-tipo">
-              <option value="">—</option>
-              <option>Nota de prensa</option><option>Post en RRSS</option>
-              <option>Campaña interna</option><option>Comunicación institucional</option><option>Otro</option>
-            </select>
-          </div>
-          <div class="form-field"><label class="login-label">Estado</label>
-            <select class="fsel" id="edit-accion-estado">
-              <option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option>
-            </select>
-          </div>
-          <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable" placeholder="Responsable"></div>
-          <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:16px">
-          <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
-          <button class="login-btn" onclick="cerrarEdicionAccion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
-        </div>
-      </div>
-    </div>
-
     <div id="view-nuevo-hito" class="view">
       <div class="form-card">
         <div class="section-header"><span>Registrar nuevo hito</span></div>
@@ -933,45 +890,6 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       </div>
     </div>
 
-    <div id="view-nueva-accion" class="view">
-      <div class="form-card">
-        <div class="section-header"><span>Registrar nueva acción comunicacional</span></div>
-        <div class="form-body">
-          <div id="na-success" class="alert-success">✓ Acción registrada correctamente</div>
-          <div id="na-error" class="alert-error"></div>
-          <div class="form-grid">
-            <div class="form-field full"><label class="login-label">Nombre de la acción *</label><input class="login-input" id="na-nombre" placeholder="Ej: Nota de prensa inauguración Chonchi"></div>
-            <div class="form-field full"><label class="login-label">Hito vinculado (opcional)</label>
-              <select class="fsel" id="na-hito"><option value="">Sin hito vinculado</option></select>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Selecciona un hito para cruzar datos en informes</div>
-            </div>
-            <div class="form-field"><label class="login-label">Tipo de acción *</label>
-              <select class="fsel" id="na-tipo"><option value="">Seleccionar...</option>
-                <option>Nota de prensa</option><option>Post en RRSS</option>
-                <option>Campaña interna</option><option>Comunicación institucional</option>
-                <option>Elaborar texto</option><option>Diseño</option>
-                <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
-              </select>
-            </div>
-            <div class="form-field"><label class="login-label">Estado</label>
-              <select class="fsel" id="na-estado"><option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option></select>
-            </div>
-            <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
-            <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="na-responsable" placeholder="Nombre del responsable"></div>
-<div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
-              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-                <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="na-periodo-inicio"></div>
-                <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="na-periodo-fin"></div>
-              </div>
-            </div>
-            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" placeholder="Observaciones adicionales" style="resize:vertical"></textarea></div>
-          </div>
-          <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#7c3aed">Guardar acción</button>
-        </div>
-      </div>
-    </div>
-
     <div id="view-completitud" class="view">
       <!-- Edit panel - hidden by default, shown when Editar is clicked -->
       <div class="edit-panel" id="edit-panel" style="display:none;margin-bottom:16px">
@@ -1025,40 +943,6 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
 
     <!-- GANTT ACCIONES -->
-    <div id="view-gantt-acciones" class="view">
-      <div class="gantt-container">
-        <div class="section-header"><span>Cronograma de acciones comunicacionales</span><span id="ga-count" style="color:#be185d"></span></div>
-        <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;font-size:12px" id="ga-legend"></div>
-        <div class="gantt-scroll"><table class="gantt-table" id="gantt-acciones-table"></table></div>
-      </div>
-    </div>
-  </div>
-    <!-- ELIMINAR HITO -->
-    <div id="view-eliminar-hito" class="view">
-      <div class="form-card" style="border-color:#fee2e2">
-        <div class="section-header" style="background:#fff5f5"><span style="color:#dc2626">🗑 Eliminar hito</span></div>
-        <div class="form-body">
-          <div id="el-success" class="alert-success">✓ Hito eliminado correctamente</div>
-          <div id="el-error" class="alert-error"></div>
-          <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:12px;font-size:13px;color:#991b1b;margin-bottom:4px">
-            ⚠ Esta acción es permanente. El hito será eliminado de Airtable y no se puede deshacer.
-          </div>
-          <div class="form-field full">
-            <label class="login-label">Buscar y seleccionar hito *</label>
-            <input class="login-input" id="el-search" placeholder="Escribe para buscar..." oninput="filterEliminar()">
-            <select class="fsel" id="el-hito-select" size="6" style="margin-top:6px;height:180px">
-              <option value="">— Escribe para buscar hitos —</option>
-            </select>
-          </div>
-          <div id="el-preview" style="display:none;background:#f8f9fc;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;margin-top:4px"></div>
-          <div class="form-field full">
-            <label class="login-label">Confirma tu correo para autorizar la eliminación *</label>
-            <input class="login-input" id="el-email" type="email" placeholder="nombre@minvu.cl">
-          </div>
-          <button class="login-btn" id="btn-eliminar" onclick="eliminarHito()" style="background:#dc2626">Confirmar eliminación</button>
-        </div>
-      </div>
-    </div>
 
 </div>
 
@@ -1651,8 +1535,9 @@ async function guardarEdicionAccion() {
 function renderReconstruccion() {
   const REGIONES_RECONS = ['Valparaíso','Ñuble','Biobío'];
   const hitos = filtered.filter(h => REGIONES_RECONS.includes(h.region));
-  document.getElementById('recons-count').textContent = hitos.length + ' hitos';
-  document.getElementById('recons-body').innerHTML = hitos.sort((a,b)=>a.n-b.n).map(h => {
+  _sn('recons-count', hitos.length + ' hitos');
+  const _rb=document.getElementById('recons-body');if(!_rb)return;
+  _rb.innerHTML = hitos.sort((a,b)=>a.n-b.n).map(h => {
     const color = PROG_COLORS[h.programa]||'#6b7280';
     const bg = PROG_BG[h.programa]||'#f3f4f6';
     const recons = h.region_reconstruccion === 'Sí' ? '<span style="color:var(--accent3);font-weight:600">✓ Sí</span>' : '—';
