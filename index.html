@@ -1334,10 +1334,11 @@ function buildFilters() {
 }
 
 function applyFilters() {
-  const p=document.getElementById('fil-programa').value, r=document.getElementById('fil-region').value;
-  const com=document.getElementById('fil-comuna').value, mes=document.getElementById('fil-mes').value;
-  const t=document.getElementById('fil-tipo').value, e=document.getElementById('fil-estado').value;
-  const anio=document.getElementById('fil-anio').value;
+  const _gv=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  const p=_gv('fil-programa'), r=_gv('fil-region');
+  const com=_gv('fil-comuna'), mes=_gv('fil-mes');
+  const t=_gv('fil-tipo'), e=_gv('fil-estado');
+  const anio=_gv('fil-anio');
   filtered=allHitos.filter(h=>h.estado!=='Eliminado'&&(!p||h.programa===p)&&(!r||h.region===r)&&(!com||h.comuna===com)&&(!mes||h.mes===mes)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e)&&(!anio||h.anio===anio));
   renderAll();
 }
