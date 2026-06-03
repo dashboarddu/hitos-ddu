@@ -1276,7 +1276,11 @@ function applyFilters() {
 
 
 function _sn(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
-function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderReconstruccion();renderAcciones();renderCompletitud();}
+function renderAll(){
+  ['renderDashboard','renderGantt','renderCalendar','renderList','renderComunas','renderReconstruccion','renderAcciones','renderCompletitud'].forEach(fn=>{
+    try { window[fn](); } catch(e) { console.error(fn+' failed:',e.message); }
+  });
+}
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
