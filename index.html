@@ -1507,13 +1507,13 @@ function abrirDesdeListaEdicion(id, actividad, mes, semana, estado, descripcion)
 function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   editingId=id;
   _sn('edit-title','Editando: '+actividad);
-  document.getElementById('edit-mes').value=mes;
-  document.getElementById('edit-semana').value=semana;
-  document.getElementById('edit-estado').value=estado;
-  document.getElementById('edit-descripcion').value=descripcion;
+  const _edit_mesEl=document.getElementById('edit-mes'); if(_edit_mesEl) _edit_mesEl.value=mes;
+  const _edit_semanaEl=document.getElementById('edit-semana'); if(_edit_semanaEl) _edit_semanaEl.value=semana;
+  const _edit_estadoEl=document.getElementById('edit-estado'); if(_edit_estadoEl) _edit_estadoEl.value=estado;
+  const _edit_descripcionEl=document.getElementById('edit-descripcion'); if(_edit_descripcionEl) _edit_descripcionEl.value=descripcion;
   const h=allHitos.find(x=>x.id===id);
-  document.getElementById('edit-fecha-exacta').value=h?h.fecha_exacta:'';
-  document.getElementById('edit-anio').value=h?h.anio:'';
+  const _edit_fecha_exactaEl=document.getElementById('edit-fecha-exacta'); if(_edit_fecha_exactaEl) _edit_fecha_exactaEl.value=h?h.fecha_exacta:'';
+  const _edit_anioEl=document.getElementById('edit-anio'); if(_edit_anioEl) _edit_anioEl.value=h?h.anio:'';
   document.getElementById('edit-success').style.display='none';
   document.getElementById('edit-panel').style.display='block';
   setTimeout(()=>document.getElementById('view-completitud').scrollIntoView({behavior:'smooth',block:'start'}),50);
@@ -1521,7 +1521,7 @@ function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
 
 
 function filterComp() {
-  const q = document.getElementById('comp-search').value.toLowerCase();
+  const q = (document.getElementById('comp-search')||{value:''}).value.toLowerCase();
   const rows = document.getElementById('comp-body').querySelectorAll('tr');
   rows.forEach(row => {
     row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
@@ -2088,8 +2088,7 @@ function limpiarFiltros() {
 function goHome() {
   // Reset all filters
   ['fil-programa','fil-region','fil-comuna','fil-mes','fil-tipo','fil-estado','fil-anio'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.value='';
+    try{const el=document.getElementById(id);if(el)el.value='';}catch(e){}
   });
   applyFilters();
   switchTab('dashboard');
