@@ -14,7 +14,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
-#login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; }
+#login-screen { position: fixed; inset: 0; background: url(fondo.jpg) center/cover no-repeat; display: flex; align-items: center; justify-content: center; z-index: 999; }
 .login-box { position: relative; z-index: 1; background: rgba(255,255,255,0.97); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 .login-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
@@ -348,6 +348,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       <option>2026</option><option>2027</option><option>2028</option>
     </select>
     <button class="btn-sm" onclick="window.print()" style="margin-left:4px">🖨 PDF</button>
+    <button class="btn-sm" onclick="limpiarFiltros()" style="margin-left:4px;color:var(--accent3);border-color:var(--accent3)">✕ Limpiar filtros</button>
   </div>
 
   <div class="content">
@@ -987,16 +988,30 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
           <div class="form-grid">
             <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
             <div class="form-field"><label class="login-label">Tipo</label>
-              <select class="fsel" id="edit-accion-tipo"><option value="">—</option>
-                <option>Nota de prensa</option><option>Post en RRSS</option><option>Campaña interna</option>
-                <option>Comunicación institucional</option><option>Elaborar texto</option><option>Diseño</option>
-                <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
-              </select>
+              <select class="fsel" id="edit-accion-tipo">
+<option value="">—</option>
+<option>Nota intranet</option>
+<option>Contenido para redes sociales</option>
+<option>Publicación externa</option>
+<option>Comunicación interna/externa</option>
+<option>Efermérride sectorial</option>
+<option>Consulta pública</option>
+<option>Diseño</option>
+<option>Minvuletín</option>
+<option>Edición</option>
+<option>Otro</option>
+</select>
             </div>
             <div class="form-field"><label class="login-label">Estado</label>
               <select class="fsel" id="edit-accion-estado">
-                <option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option>
-              </select>
+<option>Planificada</option>
+<option>En desarrollo</option>
+<option>Realizada</option>
+<option>Cancelada</option>
+<option>En diseño</option>
+<option>Revisión de borrador</option>
+<option>En V°B°</option>
+</select>
             </div>
             <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable"></div>
             <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
@@ -1023,19 +1038,42 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
                 <select class="fsel" id="na-hito"><option value="">Sin hito vinculado</option></select>
               </div>
               <div class="form-field"><label class="login-label">Tipo *</label>
-                <select class="fsel" id="na-tipo"><option value="">Seleccionar...</option>
-                  <option>Nota de prensa</option><option>Post en RRSS</option><option>Campaña interna</option>
-                  <option>Comunicación institucional</option><option>Elaborar texto</option><option>Diseño</option>
-                  <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
-                </select>
+                <select class="fsel" id="na-tipo">
+<option value="">Seleccionar...</option>
+<option>Nota intranet</option>
+<option>Contenido para redes sociales</option>
+<option>Publicación externa</option>
+<option>Comunicación interna/externa</option>
+<option>Efermérride sectorial</option>
+<option>Consulta pública</option>
+<option>Diseño</option>
+<option>Minvuletín</option>
+<option>Edición</option>
+<option>Otro</option>
+</select>
               </div>
               <div class="form-field"><label class="login-label">Estado</label>
-                <select class="fsel" id="na-estado"><option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option></select>
+                <select class="fsel" id="na-estado">
+<option>Planificada</option>
+<option>En desarrollo</option>
+<option>Realizada</option>
+<option>Cancelada</option>
+<option>En diseño</option>
+<option>Revisión de borrador</option>
+<option>En V°B°</option>
+</select>
               </div>
               <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
               <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="na-responsable"></div>
               <div class="form-field"><label class="login-label">Prioridad</label>
                 <select class="fsel" id="na-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+              </div>
+              <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
+                <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional — si la acción abarca un rango de fechas)</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                  <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="na-periodo-inicio"></div>
+                  <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="na-periodo-fin"></div>
+                </div>
               </div>
               <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" style="resize:vertical"></textarea></div>
             </div>
@@ -1916,6 +1954,12 @@ if (localStorage.getItem('ddu-theme') === 'dark') {
     const btn = document.getElementById('theme-btn');
     if (btn) btn.textContent = '☀️';
   });
+}
+function limpiarFiltros() {
+  ['fil-programa','fil-region','fil-comuna','fil-mes','fil-tipo','fil-estado','fil-anio'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  applyFilters();
 }
 function goHome() {
   // Reset all filters
