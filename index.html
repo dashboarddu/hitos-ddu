@@ -1326,11 +1326,11 @@ function buildFilters() {
   const tipos=[...new Set(allHitos.map(h=>h.tipo_hito).filter(Boolean))].sort();
   const comunas=[...new Set(allHitos.map(h=>h.comuna).filter(Boolean))].sort();
   const PROGRAMAS_FIJOS = ['Pequeñas Localidades','Quiero mi Barrio','Regeneración de Conjuntos','Planes Urbanos Habitacionales','Zonas de Interés Público','Unidad de Proyecto','Comunicaciones DDU','Unidad Digitalización SU','Infraestructura Verde','Parques Urbanos - Construcción y Mejoramiento','Parques Urbanos - Conservación','Pavimentación Participativa','Espacios Públicos','Planificación y Normas Urbanas','Suelo','Vialidad urbana','Infraestructura sanitaria','Reducción de riesgos desastres y ACC','PUI','PUE'];
-  document.getElementById('fil-programa').innerHTML='<option value="">Todos los programas</option>'+PROGRAMAS_FIJOS.map(p=>`<option>${p}</option>`).join('');
+  const _fil-programa=document.getElementById('fil-programa'); if(_fil-programa) _fil-programa.innerHTML='<option value="">Todos los programas</option>'+PROGRAMAS_FIJOS.map(p=>`<option>${p}</option>`).join('');
   const REGIONES_FIJAS = ['Nacional','Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana','O\'Higgins','Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes','Central','Arica'];
-  document.getElementById('fil-region').innerHTML='<option value="">Todas las regiones</option>'+REGIONES_FIJAS.map(r=>`<option>${r}</option>`).join('');
-  document.getElementById('fil-comuna').innerHTML='<option value="">Todas las comunas</option>'+comunas.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('fil-tipo').innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option>${t}</option>`).join('');
+  const _fil-region=document.getElementById('fil-region'); if(_fil-region) _fil-region.innerHTML='<option value="">Todas las regiones</option>'+REGIONES_FIJAS.map(r=>`<option>${r}</option>`).join('');
+  const _fil-comuna=document.getElementById('fil-comuna'); if(_fil-comuna) _fil-comuna.innerHTML='<option value="">Todas las comunas</option>'+comunas.map(c=>`<option>${c}</option>`).join('');
+  const _fil-tipo=document.getElementById('fil-tipo'); if(_fil-tipo) _fil-tipo.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option>${t}</option>`).join('');
 }
 
 function applyFilters() {
