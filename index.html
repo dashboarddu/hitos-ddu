@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestor de Hitos DDU 2026</title>
+<title>Monitor de Hitos DDU 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -320,16 +320,34 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
       <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
     </select>
-    <select class="filter-select" id="fil-tipo" onchange="applyFilters()"><option value="">Todos los tipos</option></select>
+    <select class="filter-select" id="fil-tipo" onchange="applyFilters()">
+      <option value="">Todos los tipos</option>
+      <option>Cierre programa</option><option>Circular</option><option>Conmemoración</option>
+      <option>Decreto</option><option>Diálogos / Encuentros</option><option>Efeméride</option>
+      <option>Inicio programa</option><option>Minuta</option><option>Minvuletín</option>
+      <option>Obras Equipamientos</option><option>Obras Espacio Público</option><option>Obras Habitacionales</option>
+      <option>Otro</option><option>PDL</option><option>Publicación</option><option>Reglamento</option>
+      <option>Renders</option><option>Reportes de prensa</option><option>Seminario</option><option>Streaming</option>
+    </select>
     <select class="filter-select" id="fil-estado" onchange="applyFilters()">
       <option value="">Todos los estados</option>
-      <option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option>
+      <option>Sin fecha</option>
+      <option>Planificado</option>
+      <option>Confirmado</option>
+      <option>Realizado</option>
+      <option>Planificado por la región</option>
+      <option>Planificado por Dpto. Comunicaciones Minvu</option>
+      <option>Planificado por el programa</option>
+      <option>Coordinado con Comunicaciones DGU</option>
+      <option>Coordinado con Comunicaciones DDU</option>
+      <option>Realizado con autoridades nacionales</option>
+      <option>Realizado con autoridades regionales</option>
     </select>
-    <button class="btn-sm" onclick="window.print()" style="margin-left:auto">🖨 PDF</button>
     <select class="filter-select" id="fil-anio" onchange="applyFilters()">
       <option value="">Todos los años</option>
       <option>2026</option><option>2027</option><option>2028</option>
     </select>
+    <button class="btn-sm" onclick="window.print()" style="margin-left:4px">🖨 PDF</button>
   </div>
 
   <div class="content">
@@ -1258,7 +1276,7 @@ function applyFilters() {
 
 
 function _sn(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
-function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderReconstruccion();renderAcciones();renderCompletitud();renderGanttAcciones();}
+function renderAll(){renderDashboard();renderGantt();renderCalendar();renderList();renderComunas();renderReconstruccion();renderAcciones();renderCompletitud();}
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
@@ -1485,7 +1503,7 @@ async function guardarHito() {
   const actividad=document.getElementById('nh-actividad').value.trim();
   const programa=document.getElementById('nh-programa').value;
   const tipo=document.getElementById('nh-tipo').value;
-  if(!actividad||!programa||!tipo){document.getElementById('nh-error').textContent='Completa los campos obligatorios.';document.getElementById('nh-error').style.display='block';return;}
+  if(!actividad||!programa||!tipo){_sn('nh-error','Completa los campos obligatorios.');document.getElementById('nh-error').style.display='block';return;}
   document.getElementById('nh-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
   const fields={};
@@ -1542,7 +1560,7 @@ async function guardarAccion() {
   const btn=document.getElementById('btn-na');
   const nombre=document.getElementById('na-nombre').value.trim();
   const tipo=document.getElementById('na-tipo').value;
-  if(!nombre||!tipo){document.getElementById('na-error').textContent='Completa los campos obligatorios.';document.getElementById('na-error').style.display='block';return;}
+  if(!nombre||!tipo){_sn('na-error','Completa los campos obligatorios.');document.getElementById('na-error').style.display='block';return;}
   document.getElementById('na-error').style.display='none';
   btn.textContent='Guardando...';btn.disabled=true;
   const fields={'fldkkXtPbgqOeBdX4':nombre};
