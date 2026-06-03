@@ -942,7 +942,149 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     </div>
 
 
-    <!-- GANTT ACCIONES -->
+    <!-- RECONSTRUCCION -->
+    <div id="view-reconstruccion" class="view">
+      <div class="list-container">
+        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>🔴 Hitos en Regiones de Reconstrucción <span id="recons-count" style="color:var(--accent3)"></span></span>
+        </div>
+        <div style="padding:8px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim)">Valparaíso · Ñuble · Biobío</div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Mes</th><th>Semana</th><th>Estado</th></tr></thead>
+            <tbody id="recons-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- ÁREA COMUNICACIONES HUB -->
+    <div id="view-area-com" class="view">
+      <div style="display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow-x:auto">
+        <div class="sub-tab active" onclick="switchSubTab('sub-acciones')" id="subtab-sub-acciones">📊 Área Comunicaciones</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-nueva-accion')" id="subtab-sub-nueva-accion" style="color:#7c3aed">➕ Ingresa gestión</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-links')" id="subtab-sub-links" style="color:#0891b2">🔗 Ingresa links</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-gantt-acciones')" id="subtab-sub-gantt-acciones" style="color:#be185d">📅 Gantt acciones</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-kpi')" id="subtab-sub-kpi" style="color:#f59e0b">🎯 KPI</div>
+      </div>
+      <!-- SUB: TABLA ACCIONES -->
+      <div id="sub-acciones" class="sub-view active">
+        <div class="stats-grid">
+          <div class="stat-card blue"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
+          <div class="stat-card green"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
+          <div class="stat-card yellow"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
+          <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
+        </div>
+        <div class="list-container">
+          <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
+          <div style="overflow-x:auto"><table class="list-table">
+            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Editar</th></tr></thead>
+            <tbody id="acciones-body"></tbody>
+          </table></div>
+        </div>
+        <div class="edit-panel" id="edit-accion-panel" style="display:none;margin-top:16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px" id="edit-accion-title">Editando acción</div>
+          <div id="edit-accion-success" class="alert-success">✓ Guardado</div>
+          <div class="form-grid">
+            <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
+            <div class="form-field"><label class="login-label">Tipo</label>
+              <select class="fsel" id="edit-accion-tipo"><option value="">—</option>
+                <option>Nota de prensa</option><option>Post en RRSS</option><option>Campaña interna</option>
+                <option>Comunicación institucional</option><option>Elaborar texto</option><option>Diseño</option>
+                <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
+              </select>
+            </div>
+            <div class="form-field"><label class="login-label">Estado</label>
+              <select class="fsel" id="edit-accion-estado">
+                <option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option>
+              </select>
+            </div>
+            <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable"></div>
+            <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
+            <div class="form-field"><label class="login-label">Prioridad</label>
+              <select class="fsel" id="edit-accion-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
+            <button class="login-btn" onclick="cerrarEdicionAccion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <!-- SUB: INGRESA GESTIÓN -->
+      <div id="sub-nueva-accion" class="sub-view" style="display:none">
+        <div class="form-card">
+          <div class="section-header"><span>Registrar nueva acción comunicacional</span></div>
+          <div class="form-body">
+            <div id="na-success" class="alert-success">✓ Guardado correctamente</div>
+            <div id="na-error" class="alert-error"></div>
+            <div class="form-grid">
+              <div class="form-field full"><label class="login-label">Nombre *</label><input class="login-input" id="na-nombre" placeholder="Nombre de la acción"></div>
+              <div class="form-field full"><label class="login-label">Hito vinculado (opcional)</label>
+                <select class="fsel" id="na-hito"><option value="">Sin hito vinculado</option></select>
+              </div>
+              <div class="form-field"><label class="login-label">Tipo *</label>
+                <select class="fsel" id="na-tipo"><option value="">Seleccionar...</option>
+                  <option>Nota de prensa</option><option>Post en RRSS</option><option>Campaña interna</option>
+                  <option>Comunicación institucional</option><option>Elaborar texto</option><option>Diseño</option>
+                  <option>Revisión de maqueta</option><option>En VB</option><option>Otro</option>
+                </select>
+              </div>
+              <div class="form-field"><label class="login-label">Estado</label>
+                <select class="fsel" id="na-estado"><option>Planificada</option><option>En curso</option><option>Realizada</option><option>Cancelada</option></select>
+              </div>
+              <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
+              <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="na-responsable"></div>
+              <div class="form-field"><label class="login-label">Prioridad</label>
+                <select class="fsel" id="na-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+              </div>
+              <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" style="resize:vertical"></textarea></div>
+            </div>
+            <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#7c3aed">Guardar acción</button>
+          </div>
+        </div>
+      </div>
+      <!-- SUB: LINKS -->
+      <div id="sub-links" class="sub-view" style="display:none">
+        <div class="form-card">
+          <div class="section-header"><span>Registrar links de registro</span></div>
+          <div class="form-body">
+            <div id="lk-success" class="alert-success">✓ Links guardados</div>
+            <div id="lk-error" class="alert-error"></div>
+            <div class="form-field full"><label class="login-label">Hito vinculado *</label>
+              <select class="fsel" id="lk-hito"><option value="">Seleccionar hito...</option></select>
+            </div>
+            <div id="lk-fields" style="display:flex;flex-direction:column;gap:10px"></div>
+            <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#0891b2;border:1px solid #0891b2">+ Agregar link</button>
+            <button class="login-btn" id="btn-lk" onclick="guardarLinks()" style="background:#0891b2">Guardar links</button>
+          </div>
+        </div>
+      </div>
+      <!-- SUB: GANTT ACCIONES -->
+      <div id="sub-gantt-acciones" class="sub-view" style="display:none">
+        <div class="gantt-container">
+          <div class="section-header"><span>Cronograma acciones comunicacionales</span><span id="ga-count" style="color:#be185d"></span></div>
+          <div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;font-size:11px" id="ga-legend"></div>
+          <div class="gantt-scroll"><table class="gantt-table" id="gantt-acciones-table"></table></div>
+        </div>
+      </div>
+      <!-- SUB: KPI -->
+      <div id="sub-kpi" class="sub-view" style="display:none">
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card blue"><div class="stat-label">Total</div><div class="stat-value" id="kpi-total">0</div></div>
+          <div class="stat-card green"><div class="stat-label">Realizadas</div><div class="stat-value" id="kpi-real">0</div></div>
+          <div class="stat-card yellow"><div class="stat-label">En curso</div><div class="stat-value" id="kpi-curso">0</div></div>
+          <div class="stat-card red"><div class="stat-label">Pendientes</div><div class="stat-value" id="kpi-pend">0</div></div>
+        </div>
+        <div class="two-col">
+          <div class="chart-card"><div class="chart-title">KPI por Estado</div><div id="kpi-estado-chart"></div>
+            <div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>% Completado</span><span id="kpi-pct" style="font-weight:600">0%</span></div>
+              <div style="background:var(--border);border-radius:4px;height:8px"><div id="kpi-fill" style="height:8px;border-radius:4px;background:var(--accent2);transition:width 0.4s;width:0%"></div></div>
+            </div>
+          </div>
+          <div class="chart-card"><div class="chart-title">KPI por Prioridad</div><div id="kpi-prioridad-chart"></div></div>
+        </div>
+      </div>
+    </div>
 
 </div>
 
