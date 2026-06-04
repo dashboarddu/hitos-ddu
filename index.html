@@ -305,6 +305,21 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 .content.tint-red { background: rgba(229,57,53,0.07) !important; }
 .content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
 .content.tint-pink { background: rgba(190,24,93,0.07) !important; }
+
+/* Scrollbars visibles */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* Header responsive */
+header { gap: 8px; }
+.header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .header-title { font-size: 12px !important; }
+  .header-logo { font-size: 10px !important; }
+  .btn-sm span { display: none; }
+}
 </style>
 </head>
 <body>
@@ -322,11 +337,11 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
 <div id="app">
   <header>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span class="header-logo">DDU · 2026</span>
-      <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">Gestión de hitos comunicacionales</span>
+    <div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;min-width:0">
+      <span class="header-logo" style="flex-shrink:0">DDU · 2026</span>
+      <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Gestor de hitos comunicacionales DDU</span>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
       <span class="badge-user" id="user-badge">—</span>
       <button class="btn-sm" onclick="loadData()">↻ Actualizar</button>
       <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</button>
@@ -390,8 +405,8 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     <div id="view-lista" class="view">
       <div class="list-container">
         <div class="section-header"><span>Lista de hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 var(--radius) var(--radius)">
-          <table class="list-table" style="min-width:900px">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 var(--radius) var(--radius);scrollbar-width:thin;scrollbar-color:var(--border) transparent">
+          <table class="list-table" style="min-width:960px">
             <thead>
       <tr>
         <th>N°</th>
@@ -2221,10 +2236,7 @@ function goHome() {
 }
 function cerrarSesion() {
   localStorage.removeItem('ddu-session');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('email-input').value = '';
-  document.getElementById('login-error').style.display = 'none';
+  window.location.reload();
 }
 
 
