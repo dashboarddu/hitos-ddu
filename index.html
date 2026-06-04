@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor de Hitos DDU 2026</title>
+<title>Gestor de Hitos DDU 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -123,23 +123,48 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   .form-field.full { grid-column: 1 !important; }
   header { padding: 0 12px; }
   .header-title { font-size: 13px; }
-  .content { padding: 12px; }
-  .tabs { padding: 0 8px; }
-  .tab { padding: 8px 8px; font-size: 10px; }
-  .filters { padding: 8px 12px; flex-wrap: wrap; gap: 6px; }
+  .content { padding: 8px 12px; }
+  .tabs { padding: 0 4px; }
+  .tab { padding: 8px 6px; font-size: 10px; }
+  .filters { padding: 6px 12px; flex-wrap: wrap; gap: 4px; }
   .filter-select { font-size: 11px; padding: 4px 6px; }
   .stat-value { font-size: 24px; }
-  .gantt-table th.act-col, .gantt-table td.act-col { min-width: 120px; max-width: 140px; }
+  .gantt-table th.act-col, .gantt-table td.act-col { min-width: 110px; max-width: 130px; }
   .section-header { flex-direction: column; gap: 6px; }
   .section-header input { width: 100% !important; }
   .login-box { padding: 24px 20px; margin: 16px; }
   .success-card { padding: 24px 20px; margin: 16px; }
+  /* Lista: scroll horizontal + texto compacto */
+  .list-table { font-size: 11px; }
+  .list-table td, .list-table th { padding: 7px 8px; }
+  /* Ocultar columnas menos críticas en mobile */
+  .list-col-tipo, .list-col-completitud { display: none; }
+  /* Kanban: 2 columnas en tablet */
+  #kanban-board { grid-template-columns: repeat(2,1fr) !important; }
+  /* Form centrado */
+  .form-card { max-width: 100% !important; margin: 0 0 20px !important; }
+  /* Sub-tabs scroll */
+  #view-area-com > div:first-child { overflow-x: auto; }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr !important; }
-  .tab { padding: 6px 6px; font-size: 10px; }
+  .tab { padding: 6px 5px; font-size: 9px; }
   .badge-user { display: none; }
   .header-logo { display: none; }
+  /* Kanban: 1 columna en mobile */
+  #kanban-board { grid-template-columns: 1fr !important; }
+  /* Lista: ocultar más columnas */
+  .list-col-region, .list-col-comuna, .list-col-semana, .list-col-anio { display: none; }
+  /* Stat cards más compactas */
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 22px; }
+  .stat-label { font-size: 10px; }
+}
+@media print {
+  header, .tabs, .filters, .btn-back, .edit-btn, .theme-toggle { display: none !important; }
+  .content { padding: 0 !important; }
+  .gantt-scroll { overflow: visible !important; }
+  body { background: white !important; color: black !important; }
 }
 @media print {
   header, .tabs, .filters, .btn-back, .edit-btn, .theme-toggle { display: none !important; }
@@ -299,7 +324,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
   <header>
     <div style="display:flex;align-items:center;gap:12px">
       <span class="header-logo">DDU · 2026</span>
-      <span class="header-title">Gestión de hitos comunicacionales</span>
+      <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">Gestión de hitos comunicacionales</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="badge-user" id="user-badge">—</span>
@@ -365,27 +390,37 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     <div id="view-lista" class="view">
       <div class="list-container">
         <div class="section-header"><span>Lista de hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
-        <div style="overflow-x:auto">
-          <table class="list-table">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 var(--radius) var(--radius)">
+          <table class="list-table" style="min-width:900px">
             <thead>
       <tr>
-        <th>N°</th><th>Actividad</th><th>Programa</th><th>Tipo</th>
-        <th>Región</th><th>Comuna</th><th>Semana</th><th>Mes</th><th>Año</th>
-        <th>Estado</th><th>Relevancia</th><th>Completitud</th><th>Editar</th>
+        <th>N°</th>
+        <th>Actividad</th>
+        <th>Programa</th>
+        <th class="list-col-tipo">Tipo</th>
+        <th class="list-col-region">Región</th>
+        <th class="list-col-comuna">Comuna</th>
+        <th class="list-col-semana">Semana</th>
+        <th>Mes</th>
+        <th class="list-col-anio">Año</th>
+        <th>Estado</th>
+        <th>Relevancia</th>
+        <th class="list-col-completitud">Completitud</th>
+        <th>Editar</th>
       </tr>
       <tr style="background:var(--bg)">
         <td></td>
         <td><input class="list-filter-input" placeholder="Buscar..." oninput="applyListFilters()" id="lf-actividad"></td>
         <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-programa"><option value="">Todos</option></select></td>
-        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-tipo"><option value="">Todos</option></select></td>
-        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-region"><option value="">Todas</option></select></td>
-        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-comuna"><option value="">Todas</option></select></td>
-        <td></td>
+        <td class="list-col-tipo"><select class="list-filter-sel" onchange="applyListFilters()" id="lf-tipo"><option value="">Todos</option></select></td>
+        <td class="list-col-region"><select class="list-filter-sel" onchange="applyListFilters()" id="lf-region"><option value="">Todas</option></select></td>
+        <td class="list-col-comuna"><select class="list-filter-sel" onchange="applyListFilters()" id="lf-comuna"><option value="">Todas</option></select></td>
+        <td class="list-col-semana"></td>
         <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-mes"><option value="">Todos</option></select></td>
-        <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-anio"><option value="">Todos</option><option>2026</option><option>2027</option><option>2028</option></select></td>
+        <td class="list-col-anio"><select class="list-filter-sel" onchange="applyListFilters()" id="lf-anio"><option value="">Todos</option><option>2026</option><option>2027</option><option>2028</option></select></td>
         <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-estado"><option value="">Todos</option></select></td>
         <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-relevancia"><option value="">Todas</option><option>Alta</option><option>Media</option><option>Baja</option></select></td>
-        <td></td>
+        <td class="list-col-completitud"></td>
         <td><button class="btn-sm" onclick="limpiarListFilters()" style="font-size:10px;padding:2px 6px">✕</button></td>
       </tr>
     </thead>
@@ -1103,7 +1138,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       <!-- SUB: GANTT ACCIONES -->
       <div id="sub-gantt-acciones" class="sub-view" style="display:none">
         <div class="gantt-container">
-          <div class="section-header"><span>Cronograma acciones comunicacionales</span><span id="ga-count" style="color:#be185d"></span></div>
+          <div class="section-header"><span>Gantt acciones</span><span id="ga-count" style="color:#be185d"></span></div>
           <div style="padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;font-size:11px" id="ga-legend"></div>
           <div class="gantt-scroll"><table class="gantt-table" id="gantt-acciones-table"></table></div>
         </div>
@@ -1512,15 +1547,15 @@ function renderList() {
         <td style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace">${h.n}</td>
         <td>${h.actividad}</td>
         <td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td>
-        <td style="font-size:12px;color:var(--text-dim)">${h.tipo_hito||'—'}</td>
-        <td style="font-size:12px;color:var(--text-dim)">${h.region||'—'}</td>
-        <td style="font-size:12px;color:var(--text-dim)">${h.comuna||'—'}</td>
-        <td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td>
+        <td class="list-col-tipo" style="font-size:12px;color:var(--text-dim)">${h.tipo_hito||'—'}</td>
+        <td class="list-col-region" style="font-size:12px;color:var(--text-dim)">${h.region||'—'}</td>
+        <td class="list-col-comuna" style="font-size:12px;color:var(--text-dim)">${h.comuna||'—'}</td>
+        <td class="list-col-semana" style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td>
         <td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td>
-        <td style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td>
+        <td class="list-col-anio" style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td>
         <td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td>
         <td style="font-size:12px">${h.relevancia||'—'}</td>
-        <td style="font-size:12px">${h.completitud}</td>
+        <td class="list-col-completitud" style="font-size:12px">${h.completitud}</td>
         <td><button class="edit-btn" data-id="${h.id}">Editar</button></td>
       </tr>`;
     }).join('');
@@ -1925,11 +1960,24 @@ function renderGanttAcciones() {
   html += '</tr></thead><tbody>';
 
   // Sort by fecha
+  const today = new Date();
+  today.setHours(0,0,0,0);
   const sortedGA = [...allAcciones].sort((a,b) => {
-    if (a.fecha && b.fecha) return new Date(a.fecha) - new Date(b.fecha);
-    if (a.fecha) return -1;
-    if (b.fecha) return 1;
-    return 0;
+    const da = a.fecha ? new Date(a.fecha) : null;
+    const db = b.fecha ? new Date(b.fecha) : null;
+    // Sin fecha van al final
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    // Próximos (futuros o hoy) primero, luego pasados
+    const aFuture = da >= today;
+    const bFuture = db >= today;
+    if (aFuture && !bFuture) return -1;
+    if (!aFuture && bFuture) return 1;
+    // Ambos futuros: más próximo primero
+    if (aFuture && bFuture) return da - db;
+    // Ambos pasados: más reciente primero
+    return db - da;
   });
 
   sortedGA.forEach(a => {
