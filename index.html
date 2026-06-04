@@ -1492,7 +1492,7 @@ function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-
 
 function renderList() {
   _sn('list-count',filtered.length+' hitos');
-  const _lb=document.getElementById('list-body');if(_lb)_lb.innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map(h=>{
+  const _lb=document.getElementById('list-body');if(_lb)_lb.innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowAlt=idx%2===0?'':'background:rgba(255,255,255,0.04);';
     const ttL=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
