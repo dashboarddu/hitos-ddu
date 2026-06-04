@@ -1407,7 +1407,7 @@ async function loadData() {
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
     }));
-    const arecs = await fetchAll(TABLE_ACCIONES, ['fldm2TyyqaMACQuoT']);
+    const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
       tipo: (()=>{ const v=r.fields['Tipo de acción']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
@@ -1416,8 +1416,12 @@ async function loadData() {
       prioridad: (r.fields['Prioridad']||{}).name||'',
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
-      hito_vinculado: !!(r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'].length > 0),
-      hito_id: (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'][0]) || '',
+      hito_vinculado: !!(
+        (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'].length > 0) ||
+        (r.fields['Hito vinculado'] && r.fields['Hito vinculado'].length > 0)
+      ),
+      hito_id: (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'][0]) ||
+               (r.fields['Hito vinculado'] && r.fields['Hito vinculado'][0]) || '',
       notas: r.fields['fld1MIQ4vnBTqsqDg'] || ''
     }));
     buildFilters(); applyFilters();
