@@ -1196,6 +1196,8 @@ const PROG_BG = {
 
 let allHitos=[], allAcciones=[], filtered=[], activeTab='dashboard', editingId=null;
 
+let _otpEmail = '';
+
 async function doLogin() {
   const email = document.getElementById('email-input').value.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '');
   const err = document.getElementById('login-error');
@@ -1204,7 +1206,7 @@ async function doLogin() {
     err.textContent = 'Solo se permite acceso con correo @minvu.cl';
     err.style.display = 'block'; return;
   }
-  btn.textContent = 'Enviando enlace...'; btn.disabled = true;
+  btn.textContent = 'Generando código...'; btn.disabled = true;
   err.style.display = 'none';
   try {
     const res = await fetch(`${WORKER}/auth/request`, {
@@ -1213,15 +1215,31 @@ async function doLogin() {
     });
     const data = await res.json();
     if (data.ok) {
+      _otpEmail = email;
+      // Ocultar paso 1
       document.getElementById('login-btn').style.display = 'none';
       document.getElementById('email-input').style.display = 'none';
       document.querySelector('.login-label').style.display = 'none';
+      // Mostrar paso 2: código en pantalla
       const box = document.querySelector('.login-box');
-      const msg = document.createElement('div');
-      msg.innerHTML = '<div style="text-align:center;padding:8px 0"><div style="font-size:36px;margin-bottom:16px">📬</div><div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Revisa tu correo</div><div style="font-size:13px;color:var(--text-dim);margin-bottom:20px">Enviamos un enlace de acceso a<br><strong>' + email + '</strong></div><div style="font-size:11px;color:var(--text-dim)">El enlace expira en 15 minutos.</div><button onclick="location.reload()" style="margin-top:20px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;color:var(--text-dim)">← Volver</button></div>';
-      box.appendChild(msg);
+      const step2 = document.createElement('div');
+      step2.id = 'otp-step';
+      step2.innerHTML = `
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">Tu código de acceso</div>
+          <div style="font-size:48px;font-weight:700;letter-spacing:0.15em;color:var(--text);font-family:'DM Mono',monospace;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:inline-block">${data.otp}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:10px">Válido por 15 minutos · Ingresa el código abajo</div>
+        </div>
+        <label class="login-label">Ingresa el código</label>
+        <input class="login-input" id="otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:22px;letter-spacing:0.2em;font-family:'DM Mono',monospace">
+        <button class="login-btn" id="otp-btn" onclick="verifyOTP()" style="margin-top:12px">Verificar código</button>
+        <div class="login-error" id="otp-error"></div>
+        <button onclick="location.reload()" style="margin-top:12px;width:100%;background:transparent;border:none;font-size:12px;cursor:pointer;color:var(--text-dim)">← Volver</button>
+      `;
+      box.appendChild(step2);
+      setTimeout(() => document.getElementById('otp-input')?.focus(), 100);
     } else {
-      err.textContent = data.message || 'Error al enviar el enlace.';
+      err.textContent = data.message || 'Error al generar el código.';
       err.style.display = 'block'; btn.textContent = 'Ingresar'; btn.disabled = false;
     }
   } catch (e) {
@@ -1229,6 +1247,38 @@ async function doLogin() {
     err.style.display = 'block'; btn.textContent = 'Ingresar'; btn.disabled = false;
   }
 }
+
+async function verifyOTP() {
+  const otp = (document.getElementById('otp-input')?.value || '').trim();
+  const errEl = document.getElementById('otp-error');
+  const btn = document.getElementById('otp-btn');
+  if (otp.length !== 6) { errEl.textContent = 'El código debe tener 6 dígitos.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(`${WORKER}/auth/verify`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _otpEmail, otp })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      localStorage.setItem('ddu-session', data.token);
+      document.getElementById('login-screen').style.display = 'none';
+      const app = document.getElementById('app');
+      app.style.display = 'flex'; app.style.flexDirection = 'column';
+      document.getElementById('user-badge').textContent = _otpEmail.split('@')[0];
+      window.currentUser = _otpEmail;
+      loadData();
+    } else {
+      errEl.textContent = data.message || 'Código incorrecto.';
+      errEl.style.display = 'block'; btn.textContent = 'Verificar código'; btn.disabled = false;
+    }
+  } catch (e) {
+    errEl.textContent = 'Error de conexión.';
+    errEl.style.display = 'block'; btn.textContent = 'Verificar código'; btn.disabled = false;
+  }
+}
+
 document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 function getSessionToken() {
