@@ -353,7 +353,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
     <div id="view-gantt" class="view">
       <div class="gantt-container">
-        <div class="section-header"><span>Cronograma por semana</span><span id="gantt-count" style="color:var(--accent)"></span></div>
+        <div class="section-header"><span>Gantt</span><span id="gantt-count" style="color:var(--accent)"></span></div>
         <div class="gantt-scroll"><table class="gantt-table" id="gantt-table"></table></div>
       </div>
     </div>
@@ -364,7 +364,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
     <div id="view-lista" class="view">
       <div class="list-container">
-        <div class="section-header"><span>Todos los hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
+        <div class="section-header"><span>Lista de hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
             <thead>
@@ -397,7 +397,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
     <div id="view-comunas" class="view">
       <div class="list-container">
-        <div class="section-header"><span>Hitos por comuna</span><span id="comunas-count" style="color:var(--accent)"></span></div>
+        <div class="section-header"><span>Por comuna</span><span id="comunas-count" style="color:var(--accent)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
             <thead><tr><th>Comuna</th><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th></tr></thead>
@@ -408,7 +408,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
     </div>
 
     <div id="view-nuevo-hito" class="view">
-      <div class="form-card">
+      <div class="form-card" style="max-width:680px;margin:0 auto 20px;">
         <div class="section-header"><span>Registrar nuevo hito</span></div>
         <div class="form-body">
           <div id="nh-success" class="alert-success">✓ Hito registrado correctamente</div>
@@ -943,14 +943,14 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 
     <!-- KANBAN -->
     <div id="view-kanban" class="view">
-      <div class="section-header"><span>🗂 Kanban — Hitos por estado</span><span id="kanban-count" style="color:#9333ea"></span></div>
+      <div class="section-header"><span>Panel — Hitos por estado</span><span id="kanban-count" style="color:#9333ea"></span></div>
       <div id="kanban-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;margin-top:8px"></div>
     </div>
     <!-- RECONSTRUCCION -->
     <div id="view-reconstruccion" class="view">
       <div class="list-container">
         <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
-          <span>🔴 Hitos en Regiones de Reconstrucción <span id="recons-count" style="color:var(--accent3)"></span></span>
+          <span>🔴 Regiones Reconstrucción <span id="recons-count" style="color:var(--accent3)"></span></span>
         </div>
         <div style="padding:8px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim)">Valparaíso · Ñuble · Biobío</div>
         <div style="overflow-x:auto">
@@ -962,7 +962,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
       </div>
     </div>
     <!-- ÁREA COMUNICACIONES HUB -->
-    <div id="view-area-com" class="view">
+    <div id="view-area-com" class="view" style="min-height:400px">
       <div style="display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow-x:auto">
         <div class="sub-tab active" onclick="switchSubTab('sub-acciones')" id="subtab-sub-acciones">📊 Área Comunicaciones</div>
         <div class="sub-tab" onclick="switchSubTab('sub-nueva-accion')" id="subtab-sub-nueva-accion" style="color:#7c3aed">➕ Ingresa gestión</div>
@@ -2225,21 +2225,19 @@ async function guardarLinks() {
 }
 
 function switchSubTab(sub) {
+  // Asegurar que view-area-com esté activo
+  if (!document.getElementById('view-area-com').classList.contains('active')) {
+    switchTab('area-com');
+  }
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sub-view').forEach(v => { v.style.display='none'; v.classList.remove('active'); });
   document.querySelectorAll('.btn-back-sub').forEach(b=>b.remove());
-  const subView=document.getElementById(sub);
-  if(subView) {
-    const back=document.createElement('button');
-    back.className='btn-back btn-back-sub';
-    back.innerHTML='⌂ Ir al inicio';
-    back.onclick=goHome;
-    subView.insertBefore(back, subView.firstChild);
-  }
   const btn = document.getElementById('subtab-'+sub);
   if(btn) btn.classList.add('active');
   const view = document.getElementById(sub);
   if(view) { view.style.display='block'; view.classList.add('active'); }
+  // Scroll al top del contenido
+  window.scrollTo({top: 0, behavior: 'smooth'});
 
   if(sub==='sub-nueva-accion') {
     const sel=document.getElementById('na-hito');
@@ -2336,6 +2334,7 @@ function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 // ── INICIO: verificar sesión existente ───────────────────────────
 (function initSession(){
