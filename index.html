@@ -1142,44 +1142,10 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 </div>
 
 <script>
-const TOKEN = 'patDHeJFWQWEhBUlA.d7ceabab8ead6330f0f278f1f63466b68be5c017481bb432e3ec70d28cd2a4d0';
+const WORKER = 'https://hitos-ddu-auth.carlosgonzalezisla.workers.dev';
 const BASE_ID = 'appR8Mu9RCtQpIrG7';
 const TABLE_HITOS = 'tblOZl2hmUBMHnnaL';
 const TABLE_ACCIONES = 'tblUisrBr2DNuqYsL';
-
-// CORREOS AUTORIZADOS - agrega o quita aquí
-const CORREOS_AUTORIZADOS = [
-  'cegonzalezi@minvu.cl',
-  'ahermosillas@minvu.cl',
-  'asante@minvu.cl',
-  'abecerra@minvu.cl',
-  'jizquierdoh@minvu.cl',
-  'sarauss@minvu.cl',
-  'bprat@minvu.cl',
-  'vcaceresg@minvu.cl',
-  'fvanklaveren@minvu.cl',
-  'projasc@minvu.cl',
-  'pmontivero@minvu.cl',
-  'jalcaino@minvu.cl',
-  'sleitao@minvu.cl',
-  'ebarron@minvu.cl',
-  'jcorreab@minvu.cl',
-  'oduran@minvu.cl',
-  'dulloa@minvu.cl',
-  'fclerc@minvu.cl',
-  'imoulian@minvu.cl',
-  'tcromerom@minvu.cl',
-  'afritis@minvu.cl',
-  'psilvac@minvu.cl',
-  'jpaulsenb@minvu.cl',
-  'cgomezv@minvu.cl',
-  'ogutierrezp@minvu.cl',
-  'edelosrios@minvu.cl',
-  'rjretamal@minvu.cl',
-  'dlabbe@minvu.cl',
-  'jespinozac@minvu.cl',
-  'rrosasa@minvu.cl'
-];
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SEMANAS = ['S1','S2','S3','S4'];
@@ -1230,38 +1196,63 @@ const PROG_BG = {
 
 let allHitos=[], allAcciones=[], filtered=[], activeTab='dashboard', editingId=null;
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('email-input').value.trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '');
   const err = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
   if (!email.endsWith('@minvu.cl')) {
     err.textContent = 'Solo se permite acceso con correo @minvu.cl';
     err.style.display = 'block'; return;
   }
-  const emailClean = email.replace(/[^a-z0-9@._-]/g, '');
-  if (!CORREOS_AUTORIZADOS.includes(emailClean)) {
-    err.textContent = 'Tu correo no está autorizado. Contacta al administrador.';
-    err.style.display = 'block'; return;
-  }
+  btn.textContent = 'Enviando enlace...'; btn.disabled = true;
   err.style.display = 'none';
-  document.getElementById('login-screen').style.display = 'none';
-  const app = document.getElementById('app');
-  app.style.display = 'flex'; app.style.flexDirection = 'column';
-  document.getElementById('user-badge').textContent = email.split('@')[0];
-  loadData();
+  try {
+    const res = await fetch(`${WORKER}/auth/request`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('login-btn').style.display = 'none';
+      document.getElementById('email-input').style.display = 'none';
+      document.querySelector('.login-label').style.display = 'none';
+      const box = document.querySelector('.login-box');
+      const msg = document.createElement('div');
+      msg.innerHTML = '<div style="text-align:center;padding:8px 0"><div style="font-size:36px;margin-bottom:16px">📬</div><div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Revisa tu correo</div><div style="font-size:13px;color:var(--text-dim);margin-bottom:20px">Enviamos un enlace de acceso a<br><strong>' + email + '</strong></div><div style="font-size:11px;color:var(--text-dim)">El enlace expira en 15 minutos.</div><button onclick="location.reload()" style="margin-top:20px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;color:var(--text-dim)">← Volver</button></div>';
+      box.appendChild(msg);
+    } else {
+      err.textContent = data.message || 'Error al enviar el enlace.';
+      err.style.display = 'block'; btn.textContent = 'Ingresar'; btn.disabled = false;
+    }
+  } catch (e) {
+    err.textContent = 'Error de conexión. Intenta nuevamente.';
+    err.style.display = 'block'; btn.textContent = 'Ingresar'; btn.disabled = false;
+  }
 }
 document.getElementById('email-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-const PROXY = 'https://airtable-proxy.carlosgonzalezisla.workers.dev';
-const AUTH_WORKER = 'https://hitos-ddu-auth.carlosgonzalezisla.workers.dev';
+function getSessionToken() {
+  const stored = localStorage.getItem('ddu-session');
+  if (stored) return stored;
+  const hash = window.location.hash;
+  if (hash.startsWith('#session=')) {
+    const token = hash.slice(9);
+    localStorage.setItem('ddu-session', token);
+    history.replaceState(null, '', window.location.pathname);
+    return token;
+  }
+  return null;
+}
 
 async function airtableFetch(path, options={}) {
-  const airtableUrl = encodeURIComponent(`https://api.airtable.com/v0${path}`);
-  const proxyUrl = `${PROXY}?url=${airtableUrl}`;
-  const res = await fetch(proxyUrl, {
+  const sessionToken = getSessionToken();
+  if (!sessionToken) { cerrarSesion(); throw new Error('Sesión no válida.'); }
+  const res = await fetch(`${WORKER}/airtable${path}`, {
     method: options.method || 'GET',
-    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${sessionToken}`, 'Content-Type': 'application/json' },
     body: options.body || undefined,
   });
+  if (res.status === 401) { localStorage.removeItem('ddu-session'); cerrarSesion(); throw new Error('Sesión expirada. Por favor ingresa nuevamente.'); }
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   return res.json();
 }
@@ -1961,30 +1952,7 @@ function filterEliminar() {
   };
 }
 
-async function eliminarHito() {
-  const hitoId = document.getElementById('el-hito-select').value;
-  const email = document.getElementById('el-email').value.trim().toLowerCase().replace(/[^a-z0-9@._-]/g,'');
-  const errEl = document.getElementById('el-error');
-  if (!hitoId) { errEl.textContent='Selecciona un hito.'; errEl.style.display='block'; return; }
-  if (!CORREOS_AUTORIZADOS.includes(email)) { errEl.textContent='Correo no autorizado.'; errEl.style.display='block'; return; }
-  errEl.style.display='none';
-  const btn = document.getElementById('btn-eliminar');
-  btn.textContent='Eliminando...'; btn.disabled=true;
-  try {
-    await airtableFetch('/'+BASE_ID+'/'+TABLE_HITOS+'/'+hitoId, {method:'DELETE'});
-    document.getElementById('el-success').style.display='block';
-    document.getElementById('el-search').value='';
-    document.getElementById('el-hito-select').innerHTML='';
-    document.getElementById('el-preview').style.display='none';
-    document.getElementById('el-email').value='';
-    btn.textContent='Confirmar eliminación'; btn.disabled=false;
-    setTimeout(()=>document.getElementById('el-success').style.display='none',3000);
-    await loadData();
-  } catch(e) {
-    errEl.textContent='Error: '+e.message; errEl.style.display='block';
-    btn.textContent='Confirmar eliminación'; btn.disabled=false;
-  }
-}
+// eliminarHito() eliminado — usar marcarEliminado() en su lugar
 
 
 function showSuccessHito() {
@@ -2094,6 +2062,7 @@ function goHome() {
   switchTab('dashboard');
 }
 function cerrarSesion() {
+  localStorage.removeItem('ddu-session');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('email-input').value = '';
@@ -2258,6 +2227,22 @@ function switchTab(tab) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
 }
+// ── INICIO: verificar sesión existente ───────────────────────────
+(function initSession(){
+  const token = getSessionToken();
+  if (token) {
+    document.getElementById('login-screen').style.display = 'none';
+    const app = document.getElementById('app');
+    app.style.display = 'flex'; app.style.flexDirection = 'column';
+    try {
+      const payload = token.split('.')[0];
+      const decoded = JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+      document.getElementById('user-badge').textContent = (decoded.email||'').split('@')[0];
+      window.currentUser = decoded.email || '';
+    } catch(e) { document.getElementById('user-badge').textContent = '—'; }
+    loadData();
+  }
+})();
 </script>
 </body>
 </html>
