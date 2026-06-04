@@ -1407,7 +1407,7 @@ async function loadData() {
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
     }));
-    const arecs = await fetchAll(TABLE_ACCIONES, ['fldCOYdEKtUZxj1pP']);
+    const arecs = await fetchAll(TABLE_ACCIONES, ['fldm2TyyqaMACQuoT']);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
       tipo: (()=>{ const v=r.fields['Tipo de acción']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
@@ -1416,8 +1416,8 @@ async function loadData() {
       prioridad: (r.fields['Prioridad']||{}).name||'',
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
-      hito_vinculado: !!(r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'].length > 0),
-      hito_id: (r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'][0]) || '',
+      hito_vinculado: !!(r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'].length > 0),
+      hito_id: (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'][0]) || '',
       notas: r.fields['fld1MIQ4vnBTqsqDg'] || ''
     }));
     buildFilters(); applyFilters();
@@ -1811,7 +1811,7 @@ async function guardarAccion() {
   if(estado)fields['fldih7FiODAgw5VUQ']=estado;
   if(window.currentUser)fields['fld3zzwUDvBMI6MM6']=window.currentUser;
   const hitoId=document.getElementById('na-hito').value;
-  if(hitoId)fields['fldCOYdEKtUZxj1pP']=[hitoId];
+  if(hitoId)fields['fldm2TyyqaMACQuoT']=[hitoId];
   const fecha=document.getElementById('na-fecha').value;
   const resp=document.getElementById('na-responsable').value.trim();
   const notas=document.getElementById('na-notas').value.trim();
@@ -1890,8 +1890,8 @@ async function guardarEdicionAccion() {
   const editPrio = document.getElementById('edit-accion-prioridad').value;
   if(editPrio) fields['Prioridad'] = editPrio;
   const editHito = document.getElementById('edit-accion-hito')?.value;
-  if(editHito) fields['fldCOYdEKtUZxj1pP'] = [editHito];
-  else fields['fldCOYdEKtUZxj1pP'] = [];
+  if(editHito) fields['fldm2TyyqaMACQuoT'] = [editHito];
+  else fields['fldm2TyyqaMACQuoT'] = [];
   const editPeriodoInicio = document.getElementById('edit-accion-periodo-inicio')?.value;
   const editPeriodoFin = document.getElementById('edit-accion-periodo-fin')?.value;
   if(editPeriodoInicio) fields['fldQwyu5xvS64ecjX'] = editPeriodoInicio;
