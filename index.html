@@ -1035,7 +1035,7 @@ header { gap: 8px; }
         <div class="list-container">
           <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
           <div style="overflow-x:auto"><table class="list-table">
-            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Editar</th><th>Prioridad</th></tr></thead>
+            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Hito vinculado</th><th>Editar</th><th>Prioridad</th></tr></thead>
             <tbody id="acciones-body"></tbody>
           </table></div>
         </div>
@@ -1044,6 +1044,7 @@ header { gap: 8px; }
           <div id="edit-accion-success" class="alert-success">✓ Guardado</div>
           <div class="form-grid">
             <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
+            <div class="form-field full"><label class="login-label">Hito vinculado</label><select class="fsel" id="edit-accion-hito"><option value="">Sin hito vinculado</option></select></div>
             <div class="form-field"><label class="login-label">Tipo</label>
               <select class="fsel" id="edit-accion-tipo">
 <option value="">—</option>
@@ -1075,6 +1076,14 @@ header { gap: 8px; }
             <div class="form-field"><label class="login-label">Prioridad</label>
               <select class="fsel" id="edit-accion-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
             </div>
+            <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
+              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="edit-accion-periodo-inicio"></div>
+                <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="edit-accion-periodo-fin"></div>
+              </div>
+            </div>
+            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="edit-accion-notas" rows="2" style="resize:vertical"></textarea></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
             <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
@@ -1406,7 +1415,9 @@ async function loadData() {
       prioridad: (r.fields['Prioridad']||{}).name||'',
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
-      hito_vinculado: !!(r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'].length > 0)
+      hito_vinculado: !!(r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'].length > 0),
+      hito_id: (r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'][0]) || '',
+      notas: r.fields['fld1MIQ4vnBTqsqDg'] || ''
     }));
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
@@ -1623,12 +1634,15 @@ function renderAcciones() {
   if(_vEl) _vEl.textContent = vinculadas;
   _abody.innerHTML=sortedAcc.map(a=>{
     const prioBadge=a.prioridad?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;background:${prioColor[a.prioridad]||'#6b7280'}22;color:${prioColor[a.prioridad]||'#6b7280'}">${a.prioridad}</span>`:'—';
+    const hitoVinc = a.hito_id ? allHitos.find(h=>h.id===a.hito_id) : null;
+    const hitoNombre = hitoVinc ? `<span style="font-size:11px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;display:inline-block" title="${hitoVinc.actividad}">${hitoVinc.n ? hitoVinc.n+'. ' : ''}${hitoVinc.actividad}</span>` : '<span style="color:var(--text-dim);font-size:11px">—</span>';
     return `<tr>
       <td>${a.accion}</td>
       <td style="font-size:12px">${a.tipo||'—'}</td>
       <td style="font-size:12px;color:var(--text-dim)">${a.fecha||'—'}</td>
       <td style="font-size:12px;color:var(--text-dim)">${a.responsable||'—'}</td>
       <td><span class="status-badge ${stA[a.estado]||'status-sin'}">${a.estado}</span></td>
+      <td style="font-size:12px;max-width:150px">${hitoNombre}</td>
       <td><button class="edit-btn" data-id="${a.id}">Editar</button></td>
       <td style="font-size:12px">${prioBadge}</td>
     </tr>`;
@@ -1829,8 +1843,24 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
   document.getElementById('edit-accion-estado').value = estado;
   document.getElementById('edit-accion-responsable').value = responsable;
   document.getElementById('edit-accion-fecha').value = fecha;
-  const ac=allAcciones.find(x=>x.id===id);
-  if(ac&&document.getElementById('edit-accion-prioridad')) document.getElementById('edit-accion-prioridad').value=ac.prioridad||'';
+  const ac = allAcciones.find(x=>x.id===id);
+  if(ac) {
+    if(document.getElementById('edit-accion-prioridad')) document.getElementById('edit-accion-prioridad').value = ac.prioridad||'';
+    if(document.getElementById('edit-accion-periodo-inicio')) document.getElementById('edit-accion-periodo-inicio').value = ac.periodo_inicio||'';
+    if(document.getElementById('edit-accion-periodo-fin')) document.getElementById('edit-accion-periodo-fin').value = ac.periodo_fin||'';
+    if(document.getElementById('edit-accion-notas')) document.getElementById('edit-accion-notas').value = ac.notas||'';
+    const selHito = document.getElementById('edit-accion-hito');
+    if(selHito) {
+      selHito.innerHTML = '<option value="">Sin hito vinculado</option>';
+      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = `${h.n}. ${h.actividad} (${h.programa})`;
+        if(h.id === ac.hito_id) opt.selected = true;
+        selHito.appendChild(opt);
+      });
+    }
+  }
   document.getElementById('edit-accion-success').style.display = 'none';
   document.getElementById('edit-accion-panel').style.display = 'block';
   document.getElementById('edit-accion-panel').scrollIntoView({behavior:'smooth'});
@@ -1856,8 +1886,17 @@ async function guardarEdicionAccion() {
   if (estado) fields['fldih7FiODAgw5VUQ'] = estado;
   if (resp) fields['fldZwLpH7KAXqCc8R'] = resp;
   if (fecha) fields['fldNuW8uW209WnDEz'] = fecha;
-  const editPrio=document.getElementById('edit-accion-prioridad').value;
-  if(editPrio)fields['Prioridad']=editPrio;
+  const editPrio = document.getElementById('edit-accion-prioridad').value;
+  if(editPrio) fields['Prioridad'] = editPrio;
+  const editHito = document.getElementById('edit-accion-hito')?.value;
+  if(editHito) fields['fldCOYdEKtUZxj1pP'] = [editHito];
+  else fields['fldCOYdEKtUZxj1pP'] = [];
+  const editPeriodoInicio = document.getElementById('edit-accion-periodo-inicio')?.value;
+  const editPeriodoFin = document.getElementById('edit-accion-periodo-fin')?.value;
+  if(editPeriodoInicio) fields['fldQwyu5xvS64ecjX'] = editPeriodoInicio;
+  if(editPeriodoFin) fields['fldW3PoQQKzz7783u'] = editPeriodoFin;
+  const editNotas = document.getElementById('edit-accion-notas')?.value;
+  if(editNotas) fields['fld1MIQ4vnBTqsqDg'] = editNotas;
   if (window.currentUser) fields['fld3zzwUDvBMI6MM6'] = window.currentUser;
   try {
     await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}/${editingAccionId}`, {method:'PATCH', body:JSON.stringify({fields, typecast:true})});
