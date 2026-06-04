@@ -1370,10 +1370,11 @@ async function airtableFetch(path, options={}) {
   return res.json();
 }
 
-async function fetchAll(tableId) {
+async function fetchAll(tableId, extraFields=[]) {
   let records=[], offset=null;
   do {
     let path = `/${BASE_ID}/${tableId}?pageSize=100`;
+    if (extraFields.length) path += extraFields.map(f=>`&fields[]=${f}`).join('');
     if (offset) path += `&offset=${offset}`;
     const data = await airtableFetch(path);
     if (data.error) throw new Error(`Airtable: ${data.error.type} — ${data.error.message}`);
@@ -1406,7 +1407,7 @@ async function loadData() {
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||''
     }));
-    const arecs = await fetchAll(TABLE_ACCIONES);
+    const arecs = await fetchAll(TABLE_ACCIONES, ['fldCOYdEKtUZxj1pP']);
     allAcciones = arecs.map(r => ({
       id: r.id, accion: r.fields['Nombre acción']||r.fields['Name']||'Sin nombre',
       tipo: (()=>{ const v=r.fields['Tipo de acción']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
@@ -1417,20 +1418,8 @@ async function loadData() {
       periodo_fin: r.fields['Fecha fin periodo']||'',
       hito_vinculado: !!(r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'].length > 0),
       hito_id: (r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'][0]) || '',
-      hito_ids_raw: r.fields['fldCOYdEKtUZxj1pP'] || [],
       notas: r.fields['fld1MIQ4vnBTqsqDg'] || ''
     }));
-    // Debug: mostrar estructura de acciones con hitos vinculados
-    const conHito = allAcciones.filter(a=>a.hito_ids_raw && a.hito_ids_raw.length>0);
-    if(conHito.length>0) {
-      console.log('[DDU] Acciones con hito vinculado:', conHito.length);
-      console.log('[DDU] Ejemplo:', JSON.stringify(conHito[0]));
-      console.log('[DDU] Primer hito_id raw:', conHito[0].hito_ids_raw);
-      console.log('[DDU] allHitos IDs sample:', allHitos.slice(0,3).map(h=>h.id));
-    } else {
-      console.log('[DDU] Ninguna acción tiene hito vinculado. Total acciones:', allAcciones.length);
-      console.log('[DDU] Ejemplo acción:', JSON.stringify(allAcciones[0]));
-    }
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
     document.getElementById('view-'+activeTab).classList.add('active');
