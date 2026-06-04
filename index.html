@@ -1938,7 +1938,7 @@ function renderGanttAcciones() {
     html += `<tr><td class="act-col"><div class="act-name">${a.accion}</div></td>`;
     html += `<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">${tipoShort[a.tipo]||a.tipo||'—'}</span></td>`;
 
-    MESES_GA.forEach((m,mi) => {
+    MESES_GA2.forEach((m,mi) => {
       SEMANAS.forEach((s,si) => {
         let filled = false;
         if (a.fecha) {
