@@ -405,8 +405,11 @@ header { gap: 8px; }
     <div id="view-lista" class="view">
       <div class="list-container">
         <div class="section-header"><span>Lista de hitos</span><span id="list-count" style="color:var(--accent)"></span></div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 var(--radius) var(--radius);scrollbar-width:thin;scrollbar-color:var(--border) transparent">
-          <table class="list-table" style="min-width:960px">
+        <div id="lista-scroll-top" style="overflow-x:auto;overflow-y:hidden;height:8px;scrollbar-width:thin;scrollbar-color:var(--accent) var(--border);margin-bottom:0;border-top:1px solid var(--border)">
+          <div id="lista-scroll-top-inner" style="height:1px"></div>
+        </div>
+        <div id="lista-scroll-main" style="overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent">
+          <table class="list-table" id="lista-table" style="min-width:960px">
             <thead>
       <tr>
         <th>N°</th>
@@ -1022,11 +1025,12 @@ header { gap: 8px; }
       </div>
       <!-- SUB: TABLA ACCIONES -->
       <div id="sub-acciones" class="sub-view active">
-        <div class="stats-grid">
+        <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
           <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('')"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
           <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada')"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
           <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('En desarrollo')"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
           <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada')"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
+          <div class="stat-card" style="cursor:pointer;border-color:#7c3aed33" onclick="filtrarAccionesVinculadas()"><div class="stat-label" style="color:#7c3aed">Vinculadas a hito</div><div class="stat-value" id="a-vinc" style="color:#7c3aed">0</div></div>
         </div>
         <div class="list-container">
           <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
@@ -1401,7 +1405,8 @@ async function loadData() {
       estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada',
       prioridad: (r.fields['Prioridad']||{}).name||'',
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
-      periodo_fin: r.fields['Fecha fin periodo']||''
+      periodo_fin: r.fields['Fecha fin periodo']||'',
+      hito_vinculado: !!(r.fields['fldCOYdEKtUZxj1pP'] && r.fields['fldCOYdEKtUZxj1pP'].length > 0)
     }));
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
@@ -1608,6 +1613,14 @@ function renderAcciones() {
   const _abody=document.getElementById('acciones-body');if(!_abody)return;
   const sortedAcc=[...allAcciones].reverse();
   const prioColor={'Alta':'#e53935','Media':'#f59e0b','Baja':'#0d9a6e'};
+  // Contar vinculadas — acciones que tienen hito_id en sus campos
+  // Usamos la presencia de periodo_inicio o responsable como proxy,
+  // pero lo mejor es marcar en el array. Por ahora contamos las que tienen fecha
+  // En Airtable el campo linked record no se recupera en el array actual
+  // Actualizamos renderAcciones para contar las que tienen fecha (proxy razonable)
+  const vinculadas = allAcciones.filter(a => a.hito_vinculado).length;
+  const _vEl = document.getElementById('a-vinc');
+  if(_vEl) _vEl.textContent = vinculadas;
   _abody.innerHTML=sortedAcc.map(a=>{
     const prioBadge=a.prioridad?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;background:${prioColor[a.prioridad]||'#6b7280'}22;color:${prioColor[a.prioridad]||'#6b7280'}">${a.prioridad}</span>`:'—';
     return `<tr>
@@ -2220,6 +2233,14 @@ function filtrarAcciones(estado) {
     row.style.display = row.textContent.includes(estado) ? '' : 'none';
   });
 }
+function filtrarAccionesVinculadas() {
+  const vincs = allAcciones.filter(a=>a.hito_vinculado).map(a=>a.id);
+  document.querySelectorAll('#acciones-body tr').forEach(row=>{
+    const btn = row.querySelector('.edit-btn');
+    const id = btn ? btn.dataset.id : null;
+    row.style.display = (!id || vincs.includes(id)) ? '' : 'none';
+  });
+}
 function limpiarFiltros() {
   ['fil-programa','fil-region','fil-comuna','fil-mes','fil-tipo','fil-estado','fil-anio'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
@@ -2395,7 +2416,22 @@ function switchTab(tab) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
   window.scrollTo({top: 0, behavior: 'smooth'});
+  if(tab==='lista') setTimeout(initListaScroll, 150);
 }
+// ── SCROLL TOP LISTA sincronizado ───────────────────────────────
+function initListaScroll() {
+  const top = document.getElementById('lista-scroll-top');
+  const main = document.getElementById('lista-scroll-main');
+  const table = document.getElementById('lista-table');
+  if (!top || !main || !table) return;
+  // Ajustar ancho del inner al ancho de la tabla
+  const inner = document.getElementById('lista-scroll-top-inner');
+  if (inner) inner.style.width = table.offsetWidth + 'px';
+  // Sincronizar scroll
+  top.onscroll = () => { main.scrollLeft = top.scrollLeft; };
+  main.onscroll = () => { top.scrollLeft = main.scrollLeft; };
+}
+
 // ── INICIO: verificar sesión existente ───────────────────────────
 (function initSession(){
   const token = getSessionToken();
