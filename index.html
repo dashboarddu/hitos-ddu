@@ -306,6 +306,69 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 .content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
 .content.tint-pink { background: rgba(190,24,93,0.07) !important; }
 
+/* ══════════ MODAL UNIVERSAL ══════════ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 10000;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 16px;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; animation: modalFade 0.18s ease; }
+.modal-box {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: modalSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+@keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalSlide { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+body.modal-open { overflow: hidden; }
+
+/* Fila destacada tras guardar */
+@keyframes rowFlash { 0%, 60% { background: rgba(37, 99, 235, 0.14); } 100% { background: transparent; } }
+.row-flash { animation: rowFlash 2s ease; }
+
+/* ══════════ FEEDBACK DE INTERACCIÓN ══════════ */
+button:active, .tab:active, .edit-btn:active, .stat-card:active { transform: scale(0.98); }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, .tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.edit-btn { min-height: 32px; padding: 6px 14px; font-size: 12px; transition: all 0.15s; }
+.edit-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+@media (max-width: 768px) {
+  .edit-btn { min-height: 40px; padding: 8px 16px; }
+  .modal-box { max-width: 100%; padding: 18px; border-radius: 12px; }
+  .modal-overlay { padding: 2vh 8px; }
+}
+
 /* Scrollbars visibles */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -943,40 +1006,7 @@ header { gap: 8px; }
 
     <div id="view-completitud" class="view">
       <!-- Edit panel - hidden by default, shown when Editar is clicked -->
-      <div class="edit-panel" id="edit-panel" style="display:none;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
-        <div id="edit-success" class="alert-success" style="margin-bottom:12px;cursor:pointer" onclick="goHome()">✓ Guardado correctamente — <u>regresar a la vista general</u></div>
-        <div class="form-grid">
-          <div class="form-field"><label class="login-label">Mes</label>
-            <select class="fsel" id="edit-mes"><option value="">Sin fecha</option>
-              <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
-              <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
-              <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-            </select>
-          </div>
-          <div class="form-field"><label class="login-label">Semana</label>
-            <select class="fsel" id="edit-semana"><option value="">—</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option></select>
-          </div>
-          <div class="form-field"><label class="login-label">Estado</label>
-            <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
-          </div>
-          <div class="form-field"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
-          <div class="form-field"><label class="login-label">Año</label>
-            <select class="fsel" id="edit-anio">
-              <option value="">Sin año</option>
-              <option>2026</option><option>2027</option><option>2028</option>
-            </select>
-          </div>
-          <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:16px">
-          <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
-          <button class="login-btn" onclick="cerrarEdicion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
-        </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #fee2e2">
-          <button class="login-btn" onclick="marcarEliminado()" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;width:100%">🗑 Marcar como eliminado</button>
-        </div>
-      </div>
+      <!-- edit-panel movido a modal -->
       <!-- Table -->
       <div class="list-container">
         <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
@@ -1039,57 +1069,7 @@ header { gap: 8px; }
             <tbody id="acciones-body"></tbody>
           </table></div>
         </div>
-        <div class="edit-panel" id="edit-accion-panel" style="display:none;margin-top:16px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:12px" id="edit-accion-title">Editando acción</div>
-          <div id="edit-accion-success" class="alert-success">✓ Guardado</div>
-          <div class="form-grid">
-            <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
-            <div class="form-field full"><label class="login-label">Hito vinculado</label><select class="fsel" id="edit-accion-hito"><option value="">Sin hito vinculado</option></select></div>
-            <div class="form-field"><label class="login-label">Tipo</label>
-              <select class="fsel" id="edit-accion-tipo">
-<option value="">—</option>
-<option>Nota intranet</option>
-<option>Contenido para redes sociales</option>
-<option>Publicación externa</option>
-<option>Comunicación interna/externa</option>
-<option>Efermérride sectorial</option>
-<option>Consulta pública</option>
-<option>Diseño</option>
-<option>Minvuletín</option>
-<option>Edición</option>
-<option>Otro</option>
-</select>
-            </div>
-            <div class="form-field"><label class="login-label">Estado</label>
-              <select class="fsel" id="edit-accion-estado">
-<option>Planificada</option>
-<option>En desarrollo</option>
-<option>Realizada</option>
-<option>Cancelada</option>
-<option>En diseño</option>
-<option>Revisión de borrador</option>
-<option>En V°B°</option>
-</select>
-            </div>
-            <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable"></div>
-            <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
-            <div class="form-field"><label class="login-label">Prioridad</label>
-              <select class="fsel" id="edit-accion-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-            </div>
-            <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
-              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-                <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="edit-accion-periodo-inicio"></div>
-                <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="edit-accion-periodo-fin"></div>
-              </div>
-            </div>
-            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="edit-accion-notas" rows="2" style="resize:vertical"></textarea></div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
-            <button class="login-btn" onclick="cerrarEdicionAccion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
-          </div>
-        </div>
+        <!-- edit-accion-panel movido a modal -->
       </div>
       <!-- SUB: INGRESA GESTIÓN -->
       <div id="sub-nueva-accion" class="sub-view" style="display:none">
@@ -1672,8 +1652,7 @@ function renderCompletitud() {
 }
 
 function abrirDesdeListaEdicion(id, actividad, mes, semana, estado, descripcion) {
-  switchTab('completitud');
-  setTimeout(() => abrirEdicion(id, actividad, mes, semana, estado, descripcion), 100);
+  abrirEdicion(id, actividad, mes, semana, estado, descripcion);
 }
 function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   editingId=id;
@@ -1686,8 +1665,7 @@ function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
   const _edit_fecha_exactaEl=document.getElementById('edit-fecha-exacta'); if(_edit_fecha_exactaEl) _edit_fecha_exactaEl.value=h?h.fecha_exacta:'';
   const _edit_anioEl=document.getElementById('edit-anio'); if(_edit_anioEl) _edit_anioEl.value=h?h.anio:'';
   document.getElementById('edit-success').style.display='none';
-  document.getElementById('edit-panel').style.display='block';
-  setTimeout(()=>document.getElementById('view-completitud').scrollIntoView({behavior:'smooth',block:'start'}),50);
+  abrirModal('modal-hito');
 }
 
 
@@ -1701,8 +1679,23 @@ function filterComp() {
 
 async function marcarEliminado() {
   if (!editingId) return;
-  if (!confirm('¿Marcar este hito como eliminado?')) return;
-  const btn = document.querySelector('#edit-panel .login-btn[onclick="marcarEliminado()"]');
+  const btn = document.querySelector('button[onclick="marcarEliminado()"]');
+  if (btn && !btn.dataset.confirmed) {
+    btn.dataset.confirmed = '1';
+    btn.textContent = '¿Confirmar eliminación? Presiona de nuevo';
+    btn.style.background = '#dc2626';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      if (btn.dataset.confirmed) {
+        delete btn.dataset.confirmed;
+        btn.textContent = '🗑 Marcar como eliminado';
+        btn.style.background = '';
+        btn.style.color = '';
+      }
+    }, 4000);
+    return;
+  }
+  if (btn) { delete btn.dataset.confirmed; btn.style.background=''; btn.style.color=''; }
   btn.textContent = 'Procesando...'; btn.disabled = true;
   try {
     await airtableFetch('/'+BASE_ID+'/'+TABLE_HITOS+'/'+editingId, {
@@ -1718,7 +1711,10 @@ async function marcarEliminado() {
     btn.textContent='🗑 Marcar como eliminado'; btn.disabled=false;
   }
 }
-function cerrarEdicion(){document.getElementById('edit-panel').style.display='none';editingId=null;}
+function cerrarEdicion() {
+  cerrarModal('modal-hito');
+  editingId = null;
+}
 
 async function guardarEdicion() {
   if(!editingId)return;
@@ -1736,11 +1732,13 @@ async function guardarEdicion() {
   const fe=document.getElementById('edit-fecha-exacta').value;
   if(fe)fields['Fecha hito']=fe;
   try {
+    const savedId = editingId;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});
     cerrarEdicion();
     btn.textContent='Guardar cambios';btn.disabled=false;
     await loadData();
     showSuccess('Los cambios fueron guardados correctamente');
+    flashRow(savedId);
   } catch(e){btn.textContent='Guardar cambios';btn.disabled=false;alert('Error: '+e.message);}
 }
 
@@ -1867,8 +1865,7 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
     }
   }
   document.getElementById('edit-accion-success').style.display = 'none';
-  document.getElementById('edit-accion-panel').style.display = 'block';
-  document.getElementById('edit-accion-panel').scrollIntoView({behavior:'smooth'});
+  abrirModal('modal-accion');
 }
 
 function cerrarEdicionAccion() {
@@ -1906,6 +1903,7 @@ async function guardarEdicionAccion() {
   try {
     await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}/${editingAccionId}`, {method:'PATCH', body:JSON.stringify({fields, typecast:true})});
     document.getElementById('edit-accion-success').style.display = 'block';
+    setTimeout(()=>{ cerrarModal('modal-accion'); flashRow(editingAccionId); }, 900);
     btn.textContent = 'Guardar cambios'; btn.disabled = false;
     await loadData();
   } catch(e) {
@@ -2462,6 +2460,46 @@ function switchTab(tab) {
   window.scrollTo({top: 0, behavior: 'smooth'});
   if(tab==='lista') setTimeout(initListaScroll, 150);
 }
+// ══════════ SISTEMA DE MODALES ══════════
+function abrirModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.add('open');
+  document.body.classList.add('modal-open');
+  // Foco en el primer campo
+  setTimeout(() => {
+    const first = m.querySelector('select, input, textarea');
+    if (first) first.focus();
+  }, 100);
+}
+function cerrarModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+function cerrarModales() {
+  document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  document.body.classList.remove('modal-open');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cerrarModales();
+});
+// Destacar fila tras guardar
+function flashRow(recordId) {
+  setTimeout(() => {
+    const btn = document.querySelector(`.edit-btn[data-id="${recordId}"]`);
+    if (btn) {
+      const row = btn.closest('tr');
+      if (row) {
+        row.classList.add('row-flash');
+        row.scrollIntoView({behavior:'smooth', block:'center'});
+        setTimeout(() => row.classList.remove('row-flash'), 2100);
+      }
+    }
+  }, 300);
+}
+
 // ── SCROLL TOP LISTA sincronizado ───────────────────────────────
 function initListaScroll() {
   const top = document.getElementById('lista-scroll-top');
@@ -2493,5 +2531,104 @@ function initListaScroll() {
   }
 })();
 </script>
+
+<!-- ══════════ MODALES UNIVERSALES ══════════ -->
+<div class="modal-overlay" id="modal-hito" onclick="if(event.target===this)cerrarModal('modal-hito')">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+    <button class="modal-close" onclick="cerrarModal('modal-hito')" aria-label="Cerrar">✕</button>
+    <div class="edit-panel" id="edit-panel" >
+        <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
+        <div id="edit-success" class="alert-success" style="margin-bottom:12px;cursor:pointer" onclick="goHome()">✓ Guardado correctamente — <u>regresar a la vista general</u></div>
+        <div class="form-grid">
+          <div class="form-field"><label class="login-label">Mes</label>
+            <select class="fsel" id="edit-mes"><option value="">Sin fecha</option>
+              <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
+              <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
+              <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="login-label">Semana</label>
+            <select class="fsel" id="edit-semana"><option value="">—</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Estado</label>
+            <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
+          <div class="form-field"><label class="login-label">Año</label>
+            <select class="fsel" id="edit-anio">
+              <option value="">Sin año</option>
+              <option>2026</option><option>2027</option><option>2028</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
+          <button class="login-btn" onclick="cerrarEdicion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #fee2e2">
+          <button class="login-btn" onclick="marcarEliminado()" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;width:100%">🗑 Marcar como eliminado</button>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-accion" onclick="if(event.target===this)cerrarModal('modal-accion')">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="edit-accion-title">
+    <button class="modal-close" onclick="cerrarModal('modal-accion')" aria-label="Cerrar">✕</button>
+    <div class="edit-panel" id="edit-accion-panel" >
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px" id="edit-accion-title">Editando acción</div>
+          <div id="edit-accion-success" class="alert-success">✓ Guardado</div>
+          <div class="form-grid">
+            <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
+            <div class="form-field full"><label class="login-label">Hito vinculado</label><select class="fsel" id="edit-accion-hito"><option value="">Sin hito vinculado</option></select></div>
+            <div class="form-field"><label class="login-label">Tipo</label>
+              <select class="fsel" id="edit-accion-tipo">
+<option value="">—</option>
+<option>Nota intranet</option>
+<option>Contenido para redes sociales</option>
+<option>Publicación externa</option>
+<option>Comunicación interna/externa</option>
+<option>Efermérride sectorial</option>
+<option>Consulta pública</option>
+<option>Diseño</option>
+<option>Minvuletín</option>
+<option>Edición</option>
+<option>Otro</option>
+</select>
+            </div>
+            <div class="form-field"><label class="login-label">Estado</label>
+              <select class="fsel" id="edit-accion-estado">
+<option>Planificada</option>
+<option>En desarrollo</option>
+<option>Realizada</option>
+<option>Cancelada</option>
+<option>En diseño</option>
+<option>Revisión de borrador</option>
+<option>En V°B°</option>
+</select>
+            </div>
+            <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable"></div>
+            <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="edit-accion-fecha"></div>
+            <div class="form-field"><label class="login-label">Prioridad</label>
+              <select class="fsel" id="edit-accion-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+            </div>
+            <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
+              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="edit-accion-periodo-inicio"></div>
+                <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="edit-accion-periodo-fin"></div>
+              </div>
+            </div>
+            <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="edit-accion-notas" rows="2" style="resize:vertical"></textarea></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="login-btn" onclick="guardarEdicionAccion()" style="flex:1">Guardar cambios</button>
+            <button class="login-btn" onclick="cerrarEdicionAccion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
+          </div>
+        </div>
+  </div>
+</div>
+
 </body>
 </html>
