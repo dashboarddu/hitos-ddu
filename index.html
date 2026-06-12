@@ -2208,7 +2208,29 @@ function renderReconstruccion() {
   const hitos = filtered.filter(h => REGIONES_RECONS.includes(h.region));
   _sn('recons-count', hitos.length + ' hitos');
   const _rb=document.getElementById('recons-body');if(!_rb)return;
-  _rb.innerHTML = hitos.sort((a,b)=>a.n-b.n).map(h => {
+  const MES_NUM={'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
+  const SEM_NUM={'S1':1,'S2':2,'S3':3,'S4':4};
+  const fechaHito = h => {
+    // Fecha exacta manda; si no, estimar con año+mes+semana
+    if(h.fecha_exacta) return new Date(h.fecha_exacta+'T12:00:00').getTime();
+    if(h.mes){
+      const anio=parseInt(h.anio)||2026;
+      const dia=(SEM_NUM[h.semana]||1)*7-3;
+      return new Date(anio, (MES_NUM[h.mes]||1)-1, dia).getTime();
+    }
+    return null; // sin fecha
+  };
+  const hoy = Date.now() - 86400000;
+  _rb.innerHTML = hitos.sort((a,b)=>{
+    const fa=fechaHito(a), fb=fechaHito(b);
+    if(fa===null&&fb===null) return a.n-b.n;
+    if(fa===null) return 1;
+    if(fb===null) return -1;
+    const aFut=fa>=hoy, bFut=fb>=hoy;
+    if(aFut&&!bFut) return -1;
+    if(!aFut&&bFut) return 1;
+    return aFut ? fa-fb : fb-fa; // futuros: próximo primero; pasados: reciente primero
+  }).map(h => {
     const color = PROG_COLORS[h.programa]||'#6b7280';
     const bg = PROG_BG[h.programa]||'#f3f4f6';
     const recons = h.region_reconstruccion === 'Sí' ? '<span style="color:var(--accent3);font-weight:600">✓ Sí</span>' : '—';
