@@ -1059,7 +1059,7 @@ header { gap: 8px; }
         <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
           <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('')"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
           <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada')"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
-          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('En desarrollo')"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
+          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAccionesEnCurso()"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
           <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada')"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
           <div class="stat-card" style="cursor:pointer;border-color:#7c3aed33" onclick="filtrarAccionesVinculadas()"><div class="stat-label" style="color:#7c3aed">Vinculadas a hito</div><div class="stat-value" id="a-vinc" style="color:#7c3aed">0</div></div>
         </div>
@@ -1603,7 +1603,8 @@ function renderAcciones() {
   const _set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   _set('a-total',total);
   _set('a-real',allAcciones.filter(a=>a.estado==='Realizada').length);
-  _set('a-curso',allAcciones.filter(a=>a.estado==='En curso').length);
+  const EN_CURSO=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
+  _set('a-curso',allAcciones.filter(a=>EN_CURSO.includes(a.estado)).length);
   _set('a-pend',allAcciones.filter(a=>a.estado==='Planificada').length);
   _set('acciones-count',total+' acciones');
   const stA={'Realizada':'status-real','En curso':'status-conf','Planificada':'status-plan','Cancelada':'status-sin'};
@@ -2290,6 +2291,13 @@ function filtrarAcciones(estado) {
     row.style.display = row.textContent.includes(estado) ? '' : 'none';
   });
 }
+function filtrarAccionesEnCurso() {
+  const EN_CURSO=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
+  document.querySelectorAll('#acciones-body tr').forEach(row=>{
+    const badge = row.querySelector('.status-badge');
+    row.style.display = (badge && EN_CURSO.includes(badge.textContent.trim())) ? '' : 'none';
+  });
+}
 function filtrarAccionesVinculadas() {
   const vincs = allAcciones.filter(a=>a.hito_vinculado).map(a=>a.id);
   document.querySelectorAll('#acciones-body tr').forEach(row=>{
@@ -2404,8 +2412,9 @@ function switchSubTab(sub) {
 
 function renderKPI() {
   const total=allAcciones.length;
+  const EN_CURSO_K=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
   const real=allAcciones.filter(a=>a.estado==='Realizada').length;
-  const curso=allAcciones.filter(a=>a.estado==='En curso').length;
+  const curso=allAcciones.filter(a=>EN_CURSO_K.includes(a.estado)).length;
   const pend=allAcciones.filter(a=>a.estado==='Planificada').length;
   const pct=total?Math.round(real/total*100):0;
   const _setK=(id,v,prop='textContent')=>{const el=document.getElementById(id);if(el)el[prop]=v;};
@@ -2417,8 +2426,9 @@ function renderKPI() {
   const _kpiFill=document.getElementById('kpi-fill');if(_kpiFill)_kpiFill.style.width=pct+'%';
 
   // Estado chart
-  const estados={'Planificada':pend,'En curso':curso,'Realizada':real,'Cancelada':allAcciones.filter(a=>a.estado==='Cancelada').length};
-  const colores={'Planificada':'#4f7cff','En curso':'#f59e0b','Realizada':'#00d4a0','Cancelada':'#6b7280'};
+  const estados={};
+  allAcciones.forEach(a=>{ const e=a.estado||'Sin estado'; estados[e]=(estados[e]||0)+1; });
+  const colores={'Planificada':'#4f7cff','En desarrollo':'#f59e0b','En diseño':'#db2777','Revisión de borrador':'#7c3aed','En V°B°':'#0891b2','En curso':'#f59e0b','Realizada':'#00d4a0','Cancelada':'#6b7280','Sin estado':'#9ca3af'};
   const maxE=Math.max(...Object.values(estados),1);
   const _kpiE=document.getElementById('kpi-estado-chart');if(_kpiE)_kpiE.innerHTML=Object.entries(estados).map(([k,v])=>`
     <div class="bar-row">
