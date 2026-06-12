@@ -501,8 +501,8 @@ header { gap: 8px; }
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
       <div style="position:relative">
-        <input id="global-search" type="text" placeholder="Buscar... ( / )" aria-label="Búsqueda global de hitos y acciones"
-          style="width:150px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg);color:var(--text);outline:none;transition:width 0.2s"
+        <input id="global-search" type="text" placeholder="Buscar y editar hito ( / )" aria-label="Búsqueda global de hitos y acciones"
+          style="width:185px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg);color:var(--text);outline:none;transition:width 0.2s"
           onfocus="this.style.width='240px'" onblur="setTimeout(()=>{this.style.width='150px';ocultarBusqueda();},200)"
           oninput="buscarGlobal(this.value)">
         <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;max-height:380px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001"></div>
@@ -516,14 +516,13 @@ header { gap: 8px; }
 
   <div class="tabs" style="display:flex;align-items:center">
     <div class="tab active" onclick="switchTab('dashboard')">Vista general</div>
+    <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
     <div class="tab" onclick="switchTab('gantt')">Gantt</div>
     <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">Panel</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
-    <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
-    <div class="tab red" onclick="switchTab('completitud')">Edita hito</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
       <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0">
       <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
@@ -579,7 +578,6 @@ header { gap: 8px; }
           <table class="list-table" id="lista-table" style="min-width:960px">
             <thead>
       <tr>
-        <th>N°</th>
         <th>Actividad</th>
         <th>Programa</th>
         <th class="list-col-tipo">Tipo</th>
@@ -594,7 +592,6 @@ header { gap: 8px; }
         <th>Editar</th>
       </tr>
       <tr style="background:var(--bg)">
-        <td></td>
         <td><input class="list-filter-input" placeholder="Buscar..." oninput="applyListFilters()" id="lf-actividad"></td>
         <td><select class="list-filter-sel" onchange="applyListFilters()" id="lf-programa"><option value="">Todos</option></select></td>
         <td class="list-col-tipo"><select class="list-filter-sel" onchange="applyListFilters()" id="lf-tipo"><option value="">Todos</option></select></td>
@@ -1119,7 +1116,7 @@ header { gap: 8px; }
         </div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>N°</th><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
+            <thead><tr><th>Actividad</th><th>Programa</th><th>Mes</th><th>Semana</th><th>Estado</th><th>Completitud</th><th>Editar</th></tr></thead>
             <tbody id="comp-body"></tbody>
           </table>
         </div>
@@ -1487,7 +1484,7 @@ async function loadData(silent=false) {
       fecha_exacta: r.fields['Fecha hito']||'',
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
-      relevancia: (r.fields['Nivel de relevancia']||{}).name||(r.fields['Relevancia']||{}).name||'',
+      relevancia: (()=>{const lee=v=>{if(!v)return'';if(Array.isArray(v))return v.map(x=>x?.name||x).join(', ');if(typeof v==='object')return v.name||'';return String(v);};return lee(r.fields['Nivel de relevancia'])||lee(r.fields['Relevancia']);})(),
       anio: (()=>{ const v=r.fields['Año']; if(!v) return '2026'; if(typeof v==='object'&&v!==null) return v.name||'2026'; if(typeof v==='string'&&v.length===4) return v; return '2026'; })(),
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
@@ -1688,7 +1685,7 @@ function renderCalendar() {
 function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-conf':e==='Planificado'?'status-plan':'status-sin';}
 
 function renderList() {
-  _sn('list-count',filtered.length+' hitos activos · numeración histórica');
+  _sn('list-count',filtered.length+' hitos activos');
   const _lb=document.getElementById('list-body');
   if(_lb){
     _lb.innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map((h,idx)=>{
@@ -1705,7 +1702,6 @@ function renderList() {
         data-anio="${h.anio||''}"
         data-estado="${h.estado||''}"
         data-relevancia="${h.relevancia||''}">
-        <td style="color:var(--text-dim);font-size:12px;font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums">${h.n}</td>
         <td>${h.actividad}</td>
         <td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td>
         <td class="list-col-tipo" style="font-size:12px;color:var(--text-dim)">${h.tipo_hito||'—'}</td>
@@ -1766,7 +1762,7 @@ function renderAcciones() {
   _abody.innerHTML=sortedAcc.map(a=>{
     const prioBadge=a.prioridad?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;background:${prioColor[a.prioridad]||'#6b7280'}22;color:${prioColor[a.prioridad]||'#6b7280'}">${a.prioridad}</span>`:'—';
     const hitoVinc = a.hito_id ? allHitos.find(h=>h.id===a.hito_id) : null;
-    const hitoNombre = hitoVinc ? `<span style="font-size:11px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;display:inline-block" title="${hitoVinc.actividad}">${hitoVinc.n ? hitoVinc.n+'. ' : ''}${hitoVinc.actividad}</span>` : '<span style="color:var(--text-dim);font-size:11px">—</span>';
+    const hitoNombre = hitoVinc ? `<span style="font-size:11px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;display:inline-block" title="${hitoVinc.actividad}">${hitoVinc.actividad}</span>` : '<span style="color:var(--text-dim);font-size:11px">—</span>';
     return `<tr>
       <td>${a.accion}</td>
       <td style="font-size:12px">${a.tipo||'—'}</td>
@@ -1793,7 +1789,7 @@ function renderCompletitud() {
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const desc=h.descripcion.replace(/'/g,"\\'"), act=h.actividad.replace(/'/g,"\\'");
     const rowBg=idx%2===0?'':'background:rgba(255,255,255,0.04);';
-    return `<tr style="${rowBg}"><td style="color:var(--text-dim);font-size:12px;white-space:nowrap">${h.n}</td><td style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
+    return `<tr style="${rowBg}"><td style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">${h.actividad}</td><td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td><td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td><td style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td><td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td><td style="font-size:12px">${h.completitud}</td><td><button class="edit-btn" onclick="abrirEdicion('${h.id}','${act}','${h.mes||''}','${h.semana||''}','${h.estado}','${desc}')">Editar</button></td></tr>`;
   }).join('');
 }
 
@@ -1804,7 +1800,7 @@ function abrirEdicion(id, actividad, mes, semana, estado, descripcion) {
   const h = allHitos.find(x => x.id === id);
   if (!h) { alert('Hito no encontrado'); return; }
   editingId = id;
-  document.getElementById('edit-title').textContent = `Editando: N°${h.n} · ${h.actividad}`;
+  document.getElementById('edit-title').textContent = `Editando: ${h.actividad}`;
 
   // Clonar opciones desde el formulario de ingreso (paridad garantizada)
   const clone = (fromId, toId) => {
@@ -2084,7 +2080,7 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
       allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
         const opt = document.createElement('option');
         opt.value = h.id;
-        opt.textContent = `${h.n}. ${h.actividad} (${h.programa})`;
+        opt.textContent = `${h.actividad} (${h.programa})`;
         if(h.id === ac.hito_id) opt.selected = true;
         selHito.appendChild(opt);
       });
@@ -2217,7 +2213,6 @@ function renderReconstruccion() {
     const bg = PROG_BG[h.programa]||'#f3f4f6';
     const recons = h.region_reconstruccion === 'Sí' ? '<span style="color:var(--accent3);font-weight:600">✓ Sí</span>' : '—';
     return `<tr>
-      <td style="color:var(--text-dim);font-size:12px">${h.n}</td>
       <td>${h.actividad}</td>
       <td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td>
       <td style="font-size:12px;color:var(--accent3);font-weight:500">${h.region}</td>
@@ -2355,7 +2350,7 @@ function showTooltip(e, h) {
   const color = PROG_COLORS[h.programa]||'#6b7280';
   const bg = PROG_BG[h.programa]||'#f3f4f6';
   t.innerHTML = `
-    <div class="tt-title">${h.n ? h.n+'. ' : ''}${h.actividad||h.accion||''}</div>
+    <div class="tt-title">${h.actividad||h.accion||''}</div>
     ${h.programa ? `<div class="tt-row"><span class="tt-label">Programa</span><span class="tt-badge" style="background:${bg};color:${color}">${h.programa}</span></div>` : ''}
     ${h.tipo_hito||h.tipo ? `<div class="tt-row"><span class="tt-label">Tipo</span><span>${h.tipo_hito||h.tipo}</span></div>` : ''}
     ${h.region ? `<div class="tt-row"><span class="tt-label">Región</span><span>${h.region}</span></div>` : ''}
@@ -2617,7 +2612,7 @@ function switchSubTab(sub) {
     if(sel&&allHitos.length>0&&sel.options.length<=1){
       allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
         const opt=document.createElement('option');
-        opt.value=h.id; opt.textContent=`${h.n}. ${h.actividad} (${h.programa})`;
+        opt.value=h.id; opt.textContent=`${h.actividad} (${h.programa})`;
         sel.appendChild(opt);
       });
     }
@@ -2627,7 +2622,7 @@ function switchSubTab(sub) {
     if(sel&&allHitos.length>0&&sel.options.length<=1){
       allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
         const opt=document.createElement('option');
-        opt.value=h.id; opt.textContent=`${h.n}. ${h.actividad} (${h.programa})`;
+        opt.value=h.id; opt.textContent=`${h.actividad} (${h.programa})`;
         sel.appendChild(opt);
       });
     }
@@ -2683,7 +2678,7 @@ function switchTab(tab) {
       allHitos.sort((a,b)=>a.n-b.n).forEach(h => {
         const opt = document.createElement('option');
         opt.value = h.id;
-        opt.textContent = `${h.n}. ${h.actividad} (${h.programa})`;
+        opt.textContent = `${h.actividad} (${h.programa})`;
         sel.appendChild(opt);
       });
     }
@@ -2695,7 +2690,7 @@ function switchTab(tab) {
       allHitos.sort((a,b)=>a.n-b.n).forEach(h => {
         const opt = document.createElement('option');
         opt.value = h.id;
-        opt.textContent = `${h.n}. ${h.actividad} (${h.programa})`;
+        opt.textContent = `${h.actividad} (${h.programa})`;
         sel.appendChild(opt);
       });
     }
@@ -2705,7 +2700,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','gantt','kanban','calendario','lista','comunas','reconstruccion','nuevo-hito','completitud','area-com'];
+  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','comunas','reconstruccion','area-com'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
@@ -2781,8 +2776,7 @@ function buscarGlobal(q) {
     (h.actividad||'').toLowerCase().includes(q) ||
     (h.programa||'').toLowerCase().includes(q) ||
     (h.comuna||'').toLowerCase().includes(q) ||
-    (h.region||'').toLowerCase().includes(q) ||
-    String(h.n) === q
+    (h.region||'').toLowerCase().includes(q)
   ).slice(0, 6);
 
   const accRes = allAcciones.filter(a =>
@@ -2802,7 +2796,7 @@ function buscarGlobal(q) {
     out += '<div style="padding:8px 12px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em">Hitos</div>';
     out += hitosRes.map(h => `
       <div onmousedown="abrirEdicion('${h.id}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-        <div style="font-size:12px;font-weight:500;color:var(--text)">N°${h.n} · ${h.actividad}</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text)">${h.actividad}</div>
         <div style="font-size:10px;color:var(--text-dim)">${h.programa||''} ${h.region?'· '+h.region:''} ${h.mes?'· '+h.mes:''}</div>
       </div>`).join('');
   }
