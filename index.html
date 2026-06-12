@@ -1370,7 +1370,7 @@ async function loadData() {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   try {
     const recs = await fetchAll(TABLE_HITOS);
-    allHitos = recs.filter(r=>(r.fields['fld5PRmGASv84BASc']||{}).name!=='Eliminado' && r.fields['fld5PRmGASv84BASc']!=='Eliminado').map(r => ({
+    allHitos = recs.filter(r=>(r.fields['Estado']||'')!=='Eliminado').map(r => ({
       id: r.id, n: r.fields['N°']||0, actividad: r.fields['Actividad']||'',
       descripcion: r.fields['Descripción']||'', comuna: r.fields['Comuna']||'',
       region: r.fields['Región']||'', programa: r.fields['Programa']||'',
@@ -1398,12 +1398,12 @@ async function loadData() {
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
       hito_vinculado: !!(
-        (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'].length > 0) ||
+        (r.fields['Hito relacionado'] && r.fields['Hito relacionado'].length > 0) ||
         (r.fields['Hito vinculado'] && r.fields['Hito vinculado'].length > 0)
       ),
-      hito_id: (r.fields['fldm2TyyqaMACQuoT'] && r.fields['fldm2TyyqaMACQuoT'][0]) ||
+      hito_id: (r.fields['Hito relacionado'] && r.fields['Hito relacionado'][0]) ||
                (r.fields['Hito vinculado'] && r.fields['Hito vinculado'][0]) || '',
-      notas: r.fields['fld1MIQ4vnBTqsqDg'] || ''
+      notas: r.fields['Notas'] || ''
     }));
     buildFilters(); applyFilters();
     document.getElementById('loading-indicator').style.display = 'none';
@@ -1722,16 +1722,21 @@ async function guardarEdicion() {
   const btn=document.querySelector('#edit-panel .login-btn');
   btn.textContent='Guardando...';btn.disabled=true;
   const fields={};
+  // Field IDs de Airtable — inmunes a renombres de columnas
   const mes=document.getElementById('edit-mes').value;
   const semana=document.getElementById('edit-semana').value;
   const estado=document.getElementById('edit-estado').value;
   const desc=document.getElementById('edit-descripcion').value;
-  if(mes)fields['Mes']=mes; if(semana)fields['Semana']=semana;
-  if(estado)fields['Estado']=estado; if(desc)fields['Descripción']=desc;
-  fields['Ingresado por']=window.currentUser||'';
-  fields['Fecha de ingreso']=new Date().toISOString();
+  const anio=document.getElementById('edit-anio')?.value;
+  if(mes)fields['fldEPJCSeb1TJ5vLW']=mes;            // Mes
+  if(semana)fields['fldxtYwfGjAdWsdLm']=semana;       // Semana
+  if(estado)fields['fld5PRmGASv84BASc']=estado;       // Estado
+  if(desc)fields['fldvKIJ8NxQWyeHVq']=desc;           // Descripción
+  if(anio)fields['flduVeHhof40ePRez']=anio;           // Año
+  fields['fld6itvj3qMvFxouw']=window.currentUser||''; // Ingresado por
+  fields['fld8ODhZpTPdepCZe']=new Date().toISOString(); // Fecha de ingreso
   const fe=document.getElementById('edit-fecha-exacta').value;
-  if(fe)fields['Fecha hito']=fe;
+  if(fe)fields['fldHCAMOsbuzrwzcc']=fe;               // Fecha hito
   try {
     const savedId = editingId;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});
@@ -1786,8 +1791,17 @@ async function guardarHito() {
   if(qmb20)fields['fldfyWuIDpPAZoPVF']=qmb20;
   try {
     // Calculate next N°
-    const validNums = allHitos.map(h=>h.n||0).filter(n=>n>0);
-    const maxN = validNums.length > 0 ? Math.max(...validNums) + 1 : 1;
+    // Consultar el N° máximo real en Airtable justo antes de crear
+    // (reduce la ventana de colisión entre usuarios simultáneos)
+    let maxN = 1;
+    try {
+      const fresh = await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}?pageSize=1&sort%5B0%5D%5Bfield%5D=N%C2%B0&sort%5B0%5D%5Bdirection%5D=desc`);
+      const topN = fresh.records?.[0]?.fields?.['N°'] || 0;
+      maxN = topN + 1;
+    } catch(e) {
+      const validNums = allHitos.map(h=>h.n||0).filter(n=>n>0);
+      maxN = validNums.length > 0 ? Math.max(...validNums) + 1 : 1;
+    }
     fields['fldNsze1hA9QYWn1x'] = maxN;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('nh-success').style.display='block';
