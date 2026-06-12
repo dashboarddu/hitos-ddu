@@ -4,26 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestor de Hitos DDU 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f4f6f8; --white: #ffffff; --border: #e0e4ea;
-  --text: #1a1f2e; --text-dim: #6b7280;
-  --accent: #1565c0; --accent2: #0d9a6e; --accent3: #e53935; --accent4: #f59e0b;
-  --radius: 10px; --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --bg: #f5f7fa; --white: #ffffff; --border: #e3e8ef;
+  --text: #16213a; --text-dim: #64748b;
+  --accent: #1d5fd6; --accent2: #0e9f6e; --accent3: #dc2f2f; --accent4: #e8920a;
+  --accent-soft: #eaf1fd; --accent2-soft: #e6f7f1; --accent3-soft: #fdeaea; --accent4-soft: #fdf3e0;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(22,33,58,0.06), 0 4px 12px rgba(22,33,58,0.04);
+  --shadow-lift: 0 4px 12px rgba(22,33,58,0.08), 0 12px 32px rgba(22,33,58,0.07);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
+body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; min-height: 100vh; }
 #login-screen { position: fixed; inset: 0; background: url(fondo.jpg) center/cover no-repeat; display: flex; align-items: center; justify-content: center; z-index: 999; }
 .login-box { position: relative; z-index: 1; background: rgba(255,255,255,0.97); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 .login-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .login-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; }
 .login-label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; display: block; font-weight: 500; }
-.login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.login-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
 .login-input:focus { border-color: var(--accent); }
-.fsel { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
-.login-btn { width: 100%; margin-top: 12px; background: var(--accent); border: none; border-radius: 8px; padding: 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+.fsel { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 13px; outline: none; }
+.login-btn { width: 100%; margin-top: 12px; background: var(--accent); border: none; border-radius: 8px; padding: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
 .login-btn:hover { opacity: 0.88; } .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .login-error { color: var(--accent3); font-size: 12px; margin-top: 8px; display: none; }
 .login-hint { font-size: 11px; color: var(--text-dim); margin-top: 16px; text-align: center; }
@@ -32,7 +35,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .header-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 12px; }
 .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
 .badge-user { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-dim); }
-.btn-sm { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.btn-sm { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; color: var(--text-dim); font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
 .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 .tabs { display: flex; gap: 0; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--white); overflow-x: auto; }
 .tab { padding: 8px 10px; font-size: 11px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
@@ -41,7 +44,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .tab.purple { color: #7c3aed; } .tab.purple.active { border-bottom-color: #7c3aed; color: #7c3aed; }
 .tab.red { color: var(--accent3); } .tab.red.active { border-bottom-color: var(--accent3); color: var(--accent3); }
 .filters { padding: 10px 24px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--white); border-bottom: 1px solid var(--border); }
-.filter-select { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; outline: none; cursor: pointer; }
+.filter-select { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 12px; outline: none; cursor: pointer; }
 .content { padding: 12px 24px; flex: 1; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
@@ -160,18 +163,8 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
   .stat-value { font-size: 22px; }
   .stat-label { font-size: 10px; }
 }
-@media print {
-  header, .tabs, .filters, .btn-back, .edit-btn, .theme-toggle { display: none !important; }
-  .content { padding: 0 !important; }
-  .gantt-scroll { overflow: visible !important; }
-  body { background: white !important; color: black !important; }
-}
-@media print {
-  header, .tabs, .filters, .btn-back, .edit-btn, .theme-toggle { display: none !important; }
-  .content { padding: 0 !important; }
-  .gantt-scroll { overflow: visible !important; }
-  body { background: white !important; color: black !important; }
-}
+
+
 .view { display: none; } .view.active { display: block; }
 .list-filter-input { width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
 .list-filter-sel { width:100%;padding:3px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
@@ -182,17 +175,20 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .sub-view.active { display: block; }
 /* DARK THEME */
 body.dark {
-  --bg: #0f1117;
-  --white: #181c27;
-  --border: #2a3050;
-  --text: #e8eaf0;
-  --text-dim: #8892b0;
-  --accent: #4f7cff;
-  --accent2: #00d4a0;
-  --accent3: #ff6b6b;
-  --accent4: #ffd166;
-  --radius: 10px;
-  --shadow: 0 1px 8px rgba(0,0,0,0.4);
+  --bg: #0e1118;
+  --white: #171b26;
+  --border: #28304a;
+  --text: #e9ecf4;
+  --text-dim: #8b95b0;
+  --accent: #5d8aff;
+  --accent2: #1fd6a5;
+  --accent3: #ff7070;
+  --accent4: #ffce5c;
+  --accent-soft: rgba(93,138,255,0.12); --accent2-soft: rgba(31,214,165,0.12);
+  --accent3-soft: rgba(255,112,112,0.12); --accent4-soft: rgba(255,206,92,0.12);
+  --radius: 12px;
+  --shadow: 0 1px 8px rgba(0,0,0,0.45);
+  --shadow-lift: 0 8px 32px rgba(0,0,0,0.55);
 }
 body.dark header,
 body.dark .tabs,
@@ -233,8 +229,8 @@ body.dark .hito-tooltip { background: #181c27 !important; border-color: #2a3050 
 
 /* TYPOGRAPHY */
 body { font-family: 'Outfit', sans-serif; }
-h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', serif; }
-.badge-user, td[style*="font-size:12px"] { font-family: 'DM Mono', monospace; }
+h1, .header-title, .stat-value, .login-title { font-family: 'Outfit', sans-serif; font-weight: 700; }
+.badge-user, td[style*="font-size:12px"] { font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums; }
 
 /* TOGGLE BUTTON */
 .theme-toggle {
@@ -274,11 +270,11 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 .success-icon { font-size: 48px; margin-bottom: 16px; }
 .success-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
 .success-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 24px; }
-.success-btn { background: var(--accent2); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; }
+.success-btn { background: var(--accent2); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Outfit', sans-serif; }
 .success-btn:hover { opacity: 0.88; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.btn-back { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text-dim); cursor:pointer; margin-bottom:16px; font-family:'Inter',sans-serif; transition:all 0.2s; }
+.btn-back { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text-dim); cursor:pointer; margin-bottom:16px; font-family:'Outfit', sans-serif; transition:all 0.2s; }
 .btn-back:hover { border-color:var(--accent); color:var(--accent); }
 
 /* TOOLTIP */
@@ -305,6 +301,55 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 .content.tint-red { background: rgba(229,57,53,0.07) !important; }
 .content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
 .content.tint-pink { background: rgba(190,24,93,0.07) !important; }
+
+/* ══════════ REFINAMIENTO VISUAL ══════════ */
+/* Tablas: encabezados con jerarquía */
+.list-table th, .acciones-table th, .gantt-table th, table th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  font-weight: 600; color: var(--text-dim);
+  background: var(--bg);
+}
+.list-table td, .acciones-table td { padding: 9px 10px; }
+.list-table tbody tr:hover, .acciones-table tbody tr:hover { background: var(--accent-soft); }
+
+/* Cards con elevación al pasar el mouse */
+.stat-card, .chart-card { transition: box-shadow 0.2s, transform 0.2s; }
+.stat-card:hover { box-shadow: var(--shadow-lift); transform: translateY(-1px); }
+
+/* Stat cards: barra de acento lateral */
+.stat-card { border-left: 3px solid var(--border); }
+.stat-card.blue { border-left-color: var(--accent); }
+.stat-card.green { border-left-color: var(--accent2); }
+.stat-card.yellow { border-left-color: var(--accent4); }
+.stat-card.red { border-left-color: var(--accent3); }
+
+/* Badges de estado con fondos suaves coherentes */
+.status-badge { font-weight: 500; letter-spacing: 0.01em; border-radius: 14px; padding: 3px 11px; }
+
+/* Botones principales */
+.login-btn { transition: filter 0.15s, transform 0.1s; }
+.login-btn:hover { filter: brightness(1.08); }
+.btn-sm { border-radius: 8px; transition: all 0.15s; min-height: 30px; }
+.btn-sm:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* Pestañas más respiradas */
+.tab { border-radius: 8px 8px 0 0; transition: background 0.15s, color 0.15s; }
+.tab:hover { background: var(--accent-soft); }
+
+/* Selects y inputs coherentes */
+.fsel, .login-input, .filter-select, .list-filter-sel, .list-filter-input {
+  border-radius: 8px; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fsel:focus, .login-input:focus, .filter-select:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Section headers con más jerarquía */
+.section-header { letter-spacing: 0.06em; }
+
+/* Gantt: columna programa compacta */
+.gantt-table th.prog-col, .gantt-table td.prog-col { max-width: 92px; min-width: 70px; width: 92px; }
+.gantt-table td.prog-col .prog-tag { font-size: 10px; padding: 2px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 86px; display: inline-block; }
 
 /* ══════════ CHIPS DE FILTROS ══════════ */
 .f-chip {
@@ -403,6 +448,36 @@ header { gap: 8px; }
   .header-logo { font-size: 10px !important; }
   .btn-sm span { display: none; }
 }
+
+/* ══════════ INFORME PDF (IMPRESIÓN) ══════════ */
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  header, .tabs, .filters, #filter-chips, .btn-back, .edit-btn,
+  .modal-overlay, #search-results, .list-filter-sel, .list-filter-input,
+  .btn-sm, button, #lista-scroll-top { display: none !important; }
+  body { background: white !important; color: #111 !important; font-size: 10px; }
+  .content { padding: 0 !important; background: white !important; }
+  .view { display: none !important; }
+  .view.active { display: block !important; }
+  /* Tablas: todas las columnas visibles, sin scroll */
+  .list-table, .acciones-table, .gantt-table { min-width: 0 !important; width: 100% !important; font-size: 8.5px !important; }
+  .list-table td, .list-table th, .acciones-table td, .acciones-table th { padding: 4px 5px !important; }
+  .list-col-tipo, .list-col-region, .list-col-comuna, .list-col-semana,
+  .list-col-anio, .list-col-completitud { display: table-cell !important; }
+  div[style*="overflow-x"] { overflow: visible !important; }
+  thead { display: table-header-group; } /* repetir encabezado en cada página */
+  tr { page-break-inside: avoid; }
+  .gantt-container, .list-container, .acciones-container, .chart-card, .stat-card {
+    box-shadow: none !important; border: 1px solid #ccc !important;
+  }
+  .stats-grid { grid-template-columns: repeat(5, 1fr) !important; }
+  /* Encabezado del informe */
+  .content::before {
+    content: "Gestor de hitos comunicacionales DDU · Informe generado el " attr(data-fecha);
+    display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px;
+    padding-bottom: 6px; border-bottom: 2px solid #1d5fd6;
+  }
+}
 </style>
 </head>
 <body>
@@ -439,7 +514,7 @@ header { gap: 8px; }
     </div>
   </header>
 
-  <div class="tabs">
+  <div class="tabs" style="display:flex;align-items:center">
     <div class="tab active" onclick="switchTab('dashboard')">Vista general</div>
     <div class="tab" onclick="switchTab('gantt')">Gantt</div>
     <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">Panel</div>
@@ -450,12 +525,13 @@ header { gap: 8px; }
     <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
     <div class="tab red" onclick="switchTab('completitud')">Edita hito</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
+      <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0">
+      <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
+      <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
+    </div>
   </div>
 
-  <div class="filters" style="justify-content:flex-end">
-    <button class="btn-sm" onclick="window.print()" style="margin-left:4px">🖨 PDF</button>
-    <button class="btn-sm" onclick="limpiarFiltros()" style="margin-left:4px;color:var(--accent3);border-color:var(--accent3)">✕ Limpiar filtros</button>
-  </div>
+  
   <div id="filter-chips" style="display:none;padding:6px 24px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;align-items:center"></div>
 
   <div class="content">
@@ -1298,11 +1374,11 @@ async function doLogin() {
       step2.innerHTML = `
         <div style="text-align:center;margin-bottom:20px">
           <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">Tu código de acceso</div>
-          <div style="font-size:48px;font-weight:700;letter-spacing:0.15em;color:var(--text);font-family:'DM Mono',monospace;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:inline-block">${data.otp}</div>
+          <div style="font-size:48px;font-weight:700;letter-spacing:0.15em;color:var(--text);font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:inline-block">${data.otp}</div>
           <div style="font-size:11px;color:var(--text-dim);margin-top:10px">Válido por 15 minutos · Ingresa el código abajo</div>
         </div>
         <label class="login-label">Ingresa el código</label>
-        <input class="login-input" id="otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:22px;letter-spacing:0.2em;font-family:'DM Mono',monospace">
+        <input class="login-input" id="otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:22px;letter-spacing:0.2em;font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums">
         <button class="login-btn" id="otp-btn" onclick="verifyOTP()" style="margin-top:12px">Verificar código</button>
         <div class="login-error" id="otp-error"></div>
         <button onclick="location.reload()" style="margin-top:12px;width:100%;background:transparent;border:none;font-size:12px;cursor:pointer;color:var(--text-dim)">← Volver</button>
@@ -1423,7 +1499,7 @@ async function loadData(silent=false) {
       tipo: (()=>{ const v=r.fields['Tipo de acción']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
       fecha: r.fields['fldNuW8uW209WnDEz']||r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
       estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada',
-      prioridad: (r.fields['Prioridad']||{}).name||'',
+      prioridad: (()=>{const v=r.fields['Prioridad'];if(!v)return'';if(Array.isArray(v))return v[0]?.name||v[0]||'';if(typeof v==='object')return v.name||'';return String(v);})(),
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
       hito_vinculado: !!(
@@ -1517,7 +1593,7 @@ function renderDashboard() {
 
 function renderGantt() {
   const table=document.getElementById('gantt-table');
-  _sn('gantt-count',filtered.length+' hitos');
+  _sn('gantt-count',filtered.length+' hitos activos');
   const MESES_GANTT=MESES.slice(5,12); // Jun-Dec
   const sm=['Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
@@ -1536,18 +1612,38 @@ function renderGantt() {
     };
     return getVal(a)-getVal(b);
   });
-  const sp={'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB','Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH','Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP'};
-  // Add acciones to gantt
-  const ganttItems = sorted.filter(h=>h.mes&&h.semana);
+  const sp={
+    'Pequeñas Localidades':'PPL','Quiero mi Barrio':'QMB',
+    'Regeneración de Conjuntos':'Regen','Planes Urbanos Habitacionales':'PUH',
+    'Zonas de Interés Público':'ZIP','Unidad de Proyecto':'UP',
+    'Comunicaciones DDU':'Com. DDU','Unidad Digitalización SU':'Digit. SU',
+    'Infraestructura Verde':'Inf. Verde',
+    'Parques Urbanos - Construcción y Mejoramiento':'PU Constr.',
+    'Parques Urbanos - Conservación':'PU Conserv',
+    'Pavimentación Participativa':'Pav. Part.','Espacios Públicos':'Esp. Públ.',
+    'Planificación y Normas Urbanas':'Plan.Norm.','Suelo':'Suelo',
+    'Vialidad urbana':'Vialidad','Infraestructura sanitaria':'Inf. Sanit',
+    'Reducción de riesgos desastres y ACC':'RRD y ACC','PUI':'PUI','PUE':'PUE'
+  };
+  // Mostrar TODOS los hitos: derivar mes/semana desde fecha exacta si faltan
+  const ganttItems = sorted.map(h=>{
+    let mes=h.mes, semana=h.semana;
+    if(h.fecha_exacta){
+      const d=new Date(h.fecha_exacta+'T12:00:00');
+      if(!mes) mes=MESES[d.getMonth()];
+      if(!semana){const dia=d.getDate();semana=dia<=7?'S1':dia<=14?'S2':dia<=21?'S3':'S4';}
+    }
+    return {...h, _gMes:mes, _gSemana:semana};
+  });
   ganttItems.forEach((h,idx)=>{
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowStyle=idx%2===0?'':'background:#f8f9fc;';
     const tAttr=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
     html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.actividad}</div></td>`;
-    html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||h.programa.slice(0,4)}</span></td>`;
+    html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||(h.programa||'').slice(0,10)}</span></td>`;
     const MESES_G=MESES.slice(5,12);
     MESES_G.forEach((m,gmi)=>SEMANAS.forEach((s,si)=>{
-      const f=h.mes===m&&h.semana===s&&(h.anio==='2026'||h.anio==='');
+      const f=h._gMes===m&&h._gSemana===s&&(h.anio==='2026'||h.anio==='');
       // Check if cell falls within periodo
       let inPeriod=false;
       if(h.periodo_inicio&&h.periodo_fin){
@@ -1592,7 +1688,7 @@ function renderCalendar() {
 function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-conf':e==='Planificado'?'status-plan':'status-sin';}
 
 function renderList() {
-  _sn('list-count',filtered.length+' hitos');
+  _sn('list-count',filtered.length+' hitos activos · numeración histórica');
   const _lb=document.getElementById('list-body');
   if(_lb){
     _lb.innerHTML=[...filtered].sort((a,b)=>b.n-a.n).map((h,idx)=>{
@@ -1609,7 +1705,7 @@ function renderList() {
         data-anio="${h.anio||''}"
         data-estado="${h.estado||''}"
         data-relevancia="${h.relevancia||''}">
-        <td style="color:var(--text-dim);font-size:12px;font-family:'DM Mono',monospace">${h.n}</td>
+        <td style="color:var(--text-dim);font-size:12px;font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums">${h.n}</td>
         <td>${h.actividad}</td>
         <td><span class="prog-tag" style="background:${bg};color:${color}">${h.programa}</span></td>
         <td class="list-col-tipo" style="font-size:12px;color:var(--text-dim)">${h.tipo_hito||'—'}</td>
@@ -1617,7 +1713,7 @@ function renderList() {
         <td class="list-col-comuna" style="font-size:12px;color:var(--text-dim)">${h.comuna||'—'}</td>
         <td class="list-col-semana" style="font-size:12px;color:var(--text-dim)">${h.semana||'—'}</td>
         <td style="font-size:12px;color:var(--text-dim)">${h.mes||'—'}</td>
-        <td class="list-col-anio" style="font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace">${h.anio||'—'}</td>
+        <td class="list-col-anio" style="font-size:12px;color:var(--text-dim);font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums">${h.anio||'—'}</td>
         <td><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></td>
         <td style="font-size:12px">${h.relevancia||'—'}</td>
         <td class="list-col-completitud" style="font-size:12px">${h.completitud}</td>
@@ -2099,7 +2195,7 @@ function renderKanban() {
           <span class="prog-tag" style="background:${bg};color:${pc};font-size:10px">${h.programa}</span>
           ${rel}
         </div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:6px;font-family:'DM Mono',monospace">${fecha}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px;font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums">${fecha}</div>
       </div>`;
     }).join('');
     return `<div>
@@ -2666,6 +2762,13 @@ document.addEventListener('keydown', e => {
     if (gs) gs.focus();
   }
 });
+
+// ══════════ IMPRESIÓN / INFORME PDF ══════════
+function prepararImpresion() {
+  const c = document.querySelector('.content');
+  if (c) c.setAttribute('data-fecha', new Date().toLocaleDateString('es-CL', {day:'numeric',month:'long',year:'numeric'}));
+  window.print();
+}
 
 // ══════════ BÚSQUEDA GLOBAL ══════════
 function buscarGlobal(q) {
