@@ -1656,16 +1656,51 @@ function renderCompletitud() {
 function abrirDesdeListaEdicion(id, actividad, mes, semana, estado, descripcion) {
   abrirEdicion(id, actividad, mes, semana, estado, descripcion);
 }
-function abrirEdicion(id,actividad,mes,semana,estado,descripcion) {
-  editingId=id;
-  _sn('edit-title','Editando: '+actividad);
-  const _edit_mesEl=document.getElementById('edit-mes'); if(_edit_mesEl) _edit_mesEl.value=mes;
-  const _edit_semanaEl=document.getElementById('edit-semana'); if(_edit_semanaEl) _edit_semanaEl.value=semana;
-  const _edit_estadoEl=document.getElementById('edit-estado'); if(_edit_estadoEl) _edit_estadoEl.value=estado;
-  const _edit_descripcionEl=document.getElementById('edit-descripcion'); if(_edit_descripcionEl) _edit_descripcionEl.value=descripcion;
-  const h=allHitos.find(x=>x.id===id);
-  const _edit_fecha_exactaEl=document.getElementById('edit-fecha-exacta'); if(_edit_fecha_exactaEl) _edit_fecha_exactaEl.value=h?h.fecha_exacta:'';
-  const _edit_anioEl=document.getElementById('edit-anio'); if(_edit_anioEl) _edit_anioEl.value=h?h.anio:'';
+function abrirEdicion(id, actividad, mes, semana, estado, descripcion) {
+  const h = allHitos.find(x => x.id === id);
+  if (!h) { alert('Hito no encontrado'); return; }
+  editingId = id;
+  document.getElementById('edit-title').textContent = `Editando: N°${h.n} · ${h.actividad}`;
+
+  // Clonar opciones desde el formulario de ingreso (paridad garantizada)
+  const clone = (fromId, toId) => {
+    const from = document.getElementById(fromId), to = document.getElementById(toId);
+    if (from && to && to.options.length <= 1) to.innerHTML = from.innerHTML;
+  };
+  clone('nh-programa', 'edit-programa');
+  clone('nh-tipo', 'edit-tipo');
+  clone('nh-region', 'edit-region');
+  clone('nh-relevancia', 'edit-relevancia');
+  clone('nh-region-reconstruccion', 'edit-region-reconstruccion');
+  clone('nh-qmb-20', 'edit-qmb-20');
+
+  // Comuna depende de región: copiar todas las comunas del hito actual + actual
+  const comunaSel = document.getElementById('edit-comuna');
+  if (comunaSel) {
+    const comunas = [...new Set(allHitos.map(x=>x.comuna).filter(Boolean))].sort();
+    comunaSel.innerHTML = '<option value="">Seleccionar...</option>' + comunas.map(c=>`<option>${c}</option>`).join('');
+  }
+
+  // Poblar valores actuales
+  const set = (eid, val) => { const el = document.getElementById(eid); if (el) el.value = val || ''; };
+  set('edit-actividad', h.actividad);
+  set('edit-programa', h.programa);
+  set('edit-tipo', h.tipo_hito);
+  set('edit-region', h.region);
+  set('edit-comuna', h.comuna);
+  set('edit-mes', h.mes);
+  set('edit-semana', h.semana);
+  set('edit-estado', h.estado);
+  set('edit-anio', h.anio);
+  set('edit-descripcion', h.descripcion);
+  set('edit-relevancia', h.relevancia);
+  set('edit-etapa-obra', h.etapa_obra);
+  set('edit-region-reconstruccion', h.region_reconstruccion);
+  set('edit-qmb-20', h.qmb20);
+  set('edit-fecha-exacta', h.fecha_exacta);
+  set('edit-periodo-inicio', h.periodo_inicio);
+  set('edit-periodo-fin', h.periodo_fin);
+
   document.getElementById('edit-success').style.display='none';
   abrirModal('modal-hito');
 }
@@ -1722,22 +1757,37 @@ async function guardarEdicion() {
   if(!editingId)return;
   const btn=document.querySelector('#edit-panel .login-btn');
   btn.textContent='Guardando...';btn.disabled=true;
+  const gv = id => (document.getElementById(id)||{value:''}).value;
+
+  // Validación mínima
+  if(!gv('edit-actividad').trim()){
+    alert('La actividad no puede quedar vacía.');
+    btn.textContent='Guardar cambios';btn.disabled=false;return;
+  }
+
+  // Todos los campos por field ID — inmunes a renombres en Airtable
   const fields={};
-  // Field IDs de Airtable — inmunes a renombres de columnas
-  const mes=document.getElementById('edit-mes').value;
-  const semana=document.getElementById('edit-semana').value;
-  const estado=document.getElementById('edit-estado').value;
-  const desc=document.getElementById('edit-descripcion').value;
-  const anio=document.getElementById('edit-anio')?.value;
-  if(mes)fields['fldEPJCSeb1TJ5vLW']=mes;            // Mes
-  if(semana)fields['fldxtYwfGjAdWsdLm']=semana;       // Semana
-  if(estado)fields['fld5PRmGASv84BASc']=estado;       // Estado
-  if(desc)fields['fldvKIJ8NxQWyeHVq']=desc;           // Descripción
-  if(anio)fields['flduVeHhof40ePRez']=anio;           // Año
-  fields['fld6itvj3qMvFxouw']=window.currentUser||''; // Ingresado por
-  fields['fld8ODhZpTPdepCZe']=new Date().toISOString(); // Fecha de ingreso
-  const fe=document.getElementById('edit-fecha-exacta').value;
-  if(fe)fields['fldHCAMOsbuzrwzcc']=fe;               // Fecha hito
+  fields['fldk1LWv1Irs7D9oC']=gv('edit-actividad');                       // Actividad
+  const mapIf=(eid,fid)=>{const v=gv(eid);if(v)fields[fid]=v;};
+  mapIf('edit-programa','fldKob7fwDHBVv8Y1');                             // Programa
+  mapIf('edit-tipo','fldH9oSjGM7Hsrv97');                                 // Tipo de hito
+  mapIf('edit-region','fldHTl3HWbuU3VTnI');                               // Región
+  fields['fldytB7aU74V51QIi']=gv('edit-comuna');                          // Comuna (permite limpiar)
+  mapIf('edit-mes','fldEPJCSeb1TJ5vLW');                                  // Mes
+  mapIf('edit-semana','fldxtYwfGjAdWsdLm');                               // Semana
+  mapIf('edit-estado','fld5PRmGASv84BASc');                               // Estado
+  mapIf('edit-anio','flduVeHhof40ePRez');                                 // Año
+  fields['fldvKIJ8NxQWyeHVq']=gv('edit-descripcion');                     // Descripción
+  mapIf('edit-relevancia','fldV18gWINsBste0w');                           // Nivel de relevancia
+  fields['fldrkTGiKMJ81NIfs']=gv('edit-etapa-obra');                      // Etapa obra
+  mapIf('edit-region-reconstruccion','fld0zi9xajijPq5yi');                // Región Reconstrucción
+  mapIf('edit-qmb-20','fldfyWuIDpPAZoPVF');                               // Actividad 20 años QMB
+  mapIf('edit-fecha-exacta','fldHCAMOsbuzrwzcc');                         // Fecha hito
+  mapIf('edit-periodo-inicio','fldAtW6K6s3XVxIK5');                       // Fecha inicio periodo
+  mapIf('edit-periodo-fin','fldsCdv4fMJnLyzJq');                          // Fecha fin periodo
+  fields['fld6itvj3qMvFxouw']=window.currentUser||'';                     // Ingresado por
+  fields['fld8ODhZpTPdepCZe']=new Date().toISOString();                   // Fecha de ingreso
+
   try {
     const savedId = editingId;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});
@@ -2565,6 +2615,19 @@ function initListaScroll() {
         <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
         <div id="edit-success" class="alert-success" style="margin-bottom:12px;cursor:pointer" onclick="goHome()">✓ Guardado correctamente — <u>regresar a la vista general</u></div>
         <div class="form-grid">
+          <div class="form-field full"><label class="login-label">Actividad *</label><input class="login-input" id="edit-actividad" placeholder="Nombre del hito"></div>
+          <div class="form-field"><label class="login-label">Programa</label>
+            <select class="fsel" id="edit-programa"><option value="">Seleccionar...</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Tipo de hito</label>
+            <select class="fsel" id="edit-tipo"><option value="">Seleccionar...</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Región</label>
+            <select class="fsel" id="edit-region"><option value="">Seleccionar...</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Comuna</label>
+            <select class="fsel" id="edit-comuna"><option value="">Seleccionar...</option></select>
+          </div>
           <div class="form-field"><label class="login-label">Mes</label>
             <select class="fsel" id="edit-mes"><option value="">Sin fecha</option>
               <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
@@ -2578,14 +2641,31 @@ function initListaScroll() {
           <div class="form-field"><label class="login-label">Estado</label>
             <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
           </div>
-          <div class="form-field"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
           <div class="form-field"><label class="login-label">Año</label>
             <select class="fsel" id="edit-anio">
               <option value="">Sin año</option>
               <option>2026</option><option>2027</option><option>2028</option>
             </select>
           </div>
+          <div class="form-field full"><label class="login-label">Descripción</label><input class="login-input" id="edit-descripcion" placeholder="Descripción"></div>
+          <div class="form-field"><label class="login-label">Nivel de relevancia</label>
+            <select class="fsel" id="edit-relevancia"><option value="">Seleccionar...</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Etapa obra</label><input class="login-input" id="edit-etapa-obra" placeholder="Ej: Inicio de obra"></div>
+          <div class="form-field"><label class="login-label">Región Reconstrucción</label>
+            <select class="fsel" id="edit-region-reconstruccion"><option value="">No aplica</option></select>
+          </div>
+          <div class="form-field"><label class="login-label">Actividad 20 años QMB</label>
+            <select class="fsel" id="edit-qmb-20"><option value="">No aplica</option></select>
+          </div>
           <div class="form-field"><label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="edit-fecha-exacta"></div>
+          <div class="form-field full" style="background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.15);border-radius:8px;padding:12px">
+            <label class="login-label" style="color:var(--accent)">📅 Periodo (opcional)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+              <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="edit-periodo-inicio"></div>
+              <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="edit-periodo-fin"></div>
+            </div>
+          </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
