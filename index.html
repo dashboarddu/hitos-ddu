@@ -313,6 +313,8 @@ h1, .header-title, .stat-value, .login-title { font-family: 'Outfit', sans-serif
   50% { box-shadow: 0 0 0 4px var(--accent3-soft), var(--shadow); }
 }
 .stat-card.red.pulse { animation: pulseRed 2.4s ease-in-out infinite; }
+@keyframes pulseRedInner { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.stat-card.red.pulse .stat-value { animation: pulseRedInner 2.4s ease-in-out infinite; }
 
 /* ══════════ REFINAMIENTO VISUAL ══════════ */
 /* Tablas: encabezados con jerarquía */
@@ -1919,6 +1921,7 @@ async function marcarEliminado() {
 }
 function cerrarEdicion() {
   cerrarModal('modal-hito');
+  const slb=document.getElementById('share-link-box'); if(slb) slb.style.display='none';
   editingId = null;
 }
 
@@ -2805,6 +2808,125 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ══════════ COMPARTIR HITO PARA COMPLETADO EXTERNO ══════════
+async function compartirHito() {
+  if (!editingId) return;
+  try {
+    const res = await fetch(`${WORKER}/share/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getSessionToken()}` },
+      body: JSON.stringify({ hitoId: editingId })
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.message || 'Error al generar el link.'); return; }
+    const link = `${location.origin}${location.pathname}?share=${data.shareToken}`;
+    const box = document.getElementById('share-link-box');
+    const inp = document.getElementById('share-link-input');
+    if (box && inp) { inp.value = link; box.style.display = 'block'; inp.select(); }
+    try { await navigator.clipboard.writeText(link); } catch(e) {}
+  } catch (e) { alert('Error de conexión.'); }
+}
+
+// ══════════ PÁGINA DE COMPLETADO EXTERNO (?share=) ══════════
+const SHARE_LISTAS = {
+  programas: ['Pequeñas Localidades','Quiero mi Barrio','Regeneración de Conjuntos','Planes Urbanos Habitacionales','Zonas de Interés Público','Unidad de Proyecto','Comunicaciones DDU','Unidad Digitalización SU','Infraestructura Verde','Parques Urbanos - Construcción y Mejoramiento','Parques Urbanos - Conservación','Pavimentación Participativa','Espacios Públicos','Planificación y Normas Urbanas','Suelo','Vialidad urbana','Infraestructura sanitaria','Reducción de riesgos desastres y ACC','PUI','PUE'],
+  regiones: ['Nacional','Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana',"O'Higgins",'Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes'],
+  meses: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  semanas: ['S1','S2','S3','S4'],
+  estados: ['Sin fecha','Planificado','Confirmado','Realizado'],
+  anios: ['2026','2027','2028'],
+  relevancias: ['Alta','Media','Baja']
+};
+const SHARE_CAMPOS = [
+  {n:'Actividad', id:'fldk1LWv1Irs7D9oC', tipo:'text'},
+  {n:'Programa', id:'fldKob7fwDHBVv8Y1', tipo:'select', op:'programas'},
+  {n:'Tipo de hito', id:'fldH9oSjGM7Hsrv97', tipo:'text'},
+  {n:'Región', id:'fldHTl3HWbuU3VTnI', tipo:'select', op:'regiones'},
+  {n:'Comuna', id:'fldytB7aU74V51QIi', tipo:'text'},
+  {n:'Mes', id:'fldEPJCSeb1TJ5vLW', tipo:'select', op:'meses'},
+  {n:'Semana', id:'fldxtYwfGjAdWsdLm', tipo:'select', op:'semanas'},
+  {n:'Estado', id:'fld5PRmGASv84BASc', tipo:'select', op:'estados'},
+  {n:'Año', id:'flduVeHhof40ePRez', tipo:'select', op:'anios'},
+  {n:'Descripción', id:'fldvKIJ8NxQWyeHVq', tipo:'textarea'},
+  {n:'Nivel de relevancia', id:'fldV18gWINsBste0w', tipo:'select', op:'relevancias'},
+  {n:'Etapa obra', id:'fldrkTGiKMJ81NIfs', tipo:'text'},
+  {n:'Fecha hito', id:'fldHCAMOsbuzrwzcc', tipo:'date'},
+  {n:'Fecha inicio periodo', id:'fldAtW6K6s3XVxIK5', tipo:'date'},
+  {n:'Fecha fin periodo', id:'fldsCdv4fMJnLyzJq', tipo:'date'}
+];
+function shareVal(v){ if(v==null)return''; if(Array.isArray(v))return v.map(x=>x?.name||x).join(', '); if(typeof v==='object')return v.name||''; return String(v); }
+
+async function initShareMode(token) {
+  document.getElementById('login-screen').style.display = 'none';
+  const cont = document.createElement('div');
+  cont.id = 'share-page';
+  cont.style.cssText = 'max-width:640px;margin:24px auto;padding:0 16px;font-family:Outfit,sans-serif';
+  cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Cargando hito…</div>';
+  document.body.appendChild(cont);
+  try {
+    const res = await fetch(`${WORKER}/share/hito?token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    if (!data.ok) {
+      cont.innerHTML = `<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center"><div style="font-size:40px;margin-bottom:12px">⏳</div><div style="font-size:16px;font-weight:600">${data.message||'Link inválido o expirado.'}</div><div style="font-size:13px;color:var(--text-dim);margin-top:8px">Pide un nuevo link a quien te lo compartió.</div></div>`;
+      return;
+    }
+    const h = data.hito;
+    let campos = SHARE_CAMPOS.map(c => {
+      const val = shareVal(h[c.n]);
+      const vacio = !val;
+      const tag = vacio ? '<span style="font-size:9px;background:var(--accent4-soft);color:var(--accent4);border-radius:8px;padding:1px 7px;margin-left:6px;font-weight:600">FALTA</span>' : '';
+      let input;
+      const base = `id="sh-${c.id}" style="width:100%;padding:9px 10px;border:1.5px solid ${vacio?'var(--accent4)':'var(--border)'};border-radius:8px;font-size:13px;background:var(--white);color:var(--text);outline:none;font-family:inherit"`;
+      if (c.tipo === 'select') {
+        const ops = SHARE_LISTAS[c.op].map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('');
+        input = `<select ${base}><option value="">—</option>${ops}</select>`;
+      } else if (c.tipo === 'textarea') {
+        input = `<textarea ${base} rows="2">${val}</textarea>`;
+      } else if (c.tipo === 'date') {
+        input = `<input type="date" ${base} value="${val.slice(0,10)}">`;
+      } else {
+        input = `<input type="text" ${base} value="${val.replace(/"/g,'&quot;')}">`;
+      }
+      return `<div style="margin-bottom:14px"><label style="font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em">${c.n}${tag}</label><div style="margin-top:4px">${input}</div></div>`;
+    }).join('');
+    cont.innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:var(--shadow-lift)">
+        <div style="font-size:11px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Completar hito · DDU MINVU</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:4px">${shareVal(h['Actividad'])||'Hito sin nombre'}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:22px">Los campos marcados <strong style="color:var(--accent4)">FALTA</strong> están pendientes. Completa lo que sepas y guarda. Este link expira a los 7 días.</div>
+        ${campos}
+        <div style="border-top:1px solid var(--border);margin:20px 0 16px"></div>
+        <div style="margin-bottom:16px"><label style="font-size:11px;font-weight:600;color:var(--accent3);text-transform:uppercase;letter-spacing:0.05em">Tu nombre * (obligatorio)</label><div style="margin-top:4px"><input type="text" id="sh-nombre" placeholder="Ej: Juan Pérez, DOM Valdivia" style="width:100%;padding:9px 10px;border:1.5px solid var(--accent3);border-radius:8px;font-size:13px;background:var(--white);color:var(--text);outline:none;font-family:inherit"></div></div>
+        <button id="sh-guardar" style="width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Guardar información</button>
+        <div id="sh-msg" style="margin-top:12px;font-size:13px;text-align:center;display:none"></div>
+      </div>`;
+    document.getElementById('sh-guardar').addEventListener('click', async () => {
+      const nombre = document.getElementById('sh-nombre').value.trim();
+      const msg = document.getElementById('sh-msg');
+      if (!nombre) { msg.textContent = 'Por favor indica tu nombre antes de guardar.'; msg.style.color = 'var(--accent3)'; msg.style.display = 'block'; return; }
+      const fields = {};
+      SHARE_CAMPOS.forEach(c => { const el = document.getElementById('sh-'+c.id); if (el && el.value) fields[c.id] = el.value; });
+      const btn = document.getElementById('sh-guardar');
+      btn.textContent = 'Guardando…'; btn.disabled = true;
+      try {
+        const r = await fetch(`${WORKER}/share/update`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token, fields, nombre }) });
+        const out = await r.json();
+        if (out.ok) {
+          cont.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:48px;text-align:center;box-shadow:var(--shadow-lift)"><div style="font-size:48px;margin-bottom:14px">✅</div><div style="font-size:18px;font-weight:700">¡Información guardada!</div><div style="font-size:13px;color:var(--text-dim);margin-top:8px">Gracias, ' + nombre.split(' ')[0] + '. El equipo DDU ya tiene tus datos.<br>Puedes cerrar esta página.</div></div>';
+        } else {
+          msg.textContent = out.message || 'Error al guardar.'; msg.style.color = 'var(--accent3)'; msg.style.display = 'block';
+          btn.textContent = 'Guardar información'; btn.disabled = false;
+        }
+      } catch(e) {
+        msg.textContent = 'Error de conexión. Intenta de nuevo.'; msg.style.color = 'var(--accent3)'; msg.style.display = 'block';
+        btn.textContent = 'Guardar información'; btn.disabled = false;
+      }
+    });
+  } catch(e) {
+    cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent3)">Error de conexión.</div>';
+  }
+}
+
 // ══════════ CLIC EN GRÁFICOS → FILTRA Y VA A LISTA ══════════
 function filtrarYDirigir(selectId, valor) {
   const el = document.getElementById(selectId);
@@ -2900,6 +3022,8 @@ function initListaScroll() {
 
 // ── INICIO: verificar sesión existente ───────────────────────────
 (function initSession(){
+  const shareParam = new URLSearchParams(location.search).get('share');
+  if (shareParam) { initShareMode(shareParam); return; }
   const token = getSessionToken();
   if (token) {
     document.getElementById('login-screen').style.display = 'none';
@@ -2922,6 +3046,10 @@ function initListaScroll() {
     <button class="modal-close" onclick="cerrarModal('modal-hito')" aria-label="Cerrar">✕</button>
     <div class="edit-panel" id="edit-panel" >
         <div style="font-size:13px;font-weight:600;margin-bottom:16px" id="edit-title">Editando hito</div>
+        <div id="share-link-box" style="display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px">
+          <div style="font-weight:600;color:var(--accent);margin-bottom:4px">🔗 Link de completado (válido 7 días) — copiado al portapapeles</div>
+          <input id="share-link-input" readonly onclick="this.select()" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:11px;background:var(--white);color:var(--text)">
+        </div>
         <div id="edit-success" class="alert-success" style="margin-bottom:12px;cursor:pointer" onclick="goHome()">✓ Guardado correctamente — <u>regresar a la vista general</u></div>
         <div class="form-grid">
           <div class="form-field full"><label class="login-label">Actividad *</label><input class="login-input" id="edit-actividad" placeholder="Nombre del hito"></div>
@@ -2978,6 +3106,7 @@ function initListaScroll() {
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="login-btn" onclick="guardarEdicion()" style="flex:1">Guardar cambios</button>
+          <button class="login-btn" onclick="compartirHito()" style="flex:0 0 auto;background:var(--bg);color:var(--accent);border:1px solid var(--accent)" title="Generar link para que alguien externo complete este hito">🔗 Compartir</button>
           <button class="login-btn" onclick="cerrarEdicion()" style="flex:0.3;background:var(--bg);color:var(--text-dim);border:1px solid var(--border)">Cancelar</button>
         </div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid #fee2e2">
