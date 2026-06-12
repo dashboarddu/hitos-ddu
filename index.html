@@ -306,6 +306,25 @@ h1, .header-title, .stat-value, .login-title { font-family: 'DM Serif Display', 
 .content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
 .content.tint-pink { background: rgba(190,24,93,0.07) !important; }
 
+/* ══════════ CHIPS DE FILTROS ══════════ */
+.f-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--white); border: 1px solid var(--accent);
+  color: var(--accent); border-radius: 20px;
+  padding: 3px 6px 3px 12px; font-size: 11px; font-weight: 500;
+}
+.f-chip button {
+  background: none; border: none; color: var(--accent);
+  cursor: pointer; font-size: 13px; line-height: 1;
+  padding: 2px 6px; border-radius: 50%; min-height: 24px;
+}
+.f-chip button:hover { background: var(--accent); color: white; }
+.f-chip-clear {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 11px; cursor: pointer; text-decoration: underline;
+  padding: 4px 8px; min-height: 24px;
+}
+
 /* ══════════ MODAL UNIVERSAL ══════════ */
 .modal-overlay {
   display: none;
@@ -406,10 +425,17 @@ header { gap: 8px; }
       <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Gestor de hitos comunicacionales DDU</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <div style="position:relative">
+        <input id="global-search" type="text" placeholder="Buscar... ( / )" aria-label="Búsqueda global de hitos y acciones"
+          style="width:150px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg);color:var(--text);outline:none;transition:width 0.2s"
+          onfocus="this.style.width='240px'" onblur="setTimeout(()=>{this.style.width='150px';ocultarBusqueda();},200)"
+          oninput="buscarGlobal(this.value)">
+        <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;max-height:380px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001"></div>
+      </div>
       <span class="badge-user" id="user-badge">—</span>
-      <button class="btn-sm" onclick="loadData()">↻ Actualizar</button>
-      <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</button>
-      <button class="btn-sm" onclick="cerrarSesion()" style="color:var(--accent3);border-color:var(--accent3)">⏻ Salir</button>
+      <button class="btn-sm" onclick="loadData()" aria-label="Actualizar datos">↻ Actualizar</button>
+      <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro">🌙</button>
+      <button class="btn-sm" onclick="cerrarSesion()" aria-label="Cerrar sesión" style="color:var(--accent3);border-color:var(--accent3)">⏻ Salir</button>
     </div>
   </header>
 
@@ -430,6 +456,7 @@ header { gap: 8px; }
     <button class="btn-sm" onclick="window.print()" style="margin-left:4px">🖨 PDF</button>
     <button class="btn-sm" onclick="limpiarFiltros()" style="margin-left:4px;color:var(--accent3);border-color:var(--accent3)">✕ Limpiar filtros</button>
   </div>
+  <div id="filter-chips" style="display:none;padding:6px 24px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;align-items:center"></div>
 
   <div class="content">
     <div id="loading-indicator" class="loading"><div class="spinner"></div>Cargando datos...</div>
@@ -1365,9 +1392,11 @@ async function fetchAll(tableId, extraFields=[]) {
   return records;
 }
 
-async function loadData() {
-  document.getElementById('loading-indicator').style.display = 'flex';
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+async function loadData(silent=false) {
+  if(!silent){
+    document.getElementById('loading-indicator').style.display = 'flex';
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  }
   try {
     const recs = await fetchAll(TABLE_HITOS);
     allHitos = recs.filter(r=>(r.fields['Estado']||'')!=='Eliminado').map(r => ({
@@ -1406,10 +1435,12 @@ async function loadData() {
       notas: r.fields['Notas'] || ''
     }));
     buildFilters(); applyFilters();
-    document.getElementById('loading-indicator').style.display = 'none';
-    document.getElementById('view-'+activeTab).classList.add('active');
+    if(!silent){
+      document.getElementById('loading-indicator').style.display = 'none';
+      document.getElementById('view-'+activeTab).classList.add('active');
+    }
   } catch(e) {
-    document.getElementById('loading-indicator').innerHTML = `<span style="color:var(--accent3)">Error: ${e.message}</span>`;
+    if(!silent) document.getElementById('loading-indicator').innerHTML = `<span style="color:var(--accent3)">Error: ${e.message}</span>`;
   }
 }
 
@@ -1433,8 +1464,25 @@ function applyFilters() {
   const t=_gv('fil-tipo'), e=_gv('fil-estado');
   const anio=_gv('fil-anio');
   filtered=allHitos.filter(h=>h.estado!=='Eliminado'&&(!p||h.programa===p)&&(!r||h.region===r)&&(!com||h.comuna===com)&&(!mes||h.mes===mes)&&(!t||h.tipo_hito===t)&&(!e||h.estado===e)&&(!anio||h.anio===anio));
+  renderFilterChips({Programa:p,'Región':r,Comuna:com,Mes:mes,Tipo:t,Estado:e,'Año':anio});
   buildListFilters();
   renderAll();
+}
+
+const CHIP_FIELD_MAP={Programa:'fil-programa','Región':'fil-region',Comuna:'fil-comuna',Mes:'fil-mes',Tipo:'fil-tipo',Estado:'fil-estado','Año':'fil-anio'};
+function renderFilterChips(active){
+  const box=document.getElementById('filter-chips');
+  if(!box)return;
+  const entries=Object.entries(active).filter(([k,v])=>v);
+  if(entries.length===0){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='flex';
+  box.innerHTML='<span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em">Filtros:</span>'
+    + entries.map(([k,v])=>`<span class="f-chip">${k}: ${v}<button onclick="quitarFiltro('${CHIP_FIELD_MAP[k]}')" aria-label="Quitar filtro ${k}">✕</button></span>`).join('')
+    + '<button class="f-chip-clear" onclick="limpiarFiltros()">Limpiar todo</button>';
+}
+function quitarFiltro(selectId){
+  const el=document.getElementById(selectId);
+  if(el){el.value='';applyFilters();}
 }
 
 
@@ -1740,9 +1788,11 @@ async function marcarEliminado() {
       body: JSON.stringify({fields:{'fld5PRmGASv84BASc':'Eliminado'}, typecast:true})
     });
     btn.textContent='🗑 Marcar como eliminado'; btn.disabled=false;
+    allHitos = allHitos.filter(x=>x.id!==editingId);
     cerrarEdicion();
-    await loadData();
+    applyFilters();
     showSuccess('El hito fue marcado como eliminado');
+    loadData(true);
   } catch(e) {
     alert('Error: '+e.message);
     btn.textContent='🗑 Marcar como eliminado'; btn.disabled=false;
@@ -1791,11 +1841,25 @@ async function guardarEdicion() {
   try {
     const savedId = editingId;
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_HITOS}/${editingId}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});
+    // Actualización optimista: reflejar cambios al instante sin recargar todo
+    const h = allHitos.find(x=>x.id===savedId);
+    if(h){
+      h.actividad=gv('edit-actividad'); h.programa=gv('edit-programa')||h.programa;
+      h.tipo_hito=gv('edit-tipo')||h.tipo_hito; h.region=gv('edit-region')||h.region;
+      h.comuna=gv('edit-comuna'); h.mes=gv('edit-mes')||h.mes;
+      h.semana=gv('edit-semana')||h.semana; h.estado=gv('edit-estado')||h.estado;
+      h.anio=gv('edit-anio')||h.anio; h.descripcion=gv('edit-descripcion');
+      h.relevancia=gv('edit-relevancia')||h.relevancia; h.etapa_obra=gv('edit-etapa-obra');
+      h.fecha_exacta=gv('edit-fecha-exacta')||h.fecha_exacta;
+      h.periodo_inicio=gv('edit-periodo-inicio')||h.periodo_inicio;
+      h.periodo_fin=gv('edit-periodo-fin')||h.periodo_fin;
+    }
     cerrarEdicion();
     btn.textContent='Guardar cambios';btn.disabled=false;
-    await loadData();
+    applyFilters();
     showSuccess('Los cambios fueron guardados correctamente');
     flashRow(savedId);
+    loadData(true); // sync de fórmulas (Completitud) en segundo plano
   } catch(e){btn.textContent='Guardar cambios';btn.disabled=false;alert('Error: '+e.message);}
 }
 
@@ -1968,10 +2032,27 @@ async function guardarEdicionAccion() {
   if (window.currentUser) fields['fld3zzwUDvBMI6MM6'] = window.currentUser;
   try {
     await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}/${editingAccionId}`, {method:'PATCH', body:JSON.stringify({fields, typecast:true})});
+    // Actualización optimista local
+    const _ga=id=>(document.getElementById(id)||{value:''}).value;
+    const ac = allAcciones.find(x=>x.id===editingAccionId);
+    if(ac){
+      ac.accion=_ga('edit-accion-nombre')||ac.accion;
+      ac.tipo=_ga('edit-accion-tipo')||ac.tipo;
+      ac.estado=_ga('edit-accion-estado')||ac.estado;
+      ac.responsable=_ga('edit-accion-responsable');
+      ac.fecha=_ga('edit-accion-fecha')||ac.fecha;
+      ac.prioridad=_ga('edit-accion-prioridad');
+      ac.periodo_inicio=_ga('edit-accion-periodo-inicio');
+      ac.periodo_fin=_ga('edit-accion-periodo-fin');
+      ac.notas=_ga('edit-accion-notas');
+      ac.hito_id=_ga('edit-accion-hito');
+      ac.hito_vinculado=!!ac.hito_id;
+    }
     document.getElementById('edit-accion-success').style.display = 'block';
     setTimeout(()=>{ cerrarModal('modal-accion'); flashRow(editingAccionId); }, 900);
     btn.textContent = 'Guardar cambios'; btn.disabled = false;
-    await loadData();
+    renderAcciones(); renderKPI();
+    loadData(true);
   } catch(e) {
     alert('Error: ' + e.message);
     btn.textContent = 'Guardar cambios'; btn.disabled = false;
@@ -2535,6 +2616,25 @@ function switchTab(tab) {
   window.scrollTo({top: 0, behavior: 'smooth'});
   if(tab==='lista') setTimeout(initListaScroll, 150);
 }
+// ══════════ ACCESIBILIDAD: TECLADO EN TABS ══════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab, .sub-tab').forEach(t => {
+    t.setAttribute('role', 'tab');
+    t.setAttribute('tabindex', '0');
+    t.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t.click(); }
+    });
+  });
+  // Botones editar y cards de stats también accesibles
+  document.querySelectorAll('.stat-card[onclick]').forEach(c => {
+    c.setAttribute('role', 'button');
+    c.setAttribute('tabindex', '0');
+    c.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.click(); }
+    });
+  });
+});
+
 // ══════════ SISTEMA DE MODALES ══════════
 function abrirModal(id) {
   const m = document.getElementById(id);
@@ -2558,8 +2658,66 @@ function cerrarModales() {
   document.body.classList.remove('modal-open');
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') cerrarModales();
+  if (e.key === 'Escape') { cerrarModales(); ocultarBusqueda(); }
+  // Atajo / para enfocar la búsqueda (salvo si ya escribes en un campo)
+  if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    const gs = document.getElementById('global-search');
+    if (gs) gs.focus();
+  }
 });
+
+// ══════════ BÚSQUEDA GLOBAL ══════════
+function buscarGlobal(q) {
+  const box = document.getElementById('search-results');
+  if (!box) return;
+  q = (q||'').trim().toLowerCase();
+  if (q.length < 2) { box.style.display='none'; box.innerHTML=''; return; }
+
+  const hitosRes = allHitos.filter(h =>
+    (h.actividad||'').toLowerCase().includes(q) ||
+    (h.programa||'').toLowerCase().includes(q) ||
+    (h.comuna||'').toLowerCase().includes(q) ||
+    (h.region||'').toLowerCase().includes(q) ||
+    String(h.n) === q
+  ).slice(0, 6);
+
+  const accRes = allAcciones.filter(a =>
+    (a.accion||'').toLowerCase().includes(q) ||
+    (a.tipo||'').toLowerCase().includes(q) ||
+    (a.responsable||'').toLowerCase().includes(q)
+  ).slice(0, 4);
+
+  if (hitosRes.length === 0 && accRes.length === 0) {
+    box.innerHTML = '<div style="padding:14px;font-size:12px;color:var(--text-dim);text-align:center">Sin resultados</div>';
+    box.style.display = 'block';
+    return;
+  }
+
+  let out = '';
+  if (hitosRes.length) {
+    out += '<div style="padding:8px 12px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em">Hitos</div>';
+    out += hitosRes.map(h => `
+      <div onmousedown="abrirEdicion('${h.id}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="font-size:12px;font-weight:500;color:var(--text)">N°${h.n} · ${h.actividad}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${h.programa||''} ${h.region?'· '+h.region:''} ${h.mes?'· '+h.mes:''}</div>
+      </div>`).join('');
+  }
+  if (accRes.length) {
+    out += '<div style="padding:8px 12px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em">Acciones comunicacionales</div>';
+    out += accRes.map(a => `
+      <div onmousedown="abrirEdicionAccion('${a.id}','${(a.accion||'').replace(/'/g,"\\'")}','${a.tipo||''}','${a.estado||''}','${(a.responsable||'').replace(/'/g,"\\'")}','${a.fecha||''}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="font-size:12px;font-weight:500;color:var(--text)">${a.accion}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${a.tipo||''} ${a.estado?'· '+a.estado:''}</div>
+      </div>`).join('');
+  }
+  box.innerHTML = out;
+  box.style.display = 'block';
+}
+function ocultarBusqueda() {
+  const box = document.getElementById('search-results');
+  if (box) { box.style.display='none'; }
+}
 // Destacar fila tras guardar
 function flashRow(recordId) {
   setTimeout(() => {
