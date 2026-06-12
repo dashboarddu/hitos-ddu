@@ -543,6 +543,16 @@ header { gap: 8px; }
   </div>
 
   
+  <div class="filters" id="global-filters" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
+    <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-right:2px">Filtrar:</span>
+    <select class="filter-select" id="fil-programa" onchange="applyFilters()" aria-label="Filtrar por programa"><option value="">Todos los programas</option></select>
+    <select class="filter-select" id="fil-region" onchange="applyFilters()" aria-label="Filtrar por región"><option value="">Todas las regiones</option></select>
+    <select class="filter-select" id="fil-comuna" onchange="applyFilters()" aria-label="Filtrar por comuna"><option value="">Todas las comunas</option></select>
+    <select class="filter-select" id="fil-tipo" onchange="applyFilters()" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option></select>
+    <select class="filter-select" id="fil-mes" onchange="applyFilters()" aria-label="Filtrar por mes"><option value="">Todos los meses</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
+    <select class="filter-select" id="fil-estado" onchange="applyFilters()" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
+    <select class="filter-select" id="fil-anio" onchange="applyFilters()" aria-label="Filtrar por año"><option value="">Todos los años</option><option>2026</option><option>2027</option><option>2028</option></select>
+  </div>
   <div id="filter-chips" style="display:none;padding:6px 24px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;align-items:center"></div>
 
   <div class="content">
