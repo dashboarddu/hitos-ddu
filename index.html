@@ -286,7 +286,7 @@ h1, .header-title, .stat-value, .login-title { font-family: 'Outfit', sans-serif
   padding: 12px 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.22);
   z-index: 99999;
-  pointer-events: none;
+  pointer-events: auto;
   max-width: 280px;
   font-size: 12px;
   display: none;
@@ -295,6 +295,20 @@ h1, .header-title, .stat-value, .login-title { font-family: 'Outfit', sans-serif
 .hito-tooltip .tt-row { display: flex; gap: 6px; margin-bottom: 3px; color: var(--text-dim); }
 .hito-tooltip .tt-label { font-weight: 500; color: var(--text); min-width: 70px; }
 .hito-tooltip .tt-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+.hito-tooltip .tt-share-btn { margin-top: 8px; width: 100%; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 10px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+.hito-tooltip .tt-share-btn:hover { opacity: 0.85; }
+.status-repro { background: #fef3c7; color: #b45309; }
+.status-canc { background: #fee2e2; color: #b91c1c; }
+body.dark .status-repro { background: rgba(245,158,11,0.14); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+body.dark .status-canc { background: rgba(229,57,53,0.14); color: #ef5350; border: 1px solid rgba(229,57,53,0.3); }
+.combo-wrap { position: relative; }
+.combo-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--white); border: 1px solid var(--border); border-radius: 8px; max-height: 240px; overflow-y: auto; z-index: 600; box-shadow: var(--shadow-lift); display: none; }
+.combo-item { padding: 8px 12px; font-size: 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.combo-item:last-child { border-bottom: none; }
+.combo-item:hover { background: var(--accent-soft); }
+.combo-item .combo-prog { color: var(--text-dim); font-size: 11px; }
+.combo-empty { padding: 8px 12px; font-size: 12px; color: var(--text-dim); }
+body.dark .combo-list { background: #181c27; border-color: #2a3050; }
 
 .content.tint-green { background: rgba(13,154,110,0.07) !important; }
 .content.tint-purple { background: rgba(124,58,237,0.07) !important; }
@@ -552,7 +566,7 @@ header { gap: 8px; }
     <select class="filter-select" id="fil-comuna" onchange="applyFilters()" aria-label="Filtrar por comuna"><option value="">Todas las comunas</option></select>
     <select class="filter-select" id="fil-tipo" onchange="applyFilters()" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option></select>
     <select class="filter-select" id="fil-mes" onchange="applyFilters()" aria-label="Filtrar por mes"><option value="">Todos los meses</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
-    <select class="filter-select" id="fil-estado" onchange="applyFilters()" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
+    <select class="filter-select" id="fil-estado" onchange="applyFilters()" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>Sin fecha</option><option>Planificado</option><option>Reprogramado</option><option>Realizado</option><option>Cancelado</option><option>Confirmado</option></select>
     <select class="filter-select" id="fil-anio" onchange="applyFilters()" aria-label="Filtrar por año"><option value="">Todos los años</option><option>2026</option><option>2027</option><option>2028</option></select>
   </div>
   <div id="filter-chips" style="display:none;padding:6px 24px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;align-items:center"></div>
@@ -564,7 +578,9 @@ header { gap: 8px; }
       <div class="stats-grid">
         <div class="stat-card blue" onclick="goToListaFilter('')" style="cursor:pointer" title="Ver todos los hitos"><div class="stat-label">Total hitos</div><div class="stat-value" id="s-total">0</div></div>
         <div class="stat-card blue" onclick="goToListaFilter('Planificado')" style="cursor:pointer;background:rgba(255,255,255,0.92)" title="Ver planificados"><div class="stat-label" style="color:#1565c0">Planificados</div><div class="stat-value" id="s-plan" style="color:#1565c0">0</div></div>
+        <div class="stat-card yellow" onclick="goToListaFilter('Reprogramado')" style="cursor:pointer" title="Ver reprogramados"><div class="stat-label" style="color:#b45309">Reprogramados</div><div class="stat-value" id="s-repro" style="color:#b45309">0</div></div>
         <div class="stat-card green" onclick="goToListaFilter('Realizado')" style="cursor:pointer" title="Ver realizados"><div class="stat-label">Realizados</div><div class="stat-value" id="s-real">0</div></div>
+        <div class="stat-card" onclick="goToListaFilter('Cancelado')" style="cursor:pointer;border-color:#b91c1c33" title="Ver cancelados"><div class="stat-label" style="color:#b91c1c">Cancelados</div><div class="stat-value" id="s-canc" style="color:#b91c1c">0</div></div>
         <div class="stat-card red" id="card-sin-fecha" onclick="goToListaFilter('Sin fecha')" style="cursor:pointer" title="Ver sin fecha"><div class="stat-label">Sin fecha</div><div class="stat-value" id="s-sin">0</div></div>
       </div>
       <div class="progress-section">
@@ -675,25 +691,16 @@ header { gap: 8px; }
             <div class="form-field"><label class="login-label">Tipo de hito *</label>
               <select class="fsel" id="nh-tipo" onchange="onTipoHitoChange()">
                 <option value="">Seleccionar...</option>
-                <option>Cierre programa</option>
-                <option>Circular</option>
+                <option>Capacitación</option>
+                <option>Charla</option>
+                <option>Circular DDU</option>
                 <option>Conmemoración</option>
-                <option>Decreto</option>
-                <option>Diálogos / Encuentros</option>
-                <option>Efeméride</option>
-                <option>Inicio programa</option>
-                <option>Minuta</option>
-                <option>Minvuletín</option>
-                <option>Obras Equipamientos</option>
-                <option>Obras Espacio Público</option>
-                <option>Obras Habitacionales</option>
-                <option>Otro</option>
-                <option>Publicación</option>
-                <option>Reglamento</option>
+                <option>Inicio de programa</option>
+                <option>Jornada</option>
+                <option>Lanzamiento de publicación</option>
                 <option>Renders</option>
-                <option>Reportes de prensa</option>
-                <option>Seminario</option>
-                <option>Streaming</option>
+                <option>Taller</option>
+                <option>Otro</option>
               </select>
             </div>
             <div class="form-field"><label class="login-label">Región</label>
@@ -1080,7 +1087,7 @@ header { gap: 8px; }
               <select class="fsel" id="nh-semana"><option value="">—</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option></select>
             </div>
             <div class="form-field"><label class="login-label">Estado</label>
-              <select class="fsel" id="nh-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
+              <select class="fsel" id="nh-estado"><option>Sin fecha</option><option>Planificado</option><option>Reprogramado</option><option>Realizado</option><option>Cancelado</option></select>
             </div>
             <div class="form-field"><label class="login-label">Año</label>
               <select class="fsel" id="nh-anio">
@@ -1182,15 +1189,16 @@ header { gap: 8px; }
       <div id="sub-acciones" class="sub-view active">
         <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
           <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('')"><div class="stat-label">Total acciones</div><div class="stat-value" id="a-total">0</div></div>
+          <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('Planificada')"><div class="stat-label" style="color:#1565c0">Planificadas</div><div class="stat-value" id="a-plan" style="color:#1565c0">0</div></div>
+          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('Reprogramada')"><div class="stat-label" style="color:#b45309">Reprogramadas</div><div class="stat-value" id="a-repro" style="color:#b45309">0</div></div>
           <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada')"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
-          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAccionesEnCurso()"><div class="stat-label">En curso</div><div class="stat-value" id="a-curso">0</div></div>
-          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada')"><div class="stat-label">Pendientes</div><div class="stat-value" id="a-pend">0</div></div>
+          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Cancelada')"><div class="stat-label">Canceladas</div><div class="stat-value" id="a-canc">0</div></div>
           <div class="stat-card" style="cursor:pointer;border-color:#7c3aed33" onclick="filtrarAccionesVinculadas()"><div class="stat-label" style="color:#7c3aed">Vinculadas a hito</div><div class="stat-value" id="a-vinc" style="color:#7c3aed">0</div></div>
         </div>
         <div class="list-container">
           <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
           <div style="overflow-x:auto"><table class="list-table">
-            <thead><tr><th>Acción</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Hito vinculado</th><th>Editar</th><th>Prioridad</th></tr></thead>
+            <thead><tr><th>Acción</th><th>Tipo</th><th>Producto</th><th>Fecha</th><th>Responsable</th><th>Estado</th><th>Hito vinculado</th><th>Editar</th><th>Prioridad</th></tr></thead>
             <tbody id="acciones-body"></tbody>
           </table></div>
         </div>
@@ -1206,7 +1214,11 @@ header { gap: 8px; }
             <div class="form-grid">
               <div class="form-field full"><label class="login-label">Nombre *</label><input class="login-input" id="na-nombre" placeholder="Nombre de la acción"></div>
               <div class="form-field full"><label class="login-label">Hito vinculado (opcional)</label>
-                <select class="fsel" id="na-hito"><option value="">Sin hito vinculado</option></select>
+                <div class="combo-wrap">
+                  <input class="login-input" id="na-hito-search" placeholder="Escribe para buscar un hito (nombre o programa)..." autocomplete="off" oninput="comboFilter('na-hito')" onfocus="comboFilter('na-hito')">
+                  <input type="hidden" id="na-hito" value="">
+                  <div class="combo-list" id="na-hito-list"></div>
+                </div>
               </div>
               <div class="form-field"><label class="login-label">Tipo *</label>
                 <select class="fsel" id="na-tipo">
@@ -1223,15 +1235,24 @@ header { gap: 8px; }
 <option>Otro</option>
 </select>
               </div>
+              <div class="form-field"><label class="login-label">Producto</label>
+                <select class="fsel" id="na-producto">
+<option value="">Seleccionar...</option>
+<option>Avanzada</option>
+<option>Comunicado</option>
+<option>Libreto</option>
+<option>Minuta</option>
+<option>Producción</option>
+<option>Programa</option>
+<option>Otro</option>
+</select>
+              </div>
               <div class="form-field"><label class="login-label">Estado</label>
                 <select class="fsel" id="na-estado">
 <option>Planificada</option>
-<option>En desarrollo</option>
+<option>Reprogramada</option>
 <option>Realizada</option>
 <option>Cancelada</option>
-<option>En diseño</option>
-<option>Revisión de borrador</option>
-<option>En V°B°</option>
 </select>
               </div>
               <div class="form-field"><label class="login-label">Fecha estimada</label><input class="login-input" type="date" id="na-fecha"></div>
@@ -1260,7 +1281,11 @@ header { gap: 8px; }
             <div id="lk-success" class="alert-success">✓ Links guardados</div>
             <div id="lk-error" class="alert-error"></div>
             <div class="form-field full"><label class="login-label">Hito vinculado *</label>
-              <select class="fsel" id="lk-hito"><option value="">Seleccionar hito...</option></select>
+              <div class="combo-wrap">
+                <input class="login-input" id="lk-hito-search" placeholder="Escribe para buscar el hito (nombre o programa)..." autocomplete="off" oninput="comboFilter('lk-hito')" onfocus="comboFilter('lk-hito')">
+                <input type="hidden" id="lk-hito" value="">
+                <div class="combo-list" id="lk-hito-list"></div>
+              </div>
             </div>
             <div id="lk-fields" style="display:flex;flex-direction:column;gap:10px"></div>
             <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#0891b2;border:1px solid #0891b2">+ Agregar link</button>
@@ -1280,9 +1305,10 @@ header { gap: 8px; }
       <div id="sub-kpi" class="sub-view" style="display:none;padding-top:0">
         <div class="stats-grid" style="margin-bottom:12px">
           <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('');switchSubTab('sub-acciones')"><div class="stat-label">Total</div><div class="stat-value" id="kpi-total">0</div></div>
+          <div class="stat-card blue" style="cursor:pointer" onclick="filtrarAcciones('Planificada');switchSubTab('sub-acciones')"><div class="stat-label" style="color:#1565c0">Planificadas</div><div class="stat-value" id="kpi-plan" style="color:#1565c0">0</div></div>
+          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('Reprogramada');switchSubTab('sub-acciones')"><div class="stat-label" style="color:#b45309">Reprogramadas</div><div class="stat-value" id="kpi-repro" style="color:#b45309">0</div></div>
           <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada');switchSubTab('sub-acciones')"><div class="stat-label">Realizadas</div><div class="stat-value" id="kpi-real">0</div></div>
-          <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('En desarrollo');switchSubTab('sub-acciones')"><div class="stat-label">En curso</div><div class="stat-value" id="kpi-curso">0</div></div>
-          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Planificada');switchSubTab('sub-acciones')"><div class="stat-label">Pendientes</div><div class="stat-value" id="kpi-pend">0</div></div>
+          <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Cancelada');switchSubTab('sub-acciones')"><div class="stat-label">Canceladas</div><div class="stat-value" id="kpi-canc">0</div></div>
         </div>
         <div class="two-col">
           <div class="chart-card"><div class="chart-title">KPI por Estado</div><div id="kpi-estado-chart"></div>
@@ -1297,7 +1323,7 @@ header { gap: 8px; }
 
 </div>
 
-<div class="hito-tooltip" id="hito-tooltip"></div>
+<div class="hito-tooltip" id="hito-tooltip" onmouseenter="if(window._ttHideTimer)clearTimeout(window._ttHideTimer)" onmouseleave="hideTooltip()"></div>
 <div class="success-overlay" id="success-overlay" style="display:none">
   <div class="success-card">
     <div class="success-icon">✅</div>
@@ -1521,6 +1547,7 @@ async function loadData(silent=false) {
       fecha: r.fields['fldNuW8uW209WnDEz']||r.fields['Fecha estimada']||'', responsable: r.fields['Responsable']||'',
       estado: (r.fields['fldih7FiODAgw5VUQ']||{}).name || r.fields['Estado acción'] || r.fields['Estado'] || 'Planificada',
       prioridad: (()=>{const v=r.fields['Prioridad'];if(!v)return'';if(Array.isArray(v))return v[0]?.name||v[0]||'';if(typeof v==='object')return v.name||'';return String(v);})(),
+      producto: (()=>{ const v=r.fields['Producto']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
       periodo_inicio: r.fields['Fecha inicio periodo']||'',
       periodo_fin: r.fields['Fecha fin periodo']||'',
       hito_vinculado: !!(
@@ -1541,15 +1568,73 @@ async function loadData(silent=false) {
   }
 }
 
+// ══════════ COMBO BUSCABLE DE HITOS (orden alfabético) ══════════
+function comboHitosOrdenados() {
+  return [...allHitos].sort((a,b)=>(a.actividad||'').localeCompare(b.actividad||'','es',{sensitivity:'base'}));
+}
+function comboFilter(prefix) {
+  const inp = document.getElementById(prefix+'-search');
+  const list = document.getElementById(prefix+'-list');
+  const hidden = document.getElementById(prefix);
+  if (!inp || !list || !hidden) return;
+  const q = inp.value.trim().toLowerCase();
+  // Si el texto ya no coincide con la selección, se limpia el id guardado
+  if (hidden.value && hidden.dataset.label !== inp.value) { hidden.value=''; delete hidden.dataset.label; }
+  const matches = comboHitosOrdenados().filter(h =>
+    !q || (h.actividad||'').toLowerCase().includes(q) || (h.programa||'').toLowerCase().includes(q)
+  ).slice(0, 60);
+  let html = `<div class="combo-item" onclick="comboPick('${prefix}','','Sin hito vinculado')" style="color:var(--text-dim)">Sin hito vinculado</div>`;
+  html += matches.map(h => {
+    const label = (h.actividad||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return `<div class="combo-item" onclick="comboPick('${prefix}','${h.id}',this.dataset.label)" data-label="${label}">${h.actividad} <span class="combo-prog">· ${h.programa||''}</span></div>`;
+  }).join('');
+  if (!matches.length) html += '<div class="combo-empty">Sin resultados para esa búsqueda</div>';
+  list.innerHTML = html;
+  list.style.display = 'block';
+}
+function comboPick(prefix, id, label) {
+  const inp = document.getElementById(prefix+'-search');
+  const hidden = document.getElementById(prefix);
+  const list = document.getElementById(prefix+'-list');
+  if (hidden) { hidden.value = id; hidden.dataset.label = id ? label : ''; }
+  if (inp) inp.value = id ? label : '';
+  if (list) list.style.display = 'none';
+}
+function comboSet(prefix, hitoId) {
+  const h = allHitos.find(x=>x.id===hitoId);
+  comboPick(prefix, h ? hitoId : '', h ? h.actividad : '');
+}
+function comboClear(prefix) { comboPick(prefix, '', ''); }
+document.addEventListener('click', e => {
+  document.querySelectorAll('.combo-list').forEach(l => {
+    if (!l.closest('.combo-wrap').contains(e.target)) l.style.display = 'none';
+  });
+});
+// Ordena alfabéticamente las opciones de un <select> estático (mantiene el placeholder y deja "Otro" al final)
+function ordenarSelect(id, primeras=[]) {
+  const sel = document.getElementById(id); if (!sel) return;
+  const opts = [...sel.options];
+  const placeholder = opts.filter(o => o.value === '' || o.textContent === 'Seleccionar...');
+  const fijas = opts.filter(o => primeras.includes(o.textContent));
+  const resto = opts.filter(o => !placeholder.includes(o) && !fijas.includes(o) && o.textContent !== 'Otro');
+  const otro = opts.filter(o => o.textContent === 'Otro');
+  resto.sort((a,b)=>a.textContent.localeCompare(b.textContent,'es',{sensitivity:'base'}));
+  sel.innerHTML = '';
+  [...placeholder, ...fijas, ...resto, ...otro].forEach(o => sel.appendChild(o));
+}
+
 function buildFilters() {
   const progs=[...new Set(allHitos.map(h=>h.programa).filter(Boolean))].sort();
   const regs=[...new Set(allHitos.map(h=>h.region).filter(Boolean))].sort();
   const tipos=[...new Set(allHitos.map(h=>h.tipo_hito).filter(Boolean))].sort();
   const comunas=[...new Set(allHitos.map(h=>h.comuna).filter(Boolean))].sort();
   const PROGRAMAS_FIJOS = ['Pequeñas Localidades','Quiero mi Barrio','Regeneración de Conjuntos','Planes Urbanos Habitacionales','Zonas de Interés Público','Unidad de Proyecto','Comunicaciones DDU','Unidad Digitalización SU','Infraestructura Verde','Parques Urbanos - Construcción y Mejoramiento','Parques Urbanos - Conservación','Pavimentación Participativa','Espacios Públicos','Planificación y Normas Urbanas','Suelo','Vialidad urbana','Infraestructura sanitaria','Reducción de riesgos desastres y ACC','PUI','PUE'];
-  const _filProg=document.getElementById('fil-programa'); if(_filProg) _filProg.innerHTML='<option value="">Todos los programas</option>'+PROGRAMAS_FIJOS.map(p=>`<option>${p}</option>`).join('');
+  const PROGRAMAS_ORDENADOS=[...PROGRAMAS_FIJOS].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  const _filProg=document.getElementById('fil-programa'); if(_filProg) _filProg.innerHTML='<option value="">Todos los programas</option>'+PROGRAMAS_ORDENADOS.map(p=>`<option>${p}</option>`).join('');
   const REGIONES_FIJAS = ['Nacional','Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana','O\'Higgins','Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes','Central','Arica'];
-  const _filReg=document.getElementById('fil-region'); if(_filReg) _filReg.innerHTML='<option value="">Todas las regiones</option>'+REGIONES_FIJAS.map(r=>`<option>${r}</option>`).join('');
+  // "Nacional" primero, el resto en orden alfabético
+  const REGIONES_ORDENADAS=['Nacional',...REGIONES_FIJAS.filter(r=>r!=='Nacional').sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}))];
+  const _filReg=document.getElementById('fil-region'); if(_filReg) _filReg.innerHTML='<option value="">Todas las regiones</option>'+REGIONES_ORDENADAS.map(r=>`<option>${r}</option>`).join('');
   const _filCom=document.getElementById('fil-comuna'); if(_filCom) _filCom.innerHTML='<option value="">Todas las comunas</option>'+comunas.map(c=>`<option>${c}</option>`).join('');
   const _filTipo=document.getElementById('fil-tipo'); if(_filTipo) _filTipo.innerHTML='<option value="">Todos los tipos</option>'+tipos.map(t=>`<option>${t}</option>`).join('');
 }
@@ -1592,10 +1677,15 @@ function renderAll(){
 
 function renderDashboard() {
   const total=filtered.length, real=filtered.filter(h=>h.estado==='Realizado').length;
-  const plan=filtered.filter(h=>h.estado==='Planificado').length, sin=filtered.filter(h=>h.estado==='Sin fecha').length;
-  const pct=total?Math.round(real/total*100):0;
+  // 'Confirmado' es un estado histórico: se agrupa con Planificado para no perder registros antiguos
+  const plan=filtered.filter(h=>h.estado==='Planificado'||h.estado==='Confirmado').length, sin=filtered.filter(h=>h.estado==='Sin fecha').length;
+  const repro=filtered.filter(h=>h.estado==='Reprogramado').length;
+  const canc=filtered.filter(h=>h.estado==='Cancelado').length;
+  // Los cancelados no cuentan en el denominador del progreso
+  const pct=(total-canc)>0?Math.round(real/(total-canc)*100):0;
   _sn('s-total',total); _sn('s-real',real);
   _sn('s-plan',plan); _sn('s-sin',sin);
+  _sn('s-repro',repro); _sn('s-canc',canc);
   const _csf=document.getElementById('card-sin-fecha');
   if(_csf){const _nsf=filtered.filter(h=>h.estado==='Sin fecha').length;_csf.classList.toggle('pulse',_nsf>0);}
   _sn('s-pct',pct+'%'); const _pf=document.getElementById('progress-fill');if(_pf)_pf.style.width=pct+'%';
@@ -1711,7 +1801,7 @@ function renderCalendar() {
   }).join('');
 }
 
-function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-conf':e==='Planificado'?'status-plan':'status-sin';}
+function stCls(e){return e==='Realizado'?'status-real':e==='Confirmado'?'status-conf':e==='Reprogramado'?'status-repro':e==='Cancelado'?'status-canc':e==='Planificado'?'status-plan':'status-sin';}
 
 function renderList() {
   _sn('list-count',filtered.length+' hitos activos');
@@ -1772,11 +1862,12 @@ function renderAcciones() {
   const _set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   _set('a-total',total);
   _set('a-real',allAcciones.filter(a=>a.estado==='Realizada').length);
-  const EN_CURSO=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
-  _set('a-curso',allAcciones.filter(a=>EN_CURSO.includes(a.estado)).length);
-  _set('a-pend',allAcciones.filter(a=>a.estado==='Planificada').length);
+  // Estados históricos ("En desarrollo", "En diseño", etc.) se agrupan con Planificada
+  _set('a-plan',allAcciones.filter(a=>a.estado==='Planificada'||ESTADOS_LEGACY_ACC.includes(a.estado)).length);
+  _set('a-repro',allAcciones.filter(a=>a.estado==='Reprogramada').length);
+  _set('a-canc',allAcciones.filter(a=>a.estado==='Cancelada').length);
   _set('acciones-count',total+' acciones');
-  const stA={'Realizada':'status-real','En curso':'status-conf','Planificada':'status-plan','Cancelada':'status-sin'};
+  const stA={'Realizada':'status-real','Reprogramada':'status-repro','Planificada':'status-plan','Cancelada':'status-canc','En curso':'status-conf','En desarrollo':'status-conf','En diseño':'status-conf','Revisión de borrador':'status-conf','En V°B°':'status-conf'};
   const _abody=document.getElementById('acciones-body');if(!_abody)return;
   const sortedAcc=[...allAcciones].reverse();
   const prioColor={'Alta':'#e53935','Media':'#f59e0b','Baja':'#0d9a6e'};
@@ -1795,6 +1886,7 @@ function renderAcciones() {
     return `<tr>
       <td>${a.accion}</td>
       <td style="font-size:12px">${a.tipo||'—'}</td>
+      <td style="font-size:12px;color:var(--text-dim)">${a.producto||'—'}</td>
       <td style="font-size:12px;color:var(--text-dim)">${a.fecha||'—'}</td>
       <td style="font-size:12px;color:var(--text-dim)">${a.responsable||'—'}</td>
       <td><span class="status-badge ${stA[a.estado]||'status-sin'}">${a.estado}</span></td>
@@ -1852,6 +1944,18 @@ function abrirEdicion(id, actividad, mes, semana, estado, descripcion) {
 
   // Poblar valores actuales
   const set = (eid, val) => { const el = document.getElementById(eid); if (el) el.value = val || ''; };
+  // Si el hito tiene un valor histórico que ya no está en las listas (ej: tipo antiguo,
+  // estado 'Confirmado'), se agrega como opción para no perderlo al editar
+  const ensureOpt = (eid, val) => {
+    if (!val) return;
+    const el = document.getElementById(eid); if (!el) return;
+    if (![...el.options].some(o => o.value === val || o.textContent === val)) {
+      const o = document.createElement('option'); o.textContent = val; o.value = val; el.appendChild(o);
+    }
+  };
+  ensureOpt('edit-tipo', h.tipo_hito);
+  ensureOpt('edit-estado', h.estado);
+  ensureOpt('edit-programa', h.programa);
   set('edit-actividad', h.actividad);
   set('edit-programa', h.programa);
   set('edit-tipo', h.tipo_hito);
@@ -2063,6 +2167,8 @@ async function guardarAccion() {
   if(tipo)fields['fldfaXORc1xUaWZa3']=tipo;
   const estado=document.getElementById('na-estado').value;
   if(estado)fields['fldih7FiODAgw5VUQ']=estado;
+  const producto=document.getElementById('na-producto')?.value;
+  if(producto)fields['fldzGITSeEEIFyHZ4']=producto;
   if(window.currentUser)fields['fld3zzwUDvBMI6MM6']=window.currentUser;
   const hitoId=document.getElementById('na-hito').value;
   if(hitoId)fields['fldm2TyyqaMACQuoT']=[hitoId];
@@ -2080,7 +2186,8 @@ async function guardarAccion() {
     const res=await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`,{method:'POST',body:JSON.stringify({fields,typecast:true})});
     document.getElementById('na-success').style.display='block';
     ['na-nombre','na-responsable','na-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-    ['na-tipo','na-fecha','na-periodo-inicio','na-periodo-fin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    ['na-tipo','na-producto','na-fecha','na-periodo-inicio','na-periodo-fin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    comboClear('na-hito');
     btn.textContent='Guardar acción';btn.disabled=false;
     setTimeout(()=>document.getElementById('na-success').style.display='none',3000);
     await loadData();
@@ -2094,6 +2201,15 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
   editingAccionId = id;
   document.getElementById('edit-accion-title').textContent = 'Editando: ' + nombre;
   document.getElementById('edit-accion-nombre').value = nombre;
+  const _ensureOptA = (eid, val) => {
+    if (!val) return;
+    const el = document.getElementById(eid); if (!el) return;
+    if (![...el.options].some(o => o.value === val || o.textContent === val)) {
+      const o = document.createElement('option'); o.textContent = val; o.value = val; el.appendChild(o);
+    }
+  };
+  _ensureOptA('edit-accion-tipo', tipo);
+  _ensureOptA('edit-accion-estado', estado);
   document.getElementById('edit-accion-tipo').value = tipo;
   document.getElementById('edit-accion-estado').value = estado;
   document.getElementById('edit-accion-responsable').value = responsable;
@@ -2104,17 +2220,8 @@ function abrirEdicionAccion(id, nombre, tipo, estado, responsable, fecha) {
     if(document.getElementById('edit-accion-periodo-inicio')) document.getElementById('edit-accion-periodo-inicio').value = ac.periodo_inicio||'';
     if(document.getElementById('edit-accion-periodo-fin')) document.getElementById('edit-accion-periodo-fin').value = ac.periodo_fin||'';
     if(document.getElementById('edit-accion-notas')) document.getElementById('edit-accion-notas').value = ac.notas||'';
-    const selHito = document.getElementById('edit-accion-hito');
-    if(selHito) {
-      selHito.innerHTML = '<option value="">Sin hito vinculado</option>';
-      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
-        const opt = document.createElement('option');
-        opt.value = h.id;
-        opt.textContent = `${h.actividad} (${h.programa})`;
-        if(h.id === ac.hito_id) opt.selected = true;
-        selHito.appendChild(opt);
-      });
-    }
+    if(document.getElementById('edit-accion-producto')) document.getElementById('edit-accion-producto').value = ac.producto||'';
+    comboSet('edit-accion-hito', ac.hito_id||'');
   }
   document.getElementById('edit-accion-success').style.display = 'none';
   abrirModal('modal-accion');
@@ -2140,6 +2247,8 @@ async function guardarEdicionAccion() {
   if (estado) fields['fldih7FiODAgw5VUQ'] = estado;
   if (resp) fields['fldZwLpH7KAXqCc8R'] = resp;
   if (fecha) fields['fldNuW8uW209WnDEz'] = fecha;
+  const editProducto = document.getElementById('edit-accion-producto')?.value;
+  fields['fldzGITSeEEIFyHZ4'] = editProducto || null;
   const editPrio = document.getElementById('edit-accion-prioridad').value;
   if(editPrio) fields['Prioridad'] = editPrio;
   const editHito = document.getElementById('edit-accion-hito')?.value;
@@ -2164,6 +2273,7 @@ async function guardarEdicionAccion() {
       ac.responsable=_ga('edit-accion-responsable');
       ac.fecha=_ga('edit-accion-fecha')||ac.fecha;
       ac.prioridad=_ga('edit-accion-prioridad');
+      ac.producto=_ga('edit-accion-producto');
       ac.periodo_inicio=_ga('edit-accion-periodo-inicio');
       ac.periodo_fin=_ga('edit-accion-periodo-fin');
       ac.notas=_ga('edit-accion-notas');
@@ -2189,8 +2299,9 @@ function renderKanban() {
   const COLS = [
     {key:'Sin fecha', label:'Sin fecha', color:'#6b7280'},
     {key:'Planificado', label:'Planificado', color:'#4f7cff'},
-    {key:'Confirmado', label:'Confirmado', color:'#00d4a0'},
+    {key:'Reprogramado', label:'Reprogramado', color:'#f59e0b'},
     {key:'Realizado', label:'Realizado', color:'#00d4a0'},
+    {key:'Cancelado', label:'Cancelado', color:'#b91c1c'},
   ];
   const REL_ORDER = {'Alta':0,'Media':1,'Baja':2,'':3};
   const MES_IDX = {'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
@@ -2209,7 +2320,7 @@ function renderKanban() {
   _sn('kanban-count', filtered.length + ' hitos');
 
   board.innerHTML = COLS.map(col => {
-    const hitos = sortHitos(filtered.filter(h => h.estado === col.key || (col.key==='Sin fecha'&&(h.estado==='Sin fecha'||!h.estado))));
+    const hitos = sortHitos(filtered.filter(h => h.estado === col.key || (col.key==='Sin fecha'&&(h.estado==='Sin fecha'||!h.estado)) || (col.key==='Planificado'&&h.estado==='Confirmado')));
     const cards = hitos.map(h => {
       const bg = PROG_BG[h.programa]||'#f3f4f6';
       const pc = PROG_COLORS[h.programa]||'#6b7280';
@@ -2308,9 +2419,10 @@ function renderGanttAcciones() {
     return `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>${t}</span>`;
   }).join('');
 
-  // Build header
-  const MESES_GA2=MESES.slice(5,12); // Jun-Dec only
-  const sm = ['Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  // Build header — año completo (antes solo se dibujaba junio-diciembre,
+  // por lo que las acciones de enero a mayo no aparecían en la carta Gantt)
+  const MESES_GA2=MESES;
+  const sm = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   let html = '<thead><tr><th class="act-col">Acción</th><th class="prog-col">Tipo</th>';
   MESES_GA2.forEach((m,mi) => SEMANAS.forEach((s,si) => {
     html += `<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;
@@ -2338,23 +2450,40 @@ function renderGanttAcciones() {
     return db - da;
   });
 
+  // Índice de semana absoluto en el año (0 a 47)
+  const weekIdx = d => d.getMonth()*4 + (d.getDate()<=7?0:d.getDate()<=14?1:d.getDate()<=21?2:3);
   sortedGA.forEach(a => {
     const color = TIPO_COLORS[a.tipo] || '#6b7280';
     const tipoShort = {'Nota de prensa':'NP','Post en RRSS':'RRSS','Campaña interna':'Camp','Comunicación institucional':'Inst','Otro':'Otro'};
     html += `<tr><td class="act-col"><div class="act-name">${a.accion}</div></td>`;
     html += `<td class="prog-col"><span class="prog-tag" style="background:${color}22;color:${color}">${tipoShort[a.tipo]||a.tipo||'—'}</span></td>`;
 
+    // Fecha puntual → punto; periodo (fecha inicio/fin) → barra que cubre el rango
+    let dotIdx = -1, rangoIni = -1, rangoFin = -1;
+    if (a.fecha) dotIdx = weekIdx(new Date(a.fecha + 'T12:00:00'));
+    if (a.periodo_inicio && a.periodo_fin) {
+      const di = new Date(a.periodo_inicio + 'T12:00:00');
+      const df = new Date(a.periodo_fin + 'T12:00:00');
+      const anioRef = (a.fecha ? new Date(a.fecha + 'T12:00:00') : di).getFullYear();
+      rangoIni = di.getFullYear() < anioRef ? 0 : weekIdx(di);
+      rangoFin = df.getFullYear() > anioRef ? 47 : weekIdx(df);
+      if (rangoFin < rangoIni) { const t = rangoIni; rangoIni = rangoFin; rangoFin = t; }
+    } else if (a.periodo_inicio || a.periodo_fin) {
+      // Periodo incompleto: se marca al menos la semana registrada
+      const d = new Date((a.periodo_inicio || a.periodo_fin) + 'T12:00:00');
+      rangoIni = rangoFin = weekIdx(d);
+    }
+
     MESES_GA2.forEach((m,mi) => {
       SEMANAS.forEach((s,si) => {
-        let filled = false;
-        if (a.fecha) {
-          const d = new Date(a.fecha + 'T12:00:00');
-          const dMes = MESES[d.getMonth()];
-          const dDia = d.getDate();
-          const semIdx = dDia <= 7 ? 'S1' : dDia <= 14 ? 'S2' : dDia <= 21 ? 'S3' : 'S4';
-          filled = dMes === m && semIdx === s;
-        }
-        html += `<td class="week-cell${si===0?' month-sep':''}"><div class="dot${filled?' filled':''}" style="${filled?`background:${color};width:10px;height:10px;border-radius:50%;margin:0 auto;`:''}"></div></td>`;
+        const idx = mi*4 + si;
+        const dot = dotIdx === idx;
+        const enRango = rangoIni >= 0 && idx >= rangoIni && idx <= rangoFin;
+        let inner;
+        if (dot) inner = `<div class="dot filled" style="background:${color};width:10px;height:10px;border-radius:50%;margin:0 auto;"></div>`;
+        else if (enRango) inner = `<div style="height:8px;border-radius:3px;margin:1px;background:${color};opacity:0.45"></div>`;
+        else inner = '<div class="dot"></div>';
+        html += `<td class="week-cell${si===0?' month-sep':''}">${inner}</td>`;
       });
     });
     html += '</tr>';
@@ -2408,7 +2537,9 @@ function showTooltip(e, h) {
     ${h.mes ? `<div class="tt-row"><span class="tt-label">Fecha</span><span>${h.mes}${h.semana?' '+h.semana:''}${h.anio?' '+h.anio:''}</span></div>` : ''}
     ${h.fecha_exacta ? `<div class="tt-row"><span class="tt-label">Fecha exacta</span><span>${h.fecha_exacta}</span></div>` : ''}
     ${h.estado ? `<div class="tt-row"><span class="tt-label">Estado</span><span class="status-badge ${stCls(h.estado)}">${h.estado}</span></div>` : ''}
+    ${h.id ? `<button class="tt-share-btn" onclick="enviarLinkHito('${h.id}', this)">🔗 Enviar link</button>` : ''}
   `;
+  if (window._ttHideTimer) clearTimeout(window._ttHideTimer);
   t.style.display = 'block';
   moveTooltip(e);
 }
@@ -2424,7 +2555,11 @@ function moveTooltip(e) {
 }
 
 function hideTooltip() {
-  document.getElementById('hito-tooltip').style.display = 'none';
+  // Retardo breve para poder mover el cursor hacia el tooltip y pulsar "Enviar link"
+  if (window._ttHideTimer) clearTimeout(window._ttHideTimer);
+  window._ttHideTimer = setTimeout(() => {
+    document.getElementById('hito-tooltip').style.display = 'none';
+  }, 300);
 }
 
 function tooltipAttrs(h) {
@@ -2547,28 +2682,28 @@ function buildListFilters() {
   const meses=MESES.filter(m=>allHitos.some(h=>h.mes===m));
   const ests=[...new Set(allHitos.map(h=>h.estado).filter(Boolean))].sort();
   const fill=(id,arr,label)=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=`<option value="">${label}</option>`+arr.map(v=>`<option>${v}</option>`).join('');};
-  fill('lf-programa',PROGRAMAS_FIJOS,'Todos');
+  fill('lf-programa',[...PROGRAMAS_FIJOS].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})),'Todos');
   fill('lf-tipo',tipos,'Todos');
-  fill('lf-region',REGIONES_FIJAS,'Todas');
+  fill('lf-region',['Nacional',...REGIONES_FIJAS.filter(r=>r!=='Nacional').sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}))],'Todas');
   fill('lf-comuna',coms,'Todas');
   fill('lf-mes',meses,'Todos');
   fill('lf-estado',ests,'Todos');
 }
+const ESTADOS_LEGACY_ACC=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
 function filtrarAcciones(estado) {
   const body = document.getElementById('acciones-body');
   if (!body) return;
-  const rows = body.querySelectorAll('tr');
-  rows.forEach(row => {
+  body.querySelectorAll('tr').forEach(row => {
     if (!estado) { row.style.display = ''; return; }
-    row.style.display = row.textContent.includes(estado) ? '' : 'none';
+    const badge = row.querySelector('.status-badge');
+    const e = badge ? badge.textContent.trim() : '';
+    const match = e === estado || (estado === 'Planificada' && ESTADOS_LEGACY_ACC.includes(e));
+    row.style.display = match ? '' : 'none';
   });
 }
 function filtrarAccionesEnCurso() {
-  const EN_CURSO=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
-  document.querySelectorAll('#acciones-body tr').forEach(row=>{
-    const badge = row.querySelector('.status-badge');
-    row.style.display = (badge && EN_CURSO.includes(badge.textContent.trim())) ? '' : 'none';
-  });
+  // Estados históricos: hoy se agrupan bajo Planificada
+  filtrarAcciones('Planificada');
 }
 function filtrarAccionesVinculadas() {
   const vincs = allAcciones.filter(a=>a.hito_vinculado).map(a=>a.id);
@@ -2630,7 +2765,7 @@ async function guardarLinks() {
     await airtableFetch(`/${BASE_ID}/${TABLE_ACCIONES}`, { method:'POST', body: JSON.stringify({ fields }) });
     document.getElementById('lk-success').style.display='block';
     document.getElementById('lk-fields').innerHTML='';
-    document.getElementById('lk-hito').value='';
+    comboClear('lk-hito');
     addLinkRow();
     btn.textContent='Guardar links'; btn.disabled=false;
     setTimeout(()=>document.getElementById('lk-success').style.display='none',3000);
@@ -2657,25 +2792,7 @@ function switchSubTab(sub) {
   // Scroll al top del contenido
   window.scrollTo({top: 0, behavior: 'smooth'});
 
-  if(sub==='sub-nueva-accion') {
-    const sel=document.getElementById('na-hito');
-    if(sel&&allHitos.length>0&&sel.options.length<=1){
-      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
-        const opt=document.createElement('option');
-        opt.value=h.id; opt.textContent=`${h.actividad} (${h.programa})`;
-        sel.appendChild(opt);
-      });
-    }
-  }
   if(sub==='sub-links') {
-    const sel=document.getElementById('lk-hito');
-    if(sel&&allHitos.length>0&&sel.options.length<=1){
-      allHitos.sort((a,b)=>a.n-b.n).forEach(h=>{
-        const opt=document.createElement('option');
-        opt.value=h.id; opt.textContent=`${h.actividad} (${h.programa})`;
-        sel.appendChild(opt);
-      });
-    }
     if(document.getElementById('lk-fields').children.length===0) addLinkRow();
   }
   if(sub==='sub-gantt-acciones') renderGanttAcciones();
@@ -2684,23 +2801,25 @@ function switchSubTab(sub) {
 
 function renderKPI() {
   const total=allAcciones.length;
-  const EN_CURSO_K=['En desarrollo','En diseño','Revisión de borrador','En V°B°','En curso'];
   const real=allAcciones.filter(a=>a.estado==='Realizada').length;
-  const curso=allAcciones.filter(a=>EN_CURSO_K.includes(a.estado)).length;
-  const pend=allAcciones.filter(a=>a.estado==='Planificada').length;
-  const pct=total?Math.round(real/total*100):0;
+  const plan=allAcciones.filter(a=>a.estado==='Planificada'||ESTADOS_LEGACY_ACC.includes(a.estado)).length;
+  const repro=allAcciones.filter(a=>a.estado==='Reprogramada').length;
+  const canc=allAcciones.filter(a=>a.estado==='Cancelada').length;
+  // Las canceladas no cuentan en el denominador del % completado
+  const pct=(total-canc)>0?Math.round(real/(total-canc)*100):0;
   const _setK=(id,v,prop='textContent')=>{const el=document.getElementById(id);if(el)el[prop]=v;};
   _setK('kpi-total',total);
   _setK('kpi-real',real);
-  _setK('kpi-curso',curso);
-  _setK('kpi-pend',pend);
+  _setK('kpi-plan',plan);
+  _setK('kpi-repro',repro);
+  _setK('kpi-canc',canc);
   _setK('kpi-pct',pct+'%');
   const _kpiFill=document.getElementById('kpi-fill');if(_kpiFill)_kpiFill.style.width=pct+'%';
 
   // Estado chart
   const estados={};
   allAcciones.forEach(a=>{ const e=a.estado||'Sin estado'; estados[e]=(estados[e]||0)+1; });
-  const colores={'Planificada':'#4f7cff','En desarrollo':'#f59e0b','En diseño':'#db2777','Revisión de borrador':'#7c3aed','En V°B°':'#0891b2','En curso':'#f59e0b','Realizada':'#00d4a0','Cancelada':'#6b7280','Sin estado':'#9ca3af'};
+  const colores={'Planificada':'#4f7cff','Reprogramada':'#f59e0b','Realizada':'#00d4a0','Cancelada':'#e53935','En desarrollo':'#9ca3af','En diseño':'#9ca3af','Revisión de borrador':'#9ca3af','En V°B°':'#9ca3af','En curso':'#9ca3af','Sin estado':'#9ca3af'};
   const maxE=Math.max(...Object.values(estados),1);
   const _kpiE=document.getElementById('kpi-estado-chart');if(_kpiE)_kpiE.innerHTML=Object.entries(estados).map(([k,v])=>`
     <div class="bar-row">
@@ -2723,27 +2842,7 @@ function renderKPI() {
 }
 function switchTab(tab) {
   if (tab === 'links') {
-    const sel = document.getElementById('lk-hito');
-    if (sel && allHitos.length > 0 && sel.options.length <= 1) {
-      allHitos.sort((a,b)=>a.n-b.n).forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h.id;
-        opt.textContent = `${h.actividad} (${h.programa})`;
-        sel.appendChild(opt);
-      });
-    }
     if (document.getElementById('lk-fields').children.length === 0) addLinkRow();
-  }
-  if (tab === 'nueva-accion') {
-    const sel = document.getElementById('na-hito');
-    if (sel && allHitos.length > 0 && sel.options.length <= 1) {
-      allHitos.sort((a,b)=>a.n-b.n).forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h.id;
-        opt.textContent = `${h.actividad} (${h.programa})`;
-        sel.appendChild(opt);
-      });
-    }
   }
   activeTab=tab;
   if(tab==='area-com') { setTimeout(()=>{ if(!document.querySelector('.sub-tab.active')) switchSubTab('sub-acciones'); },50); }
@@ -2759,6 +2858,11 @@ function switchTab(tab) {
 }
 // ══════════ ACCESIBILIDAD: TECLADO EN TABS ══════════
 document.addEventListener('DOMContentLoaded', () => {
+  // Orden alfabético en los desplegables estáticos (placeholder primero, "Otro" al final)
+  ordenarSelect('nh-programa');
+  ordenarSelect('nh-region', ['Nacional']);
+  ordenarSelect('na-tipo');
+  ordenarSelect('edit-accion-tipo');
   document.querySelectorAll('.tab, .sub-tab').forEach(t => {
     t.setAttribute('role', 'tab');
     t.setAttribute('tabindex', '0');
@@ -2809,6 +2913,28 @@ document.addEventListener('keydown', e => {
 });
 
 // ══════════ COMPARTIR HITO PARA COMPLETADO EXTERNO ══════════
+async function enviarLinkHito(hitoId, btn) {
+  if (!hitoId) return;
+  const original = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.textContent = 'Generando link...'; btn.disabled = true; }
+    const res = await fetch(`${WORKER}/share/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getSessionToken()}` },
+      body: JSON.stringify({ hitoId })
+    });
+    const data = await res.json();
+    if (!data.ok) { if (btn) { btn.textContent = 'Error al generar'; btn.disabled = false; } return; }
+    const link = `${location.origin}${location.pathname}?share=${data.shareToken}`;
+    try { await navigator.clipboard.writeText(link); } catch(e) {
+      // Fallback si el navegador bloquea el portapapeles
+      window.prompt('Copia el link del hito:', link);
+    }
+    if (btn) { btn.textContent = '✓ Link copiado (válido 7 días)'; btn.disabled = false; }
+  } catch (e) {
+    if (btn) { btn.textContent = original || 'Error de conexión'; btn.disabled = false; }
+  }
+}
 async function compartirHito() {
   if (!editingId) return;
   try {
@@ -2833,7 +2959,7 @@ const SHARE_LISTAS = {
   regiones: ['Nacional','Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana',"O'Higgins",'Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes'],
   meses: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
   semanas: ['S1','S2','S3','S4'],
-  estados: ['Sin fecha','Planificado','Confirmado','Realizado'],
+  estados: ['Sin fecha','Planificado','Reprogramado','Realizado','Cancelado'],
   anios: ['2026','2027','2028'],
   relevancias: ['Alta','Media','Baja']
 };
@@ -2854,6 +2980,7 @@ const SHARE_CAMPOS = [
   {n:'Fecha inicio periodo', id:'fldAtW6K6s3XVxIK5', tipo:'date'},
   {n:'Fecha fin periodo', id:'fldsCdv4fMJnLyzJq', tipo:'date'}
 ];
+SHARE_LISTAS.programas = [...SHARE_LISTAS.programas].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
 function shareVal(v){ if(v==null)return''; if(Array.isArray(v))return v.map(x=>x?.name||x).join(', '); if(typeof v==='object')return v.name||''; return String(v); }
 
 async function initShareMode(token) {
@@ -3076,7 +3203,7 @@ function initListaScroll() {
             <select class="fsel" id="edit-semana"><option value="">—</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option></select>
           </div>
           <div class="form-field"><label class="login-label">Estado</label>
-            <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Confirmado</option><option>Realizado</option></select>
+            <select class="fsel" id="edit-estado"><option>Sin fecha</option><option>Planificado</option><option>Reprogramado</option><option>Realizado</option><option>Cancelado</option></select>
           </div>
           <div class="form-field"><label class="login-label">Año</label>
             <select class="fsel" id="edit-anio">
@@ -3124,7 +3251,13 @@ function initListaScroll() {
           <div id="edit-accion-success" class="alert-success">✓ Guardado</div>
           <div class="form-grid">
             <div class="form-field full"><label class="login-label">Nombre</label><input class="login-input" id="edit-accion-nombre"></div>
-            <div class="form-field full"><label class="login-label">Hito vinculado</label><select class="fsel" id="edit-accion-hito"><option value="">Sin hito vinculado</option></select></div>
+            <div class="form-field full"><label class="login-label">Hito vinculado</label>
+              <div class="combo-wrap">
+                <input class="login-input" id="edit-accion-hito-search" placeholder="Escribe para buscar un hito..." autocomplete="off" oninput="comboFilter('edit-accion-hito')" onfocus="comboFilter('edit-accion-hito')">
+                <input type="hidden" id="edit-accion-hito" value="">
+                <div class="combo-list" id="edit-accion-hito-list"></div>
+              </div>
+            </div>
             <div class="form-field"><label class="login-label">Tipo</label>
               <select class="fsel" id="edit-accion-tipo">
 <option value="">—</option>
@@ -3140,15 +3273,24 @@ function initListaScroll() {
 <option>Otro</option>
 </select>
             </div>
+            <div class="form-field"><label class="login-label">Producto</label>
+              <select class="fsel" id="edit-accion-producto">
+<option value="">Seleccionar...</option>
+<option>Avanzada</option>
+<option>Comunicado</option>
+<option>Libreto</option>
+<option>Minuta</option>
+<option>Producción</option>
+<option>Programa</option>
+<option>Otro</option>
+</select>
+            </div>
             <div class="form-field"><label class="login-label">Estado</label>
               <select class="fsel" id="edit-accion-estado">
 <option>Planificada</option>
-<option>En desarrollo</option>
+<option>Reprogramada</option>
 <option>Realizada</option>
 <option>Cancelada</option>
-<option>En diseño</option>
-<option>Revisión de borrador</option>
-<option>En V°B°</option>
 </select>
             </div>
             <div class="form-field"><label class="login-label">Responsable</label><input class="login-input" id="edit-accion-responsable"></div>
