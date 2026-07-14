@@ -549,6 +549,7 @@ header { gap: 8px; }
     <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">Panel</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
+<div class="tab" style="color:var(--accent2)" onclick="switchTab('oportunidades')">💡 Oportunidades</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
@@ -652,6 +653,17 @@ header { gap: 8px; }
       </div>
     </div>
 
+    <div id="view-oportunidades" class="view">
+      <div class="list-container">
+        <div class="section-header"><span>Oportunidades de hito comunicable</span><span id="oportunidades-count" style="color:var(--accent2)"></span></div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Avance</th><th>Estado</th></tr></thead>
+            <tbody id="oportunidades-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <div id="view-comunas" class="view">
       <div class="list-container">
         <div class="section-header"><span>Por comuna</span><span id="comunas-count" style="color:var(--accent)"></span></div>
@@ -1345,6 +1357,8 @@ const WORKER = 'https://hitos-ddu-auth.carlosgonzalezisla.workers.dev';
 const BASE_ID = 'appR8Mu9RCtQpIrG7';
 const TABLE_HITOS = 'tblOZl2hmUBMHnnaL';
 const TABLE_ACCIONES = 'tblUisrBr2DNuqYsL';
+const TABLE_CARTERA = 'tblx9nhxAbkhR2QpK';
+let allOportunidades = [];
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SEMANAS = ['S1','S2','S3','S4'];
@@ -1543,7 +1557,8 @@ async function loadData(silent=false) {
       anio: (()=>{ const v=r.fields['Año']; if(!v) return '2026'; if(typeof v==='object'&&v!==null) return v.name||'2026'; if(typeof v==='string'&&v.length===4) return v; return '2026'; })(),
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
-      qmb20: r.fields['Actividad 20 años QMB']?.name||''
+      qmb20: r.fields['Actividad 20 años QMB']?.name||'',
+      proyecto_vinculado: r.fields['Proyecto vinculado']||[]
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
@@ -1563,6 +1578,21 @@ async function loadData(silent=false) {
                (r.fields['Hito vinculado'] && r.fields['Hito vinculado'][0]) || '',
       notas: r.fields['Notas'] || ''
     }));
+    const linkedCarteraIds = new Set();
+    allHitos.forEach(h => (h.proyecto_vinculado||[]).forEach(id => linkedCarteraIds.add(id)));
+    const crecs = await fetchAll(TABLE_CARTERA);
+    allOportunidades = crecs.filter(r => {
+      const etapa = r.fields['Etapa'] || '';
+      const avance = r.fields['Avance'];
+      const estado = (r.fields['Estado (raw)']||'').toString().toUpperCase();
+      const cumple = (typeof avance === 'number' && avance >= 0.9) || estado.includes('TERMINADO');
+      return etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(r.id);
+    }).map(r => ({
+      id: r.id, bip: r.fields['BIP']||'', nombre: r.fields['Nombre proyecto']||'',
+      programa: r.fields['Programa de origen']||'', region: r.fields['Región']||'',
+      comuna: r.fields['Comuna']||'', avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||''
+    })).sort((a,b)=>(b.avance||0)-(a.avance||0));
+    renderOportunidades();
     buildFilters(); applyFilters();
     if(!silent){
       document.getElementById('loading-indicator').style.display = 'none';
@@ -1571,6 +1601,19 @@ async function loadData(silent=false) {
   } catch(e) {
     if(!silent) document.getElementById('loading-indicator').innerHTML = `<span style="color:var(--accent3)">Error: ${e.message}</span>`;
   }
+}
+
+function renderOportunidades() {
+  const body = document.getElementById('oportunidades-body');
+  const count = document.getElementById('oportunidades-count');
+  if (!body) return;
+  count.textContent = allOportunidades.length + ' proyectos';
+  body.innerHTML = allOportunidades.map(o => `
+    <tr>
+      <td>${o.nombre}</td><td>${o.programa}</td><td>${o.region}</td><td>${o.comuna}</td>
+      <td>${typeof o.avance==='number' ? Math.round(o.avance*100)+'%' : ''}</td>
+      <td>${o.estado}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">Sin oportunidades pendientes</td></tr>';
 }
 
 // ══════════ COMBO BUSCABLE DE HITOS (orden alfabético) ══════════
@@ -2854,7 +2897,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','comunas','reconstruccion','area-com'];
+  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','oportunidades','comunas','reconstruccion','area-com'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
