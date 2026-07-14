@@ -671,7 +671,7 @@ header { gap: 8px; }
     </div>
     <div id="view-balance" class="view">
       <div class="stats-grid" id="balance-stats"></div>
-      <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto de inversión considera solo proyectos con código BIP en etapa de ejecución, para cuadrar con la Minuta de Inversión en Obras Urbanas V6.</p>
+      <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto de inversión considera solo proyectos con código BIP efectivamente en ejecución (excluye obras terminadas y la cartera "por iniciar"), siguiendo el mismo criterio que la Minuta de Inversión en Obras Urbanas V6. Puede existir una diferencia menor frente a la Minuta por proyectos que la Minuta excluye manualmente (ej. duplicados cross-programa ya contabilizados en otra línea).</p>
       <div class="two-col">
         <div class="chart-card"><div class="chart-title">Proyectos por región</div><div id="chart-balance-region"></div></div>
         <div class="chart-card"><div class="chart-title">Proyectos por comuna (top 10)</div><div id="chart-balance-comuna"></div></div>
@@ -1618,10 +1618,14 @@ async function loadData(silent=false) {
       programa: r.fields['Programa de origen']||'', region: r.fields['Región']||'',
       comuna: r.fields['Comuna']||'', etapa: r.fields['Etapa']||'',
       avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||'',
-      monto: r.fields['Monto (M$)']
+      monto: r.fields['Monto (M$)'], fuente: r.fields['Fuente Excel']||''
     }));
     allOportunidades = allCartera.filter(o => {
       const estado = (o.estado||'').toString().toUpperCase();
+      const fuente = o.fuente || '';
+      // Obras_Urbanas_por_iniciar.xlsx: proyectos que aún no arrancan por definición del archivo;
+      // su Etapa/Estado no son un indicador confiable de avance real, así que nunca son "oportunidad"
+      if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
       const cumple = (typeof o.avance === 'number' && o.avance >= 0.9) || estado.includes('TERMINADO');
       return o.etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(o.id);
     }).sort((a,b)=>(b.avance||0)-(a.avance||0));
@@ -1654,7 +1658,21 @@ function renderOportunidades() {
 function renderBalance() {
   const stats = document.getElementById('balance-stats');
   if (!stats) return;
-  const proyectosMonto = allCartera.filter(o => o.bip && o.bip.trim()!=='' && o.etapa==='Ejecución');
+  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
+  const proyectosMonto = allCartera.filter(o => {
+    if (!o.bip || o.bip.trim()==='') return false;
+    const fuente = o.fuente || '';
+    const estadoUp = (o.estado||'').toString().toUpperCase().trim();
+    // Obras_Urbanas_por_iniciar.xlsx: por definición del propio archivo, nunca cuenta como "en ejecución"
+    if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
+    // Pequeñas Localidades: criterio de "en ejecución" según Minuta V6 va por el campo Estado, no Etapa
+    if (fuente.includes('PPL_solicitud')) {
+      return PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
+    }
+    // Resto de fuentes: Etapa=Ejecución, excluyendo explícitamente Estado=Terminado
+    // (el archivo de Obras Urbanas en ejecución mezcla obras Iniciadas y Terminadas bajo la misma Etapa)
+    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
+  });
   const totalMonto = proyectosMonto.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
   const totalProy = allCartera.length;
   const iniciados = allCartera.filter(o=>o.etapa==='Ejecución').length;
