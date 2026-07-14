@@ -671,6 +671,7 @@ header { gap: 8px; }
     </div>
     <div id="view-balance" class="view">
       <div class="stats-grid" id="balance-stats"></div>
+      <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto de inversión considera solo proyectos con código BIP en etapa de ejecución, para cuadrar con la Minuta de Inversión en Obras Urbanas V6.</p>
       <div class="two-col">
         <div class="chart-card"><div class="chart-title">Proyectos por región</div><div id="chart-balance-region"></div></div>
         <div class="chart-card"><div class="chart-title">Proyectos por comuna (top 10)</div><div id="chart-balance-comuna"></div></div>
@@ -1653,14 +1654,15 @@ function renderOportunidades() {
 function renderBalance() {
   const stats = document.getElementById('balance-stats');
   if (!stats) return;
-  const totalMonto = allCartera.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
+  const proyectosMonto = allCartera.filter(o => o.bip && o.bip.trim()!=='' && o.etapa==='Ejecución');
+  const totalMonto = proyectosMonto.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
   const totalProy = allCartera.length;
   const iniciados = allCartera.filter(o=>o.etapa==='Ejecución').length;
   const porIniciar = totalProy - iniciados;
   const fmtMonto = totalMonto.toLocaleString('es-CL', {maximumFractionDigits:0});
   stats.innerHTML = `
-    <div class="stat-card blue"><div class="stat-label">Monto total inversión (M$)</div><div class="stat-value" style="font-size:22px">${fmtMonto}</div></div>
-    <div class="stat-card"><div class="stat-label">Total proyectos</div><div class="stat-value">${totalProy}</div></div>
+    <div class="stat-card blue"><div class="stat-label">Monto inversión (con BIP, en ejecución)</div><div class="stat-value" style="font-size:22px">${fmtMonto}</div></div>
+    <div class="stat-card" title="${proyectosMonto.length} proyectos con BIP en ejecución considerados en el monto"><div class="stat-label">Total proyectos</div><div class="stat-value">${totalProy}</div></div>
     <div class="stat-card green"><div class="stat-label">Iniciados</div><div class="stat-value">${iniciados}</div></div>
     <div class="stat-card yellow"><div class="stat-label">Por iniciar</div><div class="stat-value">${porIniciar}</div></div>
   `;
