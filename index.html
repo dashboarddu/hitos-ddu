@@ -377,6 +377,10 @@ body.dark .combo-list { background: #181c27; border-color: #2a3050; }
 
 /* Gantt: columna programa compacta */
 .gantt-table th.prog-col, .gantt-table td.prog-col { max-width: 92px; min-width: 70px; width: 92px; }
+#gantt-table th.bip-col, #gantt-table td.bip-col { position: sticky; left: 0; z-index: 2; width: 78px; min-width: 78px; max-width: 78px; background: var(--white); text-align: left; padding: 6px 8px; font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+#gantt-table th.act-col, #gantt-table td.act-col { left: 78px !important; }
+#gantt-table th.prog-col, #gantt-table td.prog-col { left: 278px !important; }
+body.dark #gantt-table td.bip-col { background: #181c27 !important; }
 .gantt-table td.prog-col .prog-tag { font-size: 10px; padding: 2px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 86px; display: inline-block; }
 
 /* ══════════ CHIPS DE FILTROS ══════════ */
@@ -550,6 +554,7 @@ header { gap: 8px; }
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
 <div class="tab" style="color:var(--accent2)" onclick="switchTab('oportunidades')">💡 Oportunidades</div>
+    <div class="tab" style="color:#7c3aed" onclick="switchTab('balance')">📊 Balance</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
@@ -658,8 +663,24 @@ header { gap: 8px; }
         <div class="section-header"><span>Oportunidades de hito comunicable</span><span id="oportunidades-count" style="color:var(--accent2)"></span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Avance</th><th>Estado</th></tr></thead>
+            <thead><tr><th>BIP</th><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Avance</th><th>Estado</th></tr></thead>
             <tbody id="oportunidades-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="view-balance" class="view">
+      <div class="stats-grid" id="balance-stats"></div>
+      <div class="two-col">
+        <div class="chart-card"><div class="chart-title">Proyectos por región</div><div id="chart-balance-region"></div></div>
+        <div class="chart-card"><div class="chart-title">Proyectos por comuna (top 10)</div><div id="chart-balance-comuna"></div></div>
+      </div>
+      <div class="list-container">
+        <div class="section-header"><span>Desglose por programa · con/sin BIP · ejecución/por iniciar</span></div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>Programa</th><th>En ejecución · con BIP</th><th>En ejecución · sin BIP</th><th>Por iniciar · con BIP</th><th>Por iniciar · sin BIP</th></tr></thead>
+            <tbody id="balance-programa-body"></tbody>
           </table>
         </div>
       </div>
@@ -1131,6 +1152,13 @@ header { gap: 8px; }
               <label class="login-label">Etapa de la obra</label>
               <input class="login-input" id="nh-etapa-obra" placeholder="Ej: Diseño, Licitación, Ejecución, Recepción...">
             </div>
+            <div class="form-field"><label class="login-label">Código BIP</label><input class="login-input" id="nh-bip" placeholder="Ej: 40021675-0"></div>
+            <div class="form-field"><label class="login-label">Etapa del código BIP</label>
+              <select class="fsel" id="nh-etapa-bip">
+                <option value="">Seleccionar...</option>
+                <option>Diseño</option><option>Ejecución</option><option>Terminado</option><option>Otro</option>
+              </select>
+            </div>
             <div class="form-field" id="campo-comuna" style="">
               <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
             <div class="form-field full" style="background:rgba(79,124,255,0.05);border:1px solid rgba(79,124,255,0.2);border-radius:8px;padding:12px">
@@ -1359,6 +1387,7 @@ const TABLE_HITOS = 'tblOZl2hmUBMHnnaL';
 const TABLE_ACCIONES = 'tblUisrBr2DNuqYsL';
 const TABLE_CARTERA = 'tblx9nhxAbkhR2QpK';
 let allOportunidades = [];
+let allCartera = [];
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SEMANAS = ['S1','S2','S3','S4'];
@@ -1558,7 +1587,9 @@ async function loadData(silent=false) {
       etapa_obra: r.fields['Etapa obra']||'',
       region_reconstruccion: r.fields['Región Reconstrucción']?.name||'',
       qmb20: r.fields['Actividad 20 años QMB']?.name||'',
-      proyecto_vinculado: r.fields['Proyecto vinculado']||[]
+      proyecto_vinculado: r.fields['Proyecto vinculado']||[],
+      bip: r.fields['Código BIP']||'',
+      etapa_bip: (()=>{ const v=r.fields['Etapa BIP']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })()
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
     allAcciones = arecs.map(r => ({
@@ -1581,18 +1612,20 @@ async function loadData(silent=false) {
     const linkedCarteraIds = new Set();
     allHitos.forEach(h => (h.proyecto_vinculado||[]).forEach(id => linkedCarteraIds.add(id)));
     const crecs = await fetchAll(TABLE_CARTERA);
-    allOportunidades = crecs.filter(r => {
-      const etapa = r.fields['Etapa'] || '';
-      const avance = r.fields['Avance'];
-      const estado = (r.fields['Estado (raw)']||'').toString().toUpperCase();
-      const cumple = (typeof avance === 'number' && avance >= 0.9) || estado.includes('TERMINADO');
-      return etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(r.id);
-    }).map(r => ({
+    allCartera = crecs.map(r => ({
       id: r.id, bip: r.fields['BIP']||'', nombre: r.fields['Nombre proyecto']||'',
       programa: r.fields['Programa de origen']||'', region: r.fields['Región']||'',
-      comuna: r.fields['Comuna']||'', avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||''
-    })).sort((a,b)=>(b.avance||0)-(a.avance||0));
+      comuna: r.fields['Comuna']||'', etapa: r.fields['Etapa']||'',
+      avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||'',
+      monto: r.fields['Monto (M$)']
+    }));
+    allOportunidades = allCartera.filter(o => {
+      const estado = (o.estado||'').toString().toUpperCase();
+      const cumple = (typeof o.avance === 'number' && o.avance >= 0.9) || estado.includes('TERMINADO');
+      return o.etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(o.id);
+    }).sort((a,b)=>(b.avance||0)-(a.avance||0));
     renderOportunidades();
+    renderBalance();
     buildFilters(); applyFilters();
     if(!silent){
       document.getElementById('loading-indicator').style.display = 'none';
@@ -1610,10 +1643,57 @@ function renderOportunidades() {
   count.textContent = allOportunidades.length + ' proyectos';
   body.innerHTML = allOportunidades.map(o => `
     <tr>
+      <td style="font-variant-numeric:tabular-nums">${o.bip||'—'}</td>
       <td>${o.nombre}</td><td>${o.programa}</td><td>${o.region}</td><td>${o.comuna}</td>
       <td>${typeof o.avance==='number' ? Math.round(o.avance*100)+'%' : ''}</td>
       <td>${o.estado}</td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">Sin oportunidades pendientes</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim)">Sin oportunidades pendientes</td></tr>';
+}
+
+function renderBalance() {
+  const stats = document.getElementById('balance-stats');
+  if (!stats) return;
+  const totalMonto = allCartera.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
+  const totalProy = allCartera.length;
+  const iniciados = allCartera.filter(o=>o.etapa==='Ejecución').length;
+  const porIniciar = totalProy - iniciados;
+  const fmtMonto = totalMonto.toLocaleString('es-CL', {maximumFractionDigits:0});
+  stats.innerHTML = `
+    <div class="stat-card blue"><div class="stat-label">Monto total inversión (M$)</div><div class="stat-value" style="font-size:22px">${fmtMonto}</div></div>
+    <div class="stat-card"><div class="stat-label">Total proyectos</div><div class="stat-value">${totalProy}</div></div>
+    <div class="stat-card green"><div class="stat-label">Iniciados</div><div class="stat-value">${iniciados}</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Por iniciar</div><div class="stat-value">${porIniciar}</div></div>
+  `;
+  const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
+  function countBy(field){
+    const c={};
+    allCartera.forEach(o=>{ const v=o[field]||'Sin datos'; c[v]=(c[v]||0)+1; });
+    return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));
+  }
+  function renderBarLocal(id,data){
+    const el=document.getElementById(id); if(!el) return;
+    const entries=Object.entries(data).filter(([k])=>k!=='Sin datos').slice(0,10);
+    const max=Math.max(...entries.map(([,v])=>v),1);
+    el.innerHTML=entries.map(([k,v],i)=>{
+      const color=palette[i%palette.length];
+      return `<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${color}"></div></div><div class="bar-count">${v}</div></div>`;
+    }).join('');
+  }
+  renderBarLocal('chart-balance-region', countBy('region'));
+  renderBarLocal('chart-balance-comuna', countBy('comuna'));
+  const programas = [...new Set(allCartera.map(o=>o.programa).filter(Boolean))].sort();
+  const body = document.getElementById('balance-programa-body');
+  if (body) {
+    body.innerHTML = programas.map(p => {
+      const rows = allCartera.filter(o=>o.programa===p);
+      const conBip = o => o.bip && o.bip.trim() !== '';
+      const ejecConBip = rows.filter(o=>o.etapa==='Ejecución' && conBip(o)).length;
+      const ejecSinBip = rows.filter(o=>o.etapa==='Ejecución' && !conBip(o)).length;
+      const iniConBip = rows.filter(o=>o.etapa!=='Ejecución' && conBip(o)).length;
+      const iniSinBip = rows.filter(o=>o.etapa!=='Ejecución' && !conBip(o)).length;
+      return `<tr><td>${p}</td><td>${ejecConBip}</td><td>${ejecSinBip}</td><td>${iniConBip}</td><td>${iniSinBip}</td></tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
+  }
 }
 
 // ══════════ COMBO BUSCABLE DE HITOS (orden alfabético) ══════════
@@ -1760,7 +1840,7 @@ function renderGantt() {
   _sn('gantt-count',filtered.length+' hitos activos');
   const MESES_GANTT=MESES.slice(5,12); // Jun-Dec
   const sm=['Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  let html='<thead><tr><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
+  let html='<thead><tr><th class="bip-col">BIP</th><th class="act-col">Actividad</th><th class="prog-col">Programa</th>';
   MESES_GANTT.forEach((m,mi)=>SEMANAS.forEach((s,si)=>{html+=`<th class="${si===0?'month-sep':''}" style="min-width:22px;font-size:9px">${si===0?sm[mi]+'<br>':''}${s}</th>`;}));
   html+='</tr></thead><tbody>';
   const MES_IDX={'Enero':1,'Febrero':2,'Marzo':3,'Abril':4,'Mayo':5,'Junio':6,'Julio':7,'Agosto':8,'Septiembre':9,'Octubre':10,'Noviembre':11,'Diciembre':12};
@@ -1803,7 +1883,7 @@ function renderGantt() {
     const color=PROG_COLORS[h.programa]||'#6b7280', bg=PROG_BG[h.programa]||'#f3f4f6';
     const rowStyle=idx%2===0?'':'background:#f8f9fc;';
     const tAttr=`onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"`;
-    html+=`<tr style="${rowStyle}" ${tAttr}><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.actividad}</div></td>`;
+    html+=`<tr style="${rowStyle}" ${tAttr}><td class="bip-col">${h.bip||'—'}</td><td class="act-col" style="max-width:240px;overflow:hidden"><div class="act-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.actividad}</div></td>`;
     html+=`<td class="prog-col"><span class="prog-tag" style="background:${bg};color:${color}">${sp[h.programa]||(h.programa||'').slice(0,10)}</span></td>`;
     const MESES_G=MESES.slice(5,12);
     MESES_G.forEach((m,gmi)=>SEMANAS.forEach((s,si)=>{
@@ -2016,6 +2096,8 @@ function abrirEdicion(id, actividad, mes, semana, estado, descripcion) {
   set('edit-descripcion', h.descripcion);
   set('edit-relevancia', h.relevancia);
   set('edit-etapa-obra', h.etapa_obra);
+  set('edit-bip', h.bip);
+  set('edit-etapa-bip', h.etapa_bip);
   set('edit-region-reconstruccion', h.region_reconstruccion);
   set('edit-qmb-20', h.qmb20);
   set('edit-fecha-exacta', h.fecha_exacta);
@@ -2106,6 +2188,8 @@ async function guardarEdicion() {
   fields['fldrkTGiKMJ81NIfs']=gv('edit-etapa-obra');                      // Etapa obra
   mapIf('edit-region-reconstruccion','fld0zi9xajijPq5yi');                // Región Reconstrucción
   mapIf('edit-qmb-20','fldfyWuIDpPAZoPVF');                               // Actividad 20 años QMB
+  fields['fld71wCsD1sYR8mh7']=gv('edit-bip');                             // Código BIP (permite limpiar)
+  mapIf('edit-etapa-bip','fld5bH5FDqMUkijTS');                            // Etapa BIP
   mapIf('edit-fecha-exacta','fldHCAMOsbuzrwzcc');                         // Fecha hito
   mapIf('edit-periodo-inicio','fldAtW6K6s3XVxIK5');                       // Fecha inicio periodo
   mapIf('edit-periodo-fin','fldsCdv4fMJnLyzJq');                          // Fecha fin periodo
@@ -2127,6 +2211,7 @@ async function guardarEdicion() {
       h.fecha_exacta=gv('edit-fecha-exacta')||h.fecha_exacta;
       h.periodo_inicio=gv('edit-periodo-inicio')||h.periodo_inicio;
       h.periodo_fin=gv('edit-periodo-fin')||h.periodo_fin;
+      h.bip=gv('edit-bip'); h.etapa_bip=gv('edit-etapa-bip')||h.etapa_bip;
     }
     cerrarEdicion();
     btn.textContent='Guardar cambios';btn.disabled=false;
@@ -2178,6 +2263,10 @@ async function guardarHito() {
   if(regionRecons)fields['fld0zi9xajijPq5yi']=regionRecons;
   const qmb20=document.getElementById('campo-qmb-20').style.display!=='none'?document.getElementById('nh-qmb-20').value:'';
   if(qmb20)fields['fldfyWuIDpPAZoPVF']=qmb20;
+  const bip=document.getElementById('nh-bip').value.trim();
+  if(bip)fields['fld71wCsD1sYR8mh7']=bip;
+  const etapaBip=document.getElementById('nh-etapa-bip').value;
+  if(etapaBip)fields['fld5bH5FDqMUkijTS']=etapaBip;
   try {
     // Calculate next N°
     // Consultar el N° máximo real en Airtable justo antes de crear
@@ -2197,7 +2286,7 @@ async function guardarHito() {
     ['nh-actividad','nh-region','nh-comuna','nh-descripcion','nh-fecha-exacta','nh-periodo-inicio','nh-periodo-fin'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('nh-relevancia').value='';
     document.getElementById('nh-anio').value='';
-    ['nh-programa','nh-tipo','nh-mes','nh-semana'].forEach(id=>document.getElementById(id).value='');
+    ['nh-programa','nh-tipo','nh-mes','nh-semana','nh-bip','nh-etapa-bip'].forEach(id=>document.getElementById(id).value='');
     btn.textContent='Guardar hito';btn.disabled=false;
     setTimeout(()=>document.getElementById('nh-success').style.display='none',3000);
     await loadData();
@@ -2376,6 +2465,7 @@ function renderKanban() {
       const fecha = h.fecha_exacta ? new Date(h.fecha_exacta+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}) : (h.mes?(h.mes+(h.semana?' '+h.semana:'')):'Sin fecha');
       return `<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow 0.2s" onmouseenter="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.12)'" onmouseleave="this.style.boxShadow=''" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\'")}','${h.mes||''}','${h.semana||''}','${h.estado}','')">
         <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;line-height:1.3">${h.actividad}</div>
+        ${h.bip ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums">BIP ${h.bip}${h.etapa_bip?' · '+h.etapa_bip:''}</div>` : ''}
         <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
           <span class="prog-tag" style="background:${bg};color:${pc};font-size:10px">${h.programa}</span>
           ${rel}
@@ -2578,6 +2668,7 @@ function showTooltip(e, h) {
   const bg = PROG_BG[h.programa]||'#f3f4f6';
   t.innerHTML = `
     <div class="tt-title">${h.actividad||h.accion||''}</div>
+    ${h.bip ? `<div class="tt-row"><span class="tt-label">BIP</span><span>${h.bip}${h.etapa_bip?' · '+h.etapa_bip:''}</span></div>` : ''}
     ${h.programa ? `<div class="tt-row"><span class="tt-label">Programa</span><span class="tt-badge" style="background:${bg};color:${color}">${h.programa}</span></div>` : ''}
     ${h.tipo_hito||h.tipo ? `<div class="tt-row"><span class="tt-label">Tipo</span><span>${h.tipo_hito||h.tipo}</span></div>` : ''}
     ${h.region ? `<div class="tt-row"><span class="tt-label">Región</span><span>${h.region}</span></div>` : ''}
@@ -2897,7 +2988,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','oportunidades','comunas','reconstruccion','area-com'];
+  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','oportunidades','balance','comunas','reconstruccion','area-com'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
@@ -3264,6 +3355,13 @@ function initListaScroll() {
             <select class="fsel" id="edit-relevancia"><option value="">Seleccionar...</option></select>
           </div>
           <div class="form-field"><label class="login-label">Etapa obra</label><input class="login-input" id="edit-etapa-obra" placeholder="Ej: Inicio de obra"></div>
+          <div class="form-field"><label class="login-label">Código BIP</label><input class="login-input" id="edit-bip" placeholder="Ej: 40021675-0"></div>
+          <div class="form-field"><label class="login-label">Etapa del código BIP</label>
+            <select class="fsel" id="edit-etapa-bip">
+              <option value="">Seleccionar...</option>
+              <option>Diseño</option><option>Ejecución</option><option>Terminado</option><option>Otro</option>
+            </select>
+          </div>
           <div class="form-field"><label class="login-label">Región Reconstrucción</label>
             <select class="fsel" id="edit-region-reconstruccion"><option value="">No aplica</option></select>
           </div>
