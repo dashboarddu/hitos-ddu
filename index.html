@@ -555,7 +555,7 @@ header { gap: 8px; }
     <div class="tab" onclick="switchTab('lista')">Lista</div>
     <div class="tab" style="color:#0891b2" onclick="switchTab('noticias')">📰 Hitos con noticias</div>
 <div class="tab" style="color:var(--accent2)" onclick="switchTab('oportunidades')">💡 Oportunidades</div>
-    <div class="tab" style="color:#7c3aed" onclick="switchTab('balance')">📊 Balance</div>
+    <div class="tab" style="color:#7c3aed" onclick="switchTab('balance')">📊 Cartera 2026</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
@@ -729,7 +729,7 @@ header { gap: 8px; }
     </div>
     <div id="view-balance" class="view">
       <div class="stats-grid" id="balance-stats"></div>
-      <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto de inversión considera solo proyectos con código BIP efectivamente en ejecución (excluye obras terminadas y la cartera "por iniciar"), siguiendo el mismo criterio que la Minuta de Inversión en Obras Urbanas V6. Puede existir una diferencia menor frente a la Minuta por proyectos que la Minuta excluye manualmente (ej. duplicados cross-programa ya contabilizados en otra línea).</p>
+      <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto en ejecución excluye obras terminadas y la cartera "por iniciar", siguiendo el mismo criterio que la Minuta de Inversión en Obras Urbanas V6. Puede existir una diferencia menor frente a la Minuta por proyectos que esta excluye manualmente (ej. duplicados cross-programa ya contabilizados en otra línea). El "Monto total BIP" suma todos los proyectos con código BIP sin distinción de etapa.</p>
       <div class="two-col">
         <div class="chart-card"><div class="chart-title">Proyectos por región</div><div id="chart-balance-region"></div></div>
         <div class="chart-card">
@@ -1817,9 +1817,10 @@ function renderOportunidades() {
 function renderBalance() {
   const stats = document.getElementById('balance-stats');
   if (!stats) return;
+  const esProgramaValido = (p) => p && p.trim() !== '' && p.trim() !== 'Programa de origen';
   const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
-  const proyectosMonto = allCartera.filter(o => {
-    if (!o.bip || o.bip.trim()==='') return false;
+  const conBip = allCartera.filter(o => o.bip && o.bip.trim() !== '');
+  const proyectosMonto = conBip.filter(o => {
     const fuente = o.fuente || '';
     const estadoUp = (o.estado||'').toString().toUpperCase().trim();
     // Obras_Urbanas_por_iniciar.xlsx: por definición del propio archivo, nunca cuenta como "en ejecución"
@@ -1832,14 +1833,23 @@ function renderBalance() {
     // (el archivo de Obras Urbanas en ejecución mezcla obras Iniciadas y Terminadas bajo la misma Etapa)
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
   });
-  const totalMonto = proyectosMonto.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
-  const totalCartera = allCartera.length;
-  const totalConsiderados = proyectosMonto.length;
-  const fmtMonto = totalMonto.toLocaleString('es-CL', {maximumFractionDigits:0});
+  const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
+  const porIniciarDetalle = conBip.filter(o =>
+    !idsEnEjecucion.has(o.id) &&
+    !(o.estado||'').toString().toUpperCase().includes('TERMINADO')
+  ).sort((a,b)=>(b.monto||0)-(a.monto||0));
+
+  const sumMonto = (arr) => arr.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
+  const fmt = (n) => n.toLocaleString('es-CL', {maximumFractionDigits:0});
+
+  const montoTotalBIP = sumMonto(conBip);
+  const montoEjecucion = sumMonto(proyectosMonto);
+  const montoPorIniciar = sumMonto(porIniciarDetalle);
+
   stats.innerHTML = `
-    <div class="stat-card blue"><div class="stat-label">Monto inversión (con BIP, en ejecución)</div><div class="stat-value" style="font-size:22px">${fmtMonto}</div></div>
-    <div class="stat-card yellow" title="No todos estos proyectos suman al monto de inversión"><div class="stat-label">Total proyectos en cartera</div><div class="stat-value">${totalCartera}</div></div>
-    <div class="stat-card green" title="Con BIP y en ejecución real, según el mismo criterio del monto"><div class="stat-label">Proyectos considerados en el monto</div><div class="stat-value">${totalConsiderados}</div></div>
+    <div class="stat-card blue"><div class="stat-label">Monto total BIP</div><div class="stat-value" style="font-size:22px">${fmt(montoTotalBIP)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${conBip.length} proyectos con código BIP</div></div>
+    <div class="stat-card green"><div class="stat-label">Monto en ejecución</div><div class="stat-value" style="font-size:22px">${fmt(montoEjecucion)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${proyectosMonto.length} proyectos</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Monto por iniciar</div><div class="stat-value" style="font-size:22px">${fmt(montoPorIniciar)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${porIniciarDetalle.length} proyectos</div></div>
   `;
   const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
   function countBy(field){
@@ -1874,22 +1884,16 @@ function renderBalance() {
     selComuna.innerHTML = '<option value="">Buscar comuna...</option>' + comunas.map(c=>`<option>${c}</option>`).join('');
     if (actual) { selComuna.value = actual; mostrarDetalleComuna(actual); }
   }
-  const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
-  const programas = [...new Set(allCartera.map(o=>o.programa).filter(Boolean))].sort();
+  const programas = [...new Set(allCartera.map(o=>o.programa).filter(esProgramaValido))].sort();
   const body = document.getElementById('balance-programa-body');
   if (body) {
     body.innerHTML = programas.map(p => {
-      const conBip = allCartera.filter(o => o.programa===p && o.bip && o.bip.trim()!=='');
-      const enEjecucion = conBip.filter(o => idsEnEjecucion.has(o.id)).length;
-      const porIniciar = conBip.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO')).length;
+      const conBipPrograma = conBip.filter(o => o.programa===p);
+      const enEjecucion = conBipPrograma.filter(o => idsEnEjecucion.has(o.id)).length;
+      const porIniciar = conBipPrograma.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO')).length;
       return `<tr><td>${p}</td><td>${enEjecucion}</td><td>${porIniciar}</td></tr>`;
     }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
   }
-  const porIniciarDetalle = allCartera.filter(o =>
-    o.bip && o.bip.trim() !== '' &&
-    !idsEnEjecucion.has(o.id) &&
-    !(o.estado||'').toString().toUpperCase().includes('TERMINADO')
-  ).sort((a,b)=>(b.monto||0)-(a.monto||0));
   const bodyPI = document.getElementById('balance-porIniciar-body');
   const countPI = document.getElementById('balance-porIniciar-count');
   if (bodyPI) {
