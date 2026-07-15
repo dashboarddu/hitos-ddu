@@ -591,6 +591,7 @@ header { gap: 8px; }
         <div class="reporte-item" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades</div>
         <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Especial</div>
         <div class="reporte-item" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos</div>
+        <div class="reporte-item" onclick="generarReporte('especial','Reconstrucción')">🏚️ Reconstrucción</div>
       </div>
       <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
     </div>
@@ -746,6 +747,15 @@ header { gap: 8px; }
           <table class="list-table">
             <thead><tr><th>Programa</th><th>En ejecución</th><th>Por iniciar</th></tr></thead>
             <tbody id="balance-programa-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="list-container">
+        <div class="section-header"><span>Detalle de obras por iniciar (con BIP)</span><span id="balance-porIniciar-count" style="color:var(--accent2)"></span></div>
+        <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
+          <table class="list-table">
+            <thead><tr><th>BIP</th><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Monto (M$)</th></tr></thead>
+            <tbody id="balance-porIniciar-body"></tbody>
           </table>
         </div>
       </div>
@@ -1459,7 +1469,7 @@ header { gap: 8px; }
           <p style="margin:0 0 4px"><b>Gantt / Kanban / Calendario / Lista</b> — distintas formas de ver los mismos hitos, filtrables por programa, región, comuna, tipo, mes y estado.</p>
           <p style="margin:0 0 4px"><b>Hitos con noticias</b> — sugiere qué hitos ya tienen cobertura de prensa, agrupando por nivel de coincidencia (match automático, no oficial).</p>
           <p style="margin:0 0 4px"><b>Oportunidades</b> — proyectos con código BIP que están en ejecución con avance alto (≥90%) o terminados, y que todavía no tienen un hito comunicacional asociado — candidatos a inauguración o nota de prensa.</p>
-          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), desgloses por región, comuna y programa, y un buscador de comuna que muestra el detalle de proyectos, monto, programa y etapa para la comuna elegida.</p>
+          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), desgloses por región, comuna y programa, un buscador de comuna con el detalle de esa comuna, y un listado completo de las obras "por iniciar" (proyecto, comuna, monto) — no solo el total agregado.</p>
           <p style="margin:0 0 16px"><b>Por comuna / Regiones Reconstrucción / Área Comunicaciones</b> — vistas y gestión especializadas por esos recortes.</p>
 
           <p style="font-weight:700;margin:0 0 6px">Botón "📄 Reportes"</p>
@@ -1747,7 +1757,7 @@ async function loadData(silent=false) {
       programa: r.fields['Programa de origen']||'', region: normalizaRegion(r.fields['Región']),
       comuna: r.fields['Comuna']||'', etapa: r.fields['Etapa']||'',
       avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||'',
-      monto: r.fields['Monto (M$)'], fuente: r.fields['Fuente Excel']||''
+      monto: r.fields['Monto (M$)'], fuente: r.fields['Fuente Excel']||'', linea: r.fields['Línea de inversión']||''
     }));
     const carteraBipPorId = {};
     allCartera.forEach(c => { carteraBipPorId[c.id] = c.bip; });
@@ -1834,7 +1844,10 @@ function renderBalance() {
   const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
   function countBy(field){
     const c={};
-    allCartera.forEach(o=>{ const v=o[field]||'Sin datos'; c[v]=(c[v]||0)+1; });
+    allCartera.forEach(o=>{
+      if ((o.estado||'').toString().toUpperCase().includes('TERMINADO')) return;
+      const v=o[field]||'Sin datos'; c[v]=(c[v]||0)+1;
+    });
     return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));
   }
   function renderBarLocal(id,data){
@@ -1871,6 +1884,19 @@ function renderBalance() {
       const porIniciar = conBip.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO')).length;
       return `<tr><td>${p}</td><td>${enEjecucion}</td><td>${porIniciar}</td></tr>`;
     }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
+  }
+  const porIniciarDetalle = allCartera.filter(o =>
+    o.bip && o.bip.trim() !== '' &&
+    !idsEnEjecucion.has(o.id) &&
+    !(o.estado||'').toString().toUpperCase().includes('TERMINADO')
+  ).sort((a,b)=>(b.monto||0)-(a.monto||0));
+  const bodyPI = document.getElementById('balance-porIniciar-body');
+  const countPI = document.getElementById('balance-porIniciar-count');
+  if (bodyPI) {
+    if (countPI) countPI.textContent = porIniciarDetalle.length + ' proyectos';
+    bodyPI.innerHTML = porIniciarDetalle.map(o => `
+      <tr><td style="font-variant-numeric:tabular-nums">${o.bip}</td><td>${o.nombre||'—'}</td><td>${o.programa||'—'}</td><td>${o.region||'—'}</td><td>${o.comuna||'—'}</td><td>${typeof o.monto==='number'?o.monto.toLocaleString('es-CL',{maximumFractionDigits:0}):'—'}</td></tr>
+    `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">Sin proyectos por iniciar</td></tr>';
   }
 }
 
@@ -1941,7 +1967,9 @@ function mostrarDetalleComuna(comuna) {
   if (!box) return;
   if (!comuna) { box.style.display = 'none'; box.innerHTML = ''; return; }
   const norm = comuna.trim().toUpperCase();
-  const rows = allCartera.filter(o => (o.comuna||'').trim().toUpperCase() === norm);
+  const todas = allCartera.filter(o => (o.comuna||'').trim().toUpperCase() === norm);
+  const rows = todas.filter(o => !(o.estado||'').toString().toUpperCase().includes('TERMINADO'));
+  const terminados = todas.length - rows.length;
   const conBip = rows.filter(o => o.bip && o.bip.trim()!=='');
   const porPrograma = {};
   conBip.forEach(o => { porPrograma[o.programa] = (porPrograma[o.programa]||0) + 1; });
@@ -1954,6 +1982,7 @@ function mostrarDetalleComuna(comuna) {
     <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Monto (con BIP): M$ ${montoTotal.toLocaleString('es-CL',{maximumFractionDigits:0})}</div>
     <div style="font-size:10.5px;color:var(--text-dim)">Por programa: ${Object.entries(porPrograma).map(([k,v])=>`${k} (${v})`).join(' · ')||'—'}</div>
     <div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">Por etapa: ${Object.entries(porEtapa).map(([k,v])=>`${k} (${v})`).join(' · ')||'—'}</div>
+    ${terminados>0 ? `<div style="font-size:9.5px;color:var(--text-dim);margin-top:4px;font-style:italic">(${terminados} proyecto${terminados>1?'s':''} Terminado${terminados>1?'s':''} no se cuenta${terminados>1?'n':''} arriba)</div>` : ''}
   `;
 }
 
@@ -2024,6 +2053,14 @@ function generarReporte(tipo, valor) {
     }
     titulo = `Reporte de Obras Urbanas — ${valor}`;
     subtitulo = `Cartera de proyectos con código BIP del programa ${valor}`;
+  } else if (tipo === 'especial' && valor === 'Reconstrucción') {
+    const RECONSTRUCCION_KW = ['incendio', 'riesgo de desastre', 'reconstruccion', 'plan costanera', 'plan valparaiso'];
+    rows = rows.filter(o => {
+      const linea = _normSimple(o.linea || '');
+      return RECONSTRUCCION_KW.some(k => linea.includes(k));
+    });
+    titulo = 'Reporte de Reconstrucción — Obras Urbanas';
+    subtitulo = 'Proyectos con código BIP de las líneas de reconstrucción: incendios, riesgo de desastres y planes de reconstrucción';
   }
 
   const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
@@ -2041,14 +2078,20 @@ function generarReporte(tipo, valor) {
   const fmt = (n) => n.toLocaleString('es-CL',{maximumFractionDigits:0});
 
   const destacadas = [...enEjecucion].sort((a,b)=>(b.monto||0)-(a.monto||0)).slice(0,8);
+  const destacadasPorIniciar = [...porIniciar].sort((a,b)=>(b.monto||0)-(a.monto||0)).slice(0,8);
 
-  // Desglose secundario: por programa (si es nacional/región) o por región (si es programa)
+  // Desglose secundario: por programa (si es nacional/región), por región (si es programa), por línea (si es especial)
   let desgloseTitulo, desgloseFilas;
   if (tipo === 'programa') {
     const porRegion = {};
     enEjecucion.forEach(o => { const r = o.region||'Sin dato'; porRegion[r] = (porRegion[r]||0)+1; });
     desgloseTitulo = 'Obras en ejecución por región';
     desgloseFilas = Object.entries(porRegion).sort((a,b)=>b[1]-a[1]);
+  } else if (tipo === 'especial') {
+    const porLinea = {};
+    enEjecucion.forEach(o => { const l = o.linea||'Sin dato'; porLinea[l] = (porLinea[l]||0)+1; });
+    desgloseTitulo = 'Obras en ejecución por línea de reconstrucción';
+    desgloseFilas = Object.entries(porLinea).sort((a,b)=>b[1]-a[1]);
   } else {
     const porPrograma = {};
     enEjecucion.forEach(o => { const p = o.programa||'Sin dato'; porPrograma[p] = (porPrograma[p]||0)+1; });
@@ -2108,9 +2151,14 @@ function generarReporte(tipo, valor) {
       <tr><th>Proyecto</th><th>Comuna</th><th>Monto (M$)</th><th>Avance</th></tr>
       ${destacadas.map(o=>`<tr><td>${o.nombre||'—'}</td><td>${o.comuna||'—'}</td><td>${fmt(o.monto||0)}</td><td>${typeof o.avance==='number'?Math.round(o.avance*100)+'%':'—'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#999">Sin obras destacadas para este alcance</td></tr>'}
     </table>
+    <div class="section-title">Obras por iniciar destacadas (mayor monto)</div>
+    <table>
+      <tr><th>Proyecto</th><th>Comuna</th><th>Monto (M$)</th><th>Etapa</th></tr>
+      ${destacadasPorIniciar.map(o=>`<tr><td>${o.nombre||'—'}</td><td>${o.comuna||'—'}</td><td>${fmt(o.monto||0)}</td><td>${o.etapa||'—'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#999">Sin obras por iniciar para este alcance</td></tr>'}
+    </table>
     <div class="section-title">${desgloseTitulo}</div>
     <table>
-      <tr><th>${tipo==='programa'?'Región':'Programa'}</th><th>N° de obras</th></tr>
+      <tr><th>${tipo==='programa'?'Región':(tipo==='especial'?'Línea de inversión':'Programa')}</th><th>N° de obras</th></tr>
       ${desgloseFilasRender(desgloseFilas)}
     </table>
     ${seccionConservacion}
