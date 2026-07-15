@@ -560,11 +560,46 @@ header { gap: 8px; }
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
     <div class="tab" style="color:#555" onclick="switchTab('ayuda')">❓ Ayuda</div>
-      <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0">
+      <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0;position:relative">
       <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
+      <button class="btn-sm" onclick="toggleMenuReportes()" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:#7c3aed;border-color:#7c3aed">📄 Reportes</button>
+      <div id="menu-reportes" style="display:none;position:absolute;top:calc(100% + 6px);right:60px;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
+        <div style="padding:6px 12px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase">Cartera de Proyectos (BIP)</div>
+        <div class="reporte-item" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional</div>
+        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por región</div>
+        <div id="menu-reportes-regiones">
+          <div class="reporte-item" onclick="generarReporte('region','Arica y Parinacota')">Arica y Parinacota</div>
+          <div class="reporte-item" onclick="generarReporte('region','Tarapacá')">Tarapacá</div>
+          <div class="reporte-item" onclick="generarReporte('region','Antofagasta')">Antofagasta</div>
+          <div class="reporte-item" onclick="generarReporte('region','Atacama')">Atacama</div>
+          <div class="reporte-item" onclick="generarReporte('region','Coquimbo')">Coquimbo</div>
+          <div class="reporte-item" onclick="generarReporte('region','Valparaíso')">Valparaíso</div>
+          <div class="reporte-item" onclick="generarReporte('region','Metropolitana')">Región Metropolitana</div>
+          <div class="reporte-item" onclick="generarReporte('region','O\'Higgins')">O'Higgins</div>
+          <div class="reporte-item" onclick="generarReporte('region','Maule')">Maule</div>
+          <div class="reporte-item" onclick="generarReporte('region','Ñuble')">Ñuble</div>
+          <div class="reporte-item" onclick="generarReporte('region','Biobío')">Biobío</div>
+          <div class="reporte-item" onclick="generarReporte('region','La Araucanía')">La Araucanía</div>
+          <div class="reporte-item" onclick="generarReporte('region','Los Ríos')">Los Ríos</div>
+          <div class="reporte-item" onclick="generarReporte('region','Los Lagos')">Los Lagos</div>
+          <div class="reporte-item" onclick="generarReporte('region','Aysén')">Aysén</div>
+          <div class="reporte-item" onclick="generarReporte('region','Magallanes')">Magallanes</div>
+        </div>
+        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por programa</div>
+        <div class="reporte-item" onclick="generarReporte('programa','Quiero Mi Barrio')">Quiero Mi Barrio</div>
+        <div class="reporte-item" onclick="generarReporte('programa','Obras Urbanas')">Obras Urbanas</div>
+        <div class="reporte-item" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades</div>
+        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Especial</div>
+        <div class="reporte-item" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos</div>
+      </div>
       <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
     </div>
   </div>
+
+  <style>
+    .reporte-item { padding:7px 12px; font-size:12px; cursor:pointer; color:var(--text); }
+    .reporte-item:hover { background:var(--bg-accent); }
+  </style>
 
   
   <div class="filters" id="global-filters" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
@@ -696,7 +731,14 @@ header { gap: 8px; }
       <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">El monto de inversión considera solo proyectos con código BIP efectivamente en ejecución (excluye obras terminadas y la cartera "por iniciar"), siguiendo el mismo criterio que la Minuta de Inversión en Obras Urbanas V6. Puede existir una diferencia menor frente a la Minuta por proyectos que la Minuta excluye manualmente (ej. duplicados cross-programa ya contabilizados en otra línea).</p>
       <div class="two-col">
         <div class="chart-card"><div class="chart-title">Proyectos por región</div><div id="chart-balance-region"></div></div>
-        <div class="chart-card"><div class="chart-title">Proyectos por comuna (top 10)</div><div id="chart-balance-comuna"></div></div>
+        <div class="chart-card">
+          <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Proyectos por comuna (top 10)</span>
+            <select id="balance-comuna-select" class="fsel" style="font-size:10px;padding:2px 6px;width:auto" onchange="mostrarDetalleComuna(this.value)"><option value="">Buscar comuna...</option></select>
+          </div>
+          <div id="chart-balance-comuna"></div>
+          <div id="balance-comuna-detalle" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:8px"></div>
+        </div>
       </div>
       <div class="list-container">
         <div class="section-header"><span>Desglose por programa · solo proyectos con BIP</span></div>
@@ -1417,13 +1459,22 @@ header { gap: 8px; }
           <p style="margin:0 0 4px"><b>Gantt / Kanban / Calendario / Lista</b> — distintas formas de ver los mismos hitos, filtrables por programa, región, comuna, tipo, mes y estado.</p>
           <p style="margin:0 0 4px"><b>Hitos con noticias</b> — sugiere qué hitos ya tienen cobertura de prensa, agrupando por nivel de coincidencia (match automático, no oficial).</p>
           <p style="margin:0 0 4px"><b>Oportunidades</b> — proyectos con código BIP que están en ejecución con avance alto (≥90%) o terminados, y que todavía no tienen un hito comunicacional asociado — candidatos a inauguración o nota de prensa.</p>
-          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), y desgloses por región, comuna y programa.</p>
+          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), desgloses por región, comuna y programa, y un buscador de comuna que muestra el detalle de proyectos, monto, programa y etapa para la comuna elegida.</p>
           <p style="margin:0 0 16px"><b>Por comuna / Regiones Reconstrucción / Área Comunicaciones</b> — vistas y gestión especializadas por esos recortes.</p>
+
+          <p style="font-weight:700;margin:0 0 6px">Botón "📄 Reportes"</p>
+          <p style="margin:0 0 4px">Genera reportes comunicacionales imprimibles (tamaño carta) directo desde la Cartera de Proyectos con BIP, con un párrafo ejecutivo, cifras clave, obras destacadas y desglose — sin necesidad de armarlos a mano. Opciones disponibles:</p>
+          <p style="margin:0 0 4px">• <b>Minuta nacional</b> — toda la cartera con BIP a nivel país.</p>
+          <p style="margin:0 0 4px">• <b>Por región</b> — las 16 regiones, filtradas por coincidencia de nombre en el campo Región.</p>
+          <p style="margin:0 0 4px">• <b>Por programa</b> — Quiero Mi Barrio, Obras Urbanas, Pequeñas Localidades.</p>
+          <p style="margin:0 0 16px">• <b>Especial</b> — Parques Urbanos, como reporte dedicado aparte del resto de programas.</p>
+          <p style="margin:0 0 16px">Cada reporte se abre en una pestaña nueva lista para imprimir o guardar como PDF (Ctrl/Cmd+P si el navegador no abre el diálogo de impresión solo). Usa el mismo criterio de "en ejecución" ya validado contra la Minuta V6 — no mezcla obras terminadas ni la cartera "por iniciar" en el monto de ejecución.</p>
 
           <p style="font-weight:700;margin:0 0 6px">Preguntas frecuentes</p>
           <p style="margin:0 0 4px"><b>¿Por qué el monto de Balance no coincide exacto con una minuta oficial?</b> Puede haber diferencias menores por proyectos que la minuta excluye a propósito (ej. duplicados ya contados en otro programa). Se prioriza que el criterio sea consistente y explicado, no un calce perfecto al peso.</p>
           <p style="margin:0 0 4px"><b>¿Qué hago si un hito no tiene BIP y debería tenerlo?</b> Edítalo y agrega el código en el campo "Código BIP" — si de verdad no corresponde a una obra, marca el check "Hito no asociado a BIP" en vez de dejarlo en blanco sin explicación.</p>
           <p style="margin:0 0 4px"><b>¿El match de "Hitos con noticias" es definitivo?</b> No — es una sugerencia por similitud de texto. Siempre revisa la noticia candidata antes de darla por confirmada.</p>
+          <p style="margin:0 0 4px"><b>¿Puedo generar un informe para prensa o autoridades directo desde acá?</b> Sí — usa el botón "📄 Reportes" arriba a la derecha. Elige nacional, una región o un programa, y se abre un documento tamaño carta listo para imprimir o guardar como PDF, con cifras y obras destacadas ya redactadas.</p>
           <p style="margin:0">¿Encontraste un error o falta algo? Repórtalo directamente a quien administra el dashboard — está en desarrollo activo.</p>
         </div>
       </div>
@@ -1679,9 +1730,20 @@ async function loadData(silent=false) {
     const linkedCarteraIds = new Set();
     allHitos.forEach(h => (h.proyecto_vinculado||[]).forEach(id => linkedCarteraIds.add(id)));
     const crecs = await fetchAll(TABLE_CARTERA);
+    const CODIGO_REGION = {'1':'Tarapacá','2':'Antofagasta','3':'Atacama','4':'Coquimbo','5':'Valparaíso',
+      '6':"O'Higgins",'7':'Maule','8':'Biobío','9':'La Araucanía','10':'Los Lagos','11':'Aysén',
+      '12':'Magallanes','13':'Metropolitana','14':'Los Ríos','15':'Arica y Parinacota','16':'Ñuble'};
+    const normalizaRegion = (val) => {
+      if (!val) return val;
+      let s = String(val).trim();
+      if (s.toUpperCase() === 'PMS') return 'Metropolitana'; // Parque Metropolitano de Santiago
+      let num = s.replace(/\.0$/, '');
+      if (CODIGO_REGION[num]) return CODIGO_REGION[num];
+      return s;
+    };
     allCartera = crecs.map(r => ({
       id: r.id, bip: r.fields['BIP']||'', nombre: r.fields['Nombre proyecto']||'',
-      programa: r.fields['Programa de origen']||'', region: r.fields['Región']||'',
+      programa: r.fields['Programa de origen']||'', region: normalizaRegion(r.fields['Región']),
       comuna: r.fields['Comuna']||'', etapa: r.fields['Etapa']||'',
       avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||'',
       monto: r.fields['Monto (M$)'], fuente: r.fields['Fuente Excel']||''
@@ -1785,6 +1847,19 @@ function renderBalance() {
   }
   renderBarLocal('chart-balance-region', countBy('region'));
   renderBarLocal('chart-balance-comuna', countBy('comuna'));
+  const selComuna = document.getElementById('balance-comuna-select');
+  if (selComuna) {
+    const repPorNorm = {};
+    allCartera.forEach(o => {
+      if (!o.comuna) return;
+      const norm = o.comuna.trim().toUpperCase();
+      if (!repPorNorm[norm]) repPorNorm[norm] = o.comuna.trim();
+    });
+    const comunas = Object.values(repPorNorm).sort((a,b)=>a.localeCompare(b,'es'));
+    const actual = selComuna.value;
+    selComuna.innerHTML = '<option value="">Buscar comuna...</option>' + comunas.map(c=>`<option>${c}</option>`).join('');
+    if (actual) { selComuna.value = actual; mostrarDetalleComuna(actual); }
+  }
   const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
   const programas = [...new Set(allCartera.map(o=>o.programa).filter(Boolean))].sort();
   const body = document.getElementById('balance-programa-body');
@@ -1860,7 +1935,170 @@ function renderHitosNoticias() {
   document.getElementById('noticias-count-sin').textContent = counts.sin;
 }
 
-// ══════════ COMBO BUSCABLE DE HITOS (orden alfabético) ══════════
+function mostrarDetalleComuna(comuna) {
+  const box = document.getElementById('balance-comuna-detalle');
+  if (!box) return;
+  if (!comuna) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const norm = comuna.trim().toUpperCase();
+  const rows = allCartera.filter(o => (o.comuna||'').trim().toUpperCase() === norm);
+  const conBip = rows.filter(o => o.bip && o.bip.trim()!=='');
+  const porPrograma = {};
+  conBip.forEach(o => { porPrograma[o.programa] = (porPrograma[o.programa]||0) + 1; });
+  const porEtapa = {};
+  conBip.forEach(o => { porEtapa[o.etapa] = (porEtapa[o.etapa]||0) + 1; });
+  const montoTotal = conBip.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${comuna} — ${rows.length} proyectos (${conBip.length} con BIP)</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Monto (con BIP): M$ ${montoTotal.toLocaleString('es-CL',{maximumFractionDigits:0})}</div>
+    <div style="font-size:10.5px;color:var(--text-dim)">Por programa: ${Object.entries(porPrograma).map(([k,v])=>`${k} (${v})`).join(' · ')||'—'}</div>
+    <div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">Por etapa: ${Object.entries(porEtapa).map(([k,v])=>`${k} (${v})`).join(' · ')||'—'}</div>
+  `;
+}
+
+function toggleMenuReportes() {
+  const m = document.getElementById('menu-reportes');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', (e) => {
+  const m = document.getElementById('menu-reportes');
+  if (!m) return;
+  if (m.style.display !== 'none' && !m.contains(e.target) && e.target.textContent.indexOf('Reportes') === -1) {
+    m.style.display = 'none';
+  }
+});
+
+const REGION_KEYWORDS = {
+  'Arica y Parinacota': ['arica'],
+  'Tarapacá': ['tarapaca'],
+  'Antofagasta': ['antofagasta'],
+  'Atacama': ['atacama'],
+  'Coquimbo': ['coquimbo'],
+  'Valparaíso': ['valparaiso'],
+  'Metropolitana': ['metropolitana', 'santiago'],
+  "O'Higgins": ['higgins'],
+  'Maule': ['maule'],
+  'Ñuble': ['nuble'],
+  'Biobío': ['biobio', 'bio bio'],
+  'La Araucanía': ['araucania'],
+  'Los Ríos': ['rios'],
+  'Los Lagos': ['lagos'],
+  'Aysén': ['aysen', 'aisen'],
+  'Magallanes': ['magallanes']
+};
+function _normSimple(s) {
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+function regionCoincide(valorRegion, regionBuscada) {
+  const kws = REGION_KEYWORDS[regionBuscada] || [_normSimple(regionBuscada)];
+  const v = _normSimple(valorRegion);
+  return kws.some(k => v.includes(k));
+}
+
+function generarReporte(tipo, valor) {
+  document.getElementById('menu-reportes').style.display = 'none';
+
+  let rows = allCartera.filter(o => o.bip && o.bip.trim() !== '');
+  let titulo = 'Minuta Nacional de Obras Urbanas';
+  let subtitulo = 'Cartera nacional de proyectos con código BIP';
+  if (tipo === 'region') {
+    rows = rows.filter(o => regionCoincide(o.region, valor));
+    titulo = `Reporte de Obras Urbanas — Región de ${valor}`;
+    subtitulo = `Cartera de proyectos con código BIP en la región de ${valor}`;
+  } else if (tipo === 'programa') {
+    rows = rows.filter(o => o.programa === valor);
+    titulo = `Reporte de Obras Urbanas — ${valor}`;
+    subtitulo = `Cartera de proyectos con código BIP del programa ${valor}`;
+  }
+
+  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
+  const esEnEjecucion = (o) => {
+    const fuente = o.fuente || '';
+    const estadoUp = (o.estado||'').toString().toUpperCase().trim();
+    if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
+    if (fuente.includes('PPL_solicitud')) return PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
+    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
+  };
+  const enEjecucion = rows.filter(esEnEjecucion);
+  const porIniciar = rows.filter(o => !esEnEjecucion(o) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO'));
+  const montoEjec = enEjecucion.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
+  const montoIni = porIniciar.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
+  const fmt = (n) => n.toLocaleString('es-CL',{maximumFractionDigits:0});
+
+  const destacadas = [...enEjecucion].sort((a,b)=>(b.monto||0)-(a.monto||0)).slice(0,8);
+
+  // Desglose secundario: por programa (si es nacional/región) o por región (si es programa)
+  let desgloseTitulo, desgloseFilas;
+  if (tipo === 'programa') {
+    const porRegion = {};
+    enEjecucion.forEach(o => { const r = o.region||'Sin dato'; porRegion[r] = (porRegion[r]||0)+1; });
+    desgloseTitulo = 'Obras en ejecución por región';
+    desgloseFilas = Object.entries(porRegion).sort((a,b)=>b[1]-a[1]);
+  } else {
+    const porPrograma = {};
+    enEjecucion.forEach(o => { const p = o.programa||'Sin dato'; porPrograma[p] = (porPrograma[p]||0)+1; });
+    desgloseTitulo = 'Obras en ejecución por programa';
+    desgloseFilas = Object.entries(porPrograma).sort((a,b)=>b[1]-a[1]);
+  }
+
+  const fecha = new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
+  const narrativa = `La cartera ${tipo==='nacional'?'nacional':(tipo==='region'?'de la región de '+valor:'del programa '+valor)} de obras urbanas con código BIP contempla <b>${enEjecucion.length} proyectos en ejecución</b>, por un monto de <b>M$ ${fmt(montoEjec)}</b>, además de <b>${porIniciar.length} proyectos por iniciar</b> durante 2026, por M$ ${fmt(montoIni)}. ${destacadas[0] ? `La obra de mayor inversión en ejecución es <b>${destacadas[0].nombre}</b> (${destacadas[0].comuna||'—'}), por M$ ${fmt(destacadas[0].monto||0)}.` : ''}`;
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <style>
+    @page { size: Letter portrait; margin: 16mm; }
+    * { box-sizing:border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color:#1a1a1a; margin:0; padding:0; }
+    .header { border-bottom:3px solid #1d5fd6; padding-bottom:10px; margin-bottom:14px; }
+    .header .tag { font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
+    .header h1 { font-size:19px; margin:4px 0 2px; color:#0d1b3e; }
+    .header .sub { font-size:11px; color:#666; }
+    .narrativa { font-size:12px; line-height:1.6; background:#f7f9fc; border:1px solid #d8dce3; border-radius:6px; padding:12px 14px; margin-bottom:16px; }
+    .kpis { display:flex; gap:8px; margin-bottom:16px; }
+    .kpi { flex:1; border:1px solid #d8dce3; border-radius:6px; padding:8px 10px; background:#fff; }
+    .kpi .l { font-size:9px; color:#667; text-transform:uppercase; }
+    .kpi .v { font-size:16px; font-weight:700; color:#0d1b3e; }
+    table { width:100%; border-collapse:collapse; font-size:10px; margin-bottom:16px; }
+    th { background:#0d1b3e; color:#fff; padding:5px 8px; text-align:left; font-size:9px; }
+    td { padding:5px 8px; border-bottom:1px solid #e3e6ec; }
+    tr:nth-child(even) td { background:#f7f9fc; }
+    .section-title { font-size:12px; font-weight:700; color:#0d1b3e; border-bottom:2px solid #0d1b3e; padding-bottom:3px; margin:14px 0 8px; }
+    .footer { font-size:8.5px; color:#888; margin-top:12px; border-top:1px solid #e3e6ec; padding-top:6px; }
+  </style></head><body>
+    <div class="header">
+      <div class="tag">MINVU · División de Desarrollo Urbano · Marcha blanca</div>
+      <h1>${titulo}</h1>
+      <div class="sub">${subtitulo} · Generado el ${fecha}</div>
+    </div>
+    <div class="narrativa">${narrativa}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Monto en ejecución 2026</div><div class="v">M$ ${fmt(montoEjec)}</div></div>
+      <div class="kpi"><div class="l">Obras en ejecución</div><div class="v">${enEjecucion.length}</div></div>
+      <div class="kpi"><div class="l">Monto por iniciar 2026</div><div class="v">M$ ${fmt(montoIni)}</div></div>
+      <div class="kpi"><div class="l">Obras por iniciar</div><div class="v">${porIniciar.length}</div></div>
+    </div>
+    <div class="section-title">Obras destacadas (mayor inversión, en ejecución)</div>
+    <table>
+      <tr><th>Proyecto</th><th>Comuna</th><th>Monto (M$)</th><th>Avance</th></tr>
+      ${destacadas.map(o=>`<tr><td>${o.nombre||'—'}</td><td>${o.comuna||'—'}</td><td>${fmt(o.monto||0)}</td><td>${typeof o.avance==='number'?Math.round(o.avance*100)+'%':'—'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#999">Sin obras destacadas para este alcance</td></tr>'}
+    </table>
+    <div class="section-title">${desgloseTitulo}</div>
+    <table>
+      <tr><th>${tipo==='programa'?'Región':'Programa'}</th><th>N° de obras</th></tr>
+      ${desgloseFilasRender(desgloseFilas)}
+    </table>
+    <div class="footer">El monto de inversión considera solo proyectos con código BIP efectivamente en ejecución (excluye obras terminadas y la cartera "por iniciar"), siguiendo el mismo criterio que la Minuta de Inversión en Obras Urbanas V6. Documento generado automáticamente desde el Gestor de Hitos DDU — dashboard en marcha blanca, cifras sujetas a revisión.</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>{ win.print(); }, 400);
+}
+function desgloseFilasRender(filas) {
+  return filas.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('') || '<tr><td colspan="2" style="text-align:center;color:#999">Sin datos</td></tr>';
+}
+
 function comboHitosOrdenados() {
   return [...allHitos].sort((a,b)=>(a.actividad||'').localeCompare(b.actividad||'','es',{sensitivity:'base'}));
 }
