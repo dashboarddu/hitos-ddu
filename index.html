@@ -553,11 +553,13 @@ header { gap: 8px; }
     <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">Panel</div>
     <div class="tab" onclick="switchTab('calendario')">Calendario</div>
     <div class="tab" onclick="switchTab('lista')">Lista</div>
+    <div class="tab" style="color:#0891b2" onclick="switchTab('noticias')">📰 Hitos con noticias</div>
 <div class="tab" style="color:var(--accent2)" onclick="switchTab('oportunidades')">💡 Oportunidades</div>
     <div class="tab" style="color:#7c3aed" onclick="switchTab('balance')">📊 Balance</div>
     <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
     <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
     <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
+    <div class="tab" style="color:#555" onclick="switchTab('ayuda')">❓ Ayuda</div>
       <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0">
       <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
       <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
@@ -657,6 +659,26 @@ header { gap: 8px; }
         </div>
       </div>
     </div>
+    <div id="view-noticias" class="view">
+      <div class="list-container" style="margin-bottom:0">
+        <div class="section-header"><span>Hitos con noticias — match automático contra Registro de noticias</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;align-items:start">
+        <div class="chart-card">
+          <div class="chart-title" style="color:#0d9a6e">Match fuerte (<span id="noticias-count-fuerte">0</span>)</div>
+          <div id="noticias-col-fuerte"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title" style="color:#f59e0b">Match posible (<span id="noticias-count-posible">0</span>)</div>
+          <div id="noticias-col-posible"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title" style="color:#888">Sin noticia (<span id="noticias-count-sin">0</span>)</div>
+          <div id="noticias-col-sin"></div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:10px">El match se calcula por similitud de texto entre el nombre del hito y el título/resumen de cada noticia — es una sugerencia, no una confirmación oficial. Click en una tarjeta para ver las noticias candidatas.</p>
+    </div>
 
     <div id="view-oportunidades" class="view">
       <div class="list-container">
@@ -677,10 +699,10 @@ header { gap: 8px; }
         <div class="chart-card"><div class="chart-title">Proyectos por comuna (top 10)</div><div id="chart-balance-comuna"></div></div>
       </div>
       <div class="list-container">
-        <div class="section-header"><span>Desglose por programa · con/sin BIP · ejecución/por iniciar</span></div>
+        <div class="section-header"><span>Desglose por programa · solo proyectos con BIP</span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>Programa</th><th>En ejecución · con BIP</th><th>En ejecución · sin BIP</th><th>Por iniciar · con BIP</th><th>Por iniciar · sin BIP</th></tr></thead>
+            <thead><tr><th>Programa</th><th>En ejecución</th><th>Por iniciar</th></tr></thead>
             <tbody id="balance-programa-body"></tbody>
           </table>
         </div>
@@ -1160,6 +1182,10 @@ header { gap: 8px; }
                 <option>Diseño</option><option>Ejecución</option><option>Terminado</option><option>Otro</option>
               </select>
             </div>
+            <div class="form-field" style="display:flex;align-items:center;gap:6px;padding-top:18px">
+              <input type="checkbox" id="nh-sin-bip" style="width:16px;height:16px">
+              <label class="login-label" style="margin:0" for="nh-sin-bip">Hito no asociado a BIP (ej: capacitación, charla, jornada)</label>
+            </div>
             <div class="form-field" id="campo-comuna" style="">
               <label class="login-label">Fecha exacta (si la tienes)</label><input class="login-input" type="date" id="nh-fecha-exacta"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">Opcional. Complementa el mes y semana estimados</div></div>
             <div class="form-field full" style="background:rgba(79,124,255,0.05);border:1px solid rgba(79,124,255,0.2);border-radius:8px;padding:12px">
@@ -1367,6 +1393,42 @@ header { gap: 8px; }
       </div>
     </div>
 
+    <div id="view-ayuda" class="view">
+      <div class="list-container">
+        <div class="section-header"><span>❓ Ayuda — Manual del Gestor de Hitos DDU</span></div>
+        <div style="padding:12px 4px;font-size:12.5px;line-height:1.6;color:var(--text)">
+          <div style="background:#fff8ec;border:1px solid #f0c988;border-radius:8px;padding:10px 14px;margin-bottom:16px">
+            <b>⚠ Este dashboard está en marcha blanca.</b> Algunos datos y funciones todavía se están afinando — si algo se ve raro o falta información, avisa antes de asumir que es un error definitivo.
+          </div>
+
+          <p style="font-weight:700;margin:0 0 6px">¿Qué información contiene el dashboard?</p>
+          <p style="margin:0 0 4px"><b>Hitos comunicacionales</b> — actividades de comunicación (inauguraciones, publicaciones, capacitaciones, etc.), con fecha, estado, región/comuna y tipo.</p>
+          <p style="margin:0 0 4px"><b>Cartera de Proyectos</b> — proyectos de obra con código BIP, monto, avance y etapa (Diseño/Ejecución/Terminado), consolidados desde los Excel de Quiero Mi Barrio, Obras Urbanas, Pequeñas Localidades y Parques Urbanos.</p>
+          <p style="margin:0 0 4px"><b>Acciones comunicacionales</b> — tareas y gestiones internas vinculadas a un hito.</p>
+          <p style="margin:0 0 16px"><b>Registro de noticias</b> — recortes de prensa relacionados, usados para el match automático de la pestaña "Hitos con noticias".</p>
+
+          <p style="font-weight:700;margin:0 0 6px">¿Cómo se vinculan los hitos con los proyectos (BIP)?</p>
+          <p style="margin:0 0 4px">Cada hito de obra puede tener un código BIP asociado — a veces se escribe a mano al crear el hito, a veces se enlaza automáticamente al proyecto correspondiente en Cartera. Si un hito no tiene BIP y es de un tipo como Capacitación, Charla o Jornada, es normal — no todos los hitos corresponden a una obra física. Para esos casos existe el check "Hito no asociado a BIP".</p>
+          <p style="margin:0 0 16px">Cuando un mismo BIP aparece en más de una etapa (por ejemplo Diseño y Ejecución), no se fusionan — son registros distintos y legítimos del mismo proyecto en distintas fases.</p>
+
+          <p style="font-weight:700;margin:0 0 6px">¿Qué muestra cada pestaña?</p>
+          <p style="margin:0 0 4px"><b>Vista general</b> — resumen y estadísticas generales de hitos.</p>
+          <p style="margin:0 0 4px"><b>Ingresa hito</b> — formulario para crear un hito nuevo.</p>
+          <p style="margin:0 0 4px"><b>Gantt / Kanban / Calendario / Lista</b> — distintas formas de ver los mismos hitos, filtrables por programa, región, comuna, tipo, mes y estado.</p>
+          <p style="margin:0 0 4px"><b>Hitos con noticias</b> — sugiere qué hitos ya tienen cobertura de prensa, agrupando por nivel de coincidencia (match automático, no oficial).</p>
+          <p style="margin:0 0 4px"><b>Oportunidades</b> — proyectos con código BIP que están en ejecución con avance alto (≥90%) o terminados, y que todavía no tienen un hito comunicacional asociado — candidatos a inauguración o nota de prensa.</p>
+          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), y desgloses por región, comuna y programa.</p>
+          <p style="margin:0 0 16px"><b>Por comuna / Regiones Reconstrucción / Área Comunicaciones</b> — vistas y gestión especializadas por esos recortes.</p>
+
+          <p style="font-weight:700;margin:0 0 6px">Preguntas frecuentes</p>
+          <p style="margin:0 0 4px"><b>¿Por qué el monto de Balance no coincide exacto con una minuta oficial?</b> Puede haber diferencias menores por proyectos que la minuta excluye a propósito (ej. duplicados ya contados en otro programa). Se prioriza que el criterio sea consistente y explicado, no un calce perfecto al peso.</p>
+          <p style="margin:0 0 4px"><b>¿Qué hago si un hito no tiene BIP y debería tenerlo?</b> Edítalo y agrega el código en el campo "Código BIP" — si de verdad no corresponde a una obra, marca el check "Hito no asociado a BIP" en vez de dejarlo en blanco sin explicación.</p>
+          <p style="margin:0 0 4px"><b>¿El match de "Hitos con noticias" es definitivo?</b> No — es una sugerencia por similitud de texto. Siempre revisa la noticia candidata antes de darla por confirmada.</p>
+          <p style="margin:0">¿Encontraste un error o falta algo? Repórtalo directamente a quien administra el dashboard — está en desarrollo activo.</p>
+        </div>
+      </div>
+    </div>
+
 </div>
 
 <div class="hito-tooltip" id="hito-tooltip" onmouseenter="if(window._ttHideTimer)clearTimeout(window._ttHideTimer)" onmouseleave="hideTooltip()"></div>
@@ -1387,8 +1449,11 @@ const BASE_ID = 'appR8Mu9RCtQpIrG7';
 const TABLE_HITOS = 'tblOZl2hmUBMHnnaL';
 const TABLE_ACCIONES = 'tblUisrBr2DNuqYsL';
 const TABLE_CARTERA = 'tblx9nhxAbkhR2QpK';
+const TABLE_NOTICIAS = 'tblaYbaBupO8swGxZ';
 let allOportunidades = [];
 let allCartera = [];
+let allNoticias = [];
+let hitosConNoticias = [];
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SEMANAS = ['S1','S2','S3','S4'];
@@ -1590,6 +1655,7 @@ async function loadData(silent=false) {
       qmb20: r.fields['Actividad 20 años QMB']?.name||'',
       proyecto_vinculado: r.fields['Proyecto vinculado']||[],
       bip: r.fields['Código BIP']||'',
+      sin_bip: !!r.fields['Hito no asociado a BIP'],
       etapa_bip: (()=>{ const v=r.fields['Etapa BIP']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })()
     }));
     const arecs = await fetchAll(TABLE_ACCIONES);
@@ -1620,9 +1686,18 @@ async function loadData(silent=false) {
       avance: r.fields['Avance'], estado: r.fields['Estado (raw)']||'',
       monto: r.fields['Monto (M$)'], fuente: r.fields['Fuente Excel']||''
     }));
+    const carteraBipPorId = {};
+    allCartera.forEach(c => { carteraBipPorId[c.id] = c.bip; });
+    allHitos.forEach(h => {
+      if (!h.bip && h.proyecto_vinculado && h.proyecto_vinculado.length) {
+        const bipVinculado = carteraBipPorId[h.proyecto_vinculado[0]];
+        if (bipVinculado) h.bip = bipVinculado;
+      }
+    });
     allOportunidades = allCartera.filter(o => {
       const estado = (o.estado||'').toString().toUpperCase();
       const fuente = o.fuente || '';
+      if (!o.bip || o.bip.trim()==='') return false;
       // Obras_Urbanas_por_iniciar.xlsx: proyectos que aún no arrancan por definición del archivo;
       // su Etapa/Estado no son un indicador confiable de avance real, así que nunca son "oportunidad"
       if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
@@ -1631,6 +1706,17 @@ async function loadData(silent=false) {
     }).sort((a,b)=>(b.avance||0)-(a.avance||0));
     renderOportunidades();
     renderBalance();
+    const nrecs = await fetchAll(TABLE_NOTICIAS);
+    allNoticias = nrecs.map(r => ({
+      id: r.id,
+      titulo: r.fields['Título de la Noticia']||'',
+      resumen: r.fields['Resumen 2-3 Líneas']||'',
+      url: (()=>{ const v=r.fields['Enlace Original']; if(!v) return ''; if(typeof v==='object') return v.name||''; return String(v); })(),
+      sector: r.fields['Sector Relevante']?.name || r.fields['Sector Relevante'] || '',
+      fuente: r.fields['Fuente de Noticia']||''
+    }));
+    calcularMatchNoticias();
+    renderHitosNoticias();
     buildFilters(); applyFilters();
     if(!silent){
       document.getElementById('loading-indicator').style.display = 'none';
@@ -1674,15 +1760,13 @@ function renderBalance() {
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
   });
   const totalMonto = proyectosMonto.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
-  const totalProy = allCartera.length;
-  const iniciados = allCartera.filter(o=>o.etapa==='Ejecución').length;
-  const porIniciar = totalProy - iniciados;
+  const totalCartera = allCartera.length;
+  const totalConsiderados = proyectosMonto.length;
   const fmtMonto = totalMonto.toLocaleString('es-CL', {maximumFractionDigits:0});
   stats.innerHTML = `
     <div class="stat-card blue"><div class="stat-label">Monto inversión (con BIP, en ejecución)</div><div class="stat-value" style="font-size:22px">${fmtMonto}</div></div>
-    <div class="stat-card" title="${proyectosMonto.length} proyectos con BIP en ejecución considerados en el monto"><div class="stat-label">Total proyectos</div><div class="stat-value">${totalProy}</div></div>
-    <div class="stat-card green"><div class="stat-label">Iniciados</div><div class="stat-value">${iniciados}</div></div>
-    <div class="stat-card yellow"><div class="stat-label">Por iniciar</div><div class="stat-value">${porIniciar}</div></div>
+    <div class="stat-card yellow" title="No todos estos proyectos suman al monto de inversión"><div class="stat-label">Total proyectos en cartera</div><div class="stat-value">${totalCartera}</div></div>
+    <div class="stat-card green" title="Con BIP y en ejecución real, según el mismo criterio del monto"><div class="stat-label">Proyectos considerados en el monto</div><div class="stat-value">${totalConsiderados}</div></div>
   `;
   const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
   function countBy(field){
@@ -1701,19 +1785,79 @@ function renderBalance() {
   }
   renderBarLocal('chart-balance-region', countBy('region'));
   renderBarLocal('chart-balance-comuna', countBy('comuna'));
+  const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
   const programas = [...new Set(allCartera.map(o=>o.programa).filter(Boolean))].sort();
   const body = document.getElementById('balance-programa-body');
   if (body) {
     body.innerHTML = programas.map(p => {
-      const rows = allCartera.filter(o=>o.programa===p);
-      const conBip = o => o.bip && o.bip.trim() !== '';
-      const ejecConBip = rows.filter(o=>o.etapa==='Ejecución' && conBip(o)).length;
-      const ejecSinBip = rows.filter(o=>o.etapa==='Ejecución' && !conBip(o)).length;
-      const iniConBip = rows.filter(o=>o.etapa!=='Ejecución' && conBip(o)).length;
-      const iniSinBip = rows.filter(o=>o.etapa!=='Ejecución' && !conBip(o)).length;
-      return `<tr><td>${p}</td><td>${ejecConBip}</td><td>${ejecSinBip}</td><td>${iniConBip}</td><td>${iniSinBip}</td></tr>`;
-    }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
+      const conBip = allCartera.filter(o => o.programa===p && o.bip && o.bip.trim()!=='');
+      const enEjecucion = conBip.filter(o => idsEnEjecucion.has(o.id)).length;
+      const porIniciar = conBip.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO')).length;
+      return `<tr><td>${p}</td><td>${enEjecucion}</td><td>${porIniciar}</td></tr>`;
+    }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
   }
+}
+
+function _normTexto(s) {
+  if (!s) return '';
+  let t = String(s).toLowerCase();
+  t = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  t = t.replace(/[^a-z0-9\s]/g, ' ');
+  const FILLER = new Set(['de','del','la','el','los','las','en','para','y','a','con','construccion','mejoramiento','obra','confianza','barrio']);
+  return t.split(/\s+/).filter(w => w.length > 2 && !FILLER.has(w));
+}
+function _similitud(tokensA, tokensB) {
+  if (!tokensA.length || !tokensB.length) return 0;
+  const setA = new Set(tokensA), setB = new Set(tokensB);
+  let inter = 0;
+  setA.forEach(w => { if (setB.has(w)) inter++; });
+  return (2 * inter) / (setA.size + setB.size);
+}
+function calcularMatchNoticias() {
+  const noticiasTokens = allNoticias.map(n => _normTexto((n.titulo||'') + ' ' + (n.resumen||'')));
+  hitosConNoticias = allHitos.map(h => {
+    const tokensH = _normTexto((h.actividad||'') + ' ' + (h.comuna||''));
+    let candidatos = allNoticias.map((n, i) => ({ noticia: n, score: _similitud(tokensH, noticiasTokens[i]) }));
+    candidatos.sort((a,b) => b.score - a.score);
+    candidatos = candidatos.slice(0, 3);
+    const mejor = candidatos[0] || { score: 0 };
+    let nivel = 'sin';
+    if (mejor.score >= 0.35) nivel = 'fuerte';
+    else if (mejor.score >= 0.15) nivel = 'posible';
+    return { hito: h, candidatos, nivel };
+  });
+}
+function toggleNoticiaCard(id) {
+  const el = document.getElementById('noticias-detalle-'+id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function renderHitosNoticias() {
+  const cols = { fuerte: document.getElementById('noticias-col-fuerte'), posible: document.getElementById('noticias-col-posible'), sin: document.getElementById('noticias-col-sin') };
+  if (!cols.fuerte) return;
+  const counts = { fuerte: 0, posible: 0, sin: 0 };
+  const html = { fuerte: '', posible: '', sin: '' };
+  hitosConNoticias.forEach(item => {
+    counts[item.nivel]++;
+    const h = item.hito;
+    const mejor = item.candidatos[0];
+    const detalle = item.candidatos.filter(c => c.score > 0).map(c => `
+      <div style="border-top:1px solid var(--border);padding-top:6px;margin-top:6px">
+        <a href="${c.noticia.url}" target="_blank" style="font-size:11px;font-weight:500;color:var(--accent2);text-decoration:none">${c.noticia.titulo||'(sin título)'}</a>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${c.noticia.resumen||''}</div>
+      </div>`).join('') || '<div style="font-size:11px;color:var(--text-dim)">Sin noticias candidatas</div>';
+    html[item.nivel] += `
+      <div class="kanban-card" style="margin-bottom:8px;cursor:pointer" onclick="toggleNoticiaCard('${h.id}')">
+        <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${h.actividad}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${h.comuna||''} ${mejor && mejor.score>0 ? '· score '+Math.round(mejor.score*100)+'%' : ''}</div>
+        <div id="noticias-detalle-${h.id}" style="display:none;margin-top:6px">${detalle}</div>
+      </div>`;
+  });
+  cols.fuerte.innerHTML = html.fuerte || '<p style="font-size:11px;color:var(--text-dim);text-align:center">Sin hitos</p>';
+  cols.posible.innerHTML = html.posible || '<p style="font-size:11px;color:var(--text-dim);text-align:center">Sin hitos</p>';
+  cols.sin.innerHTML = html.sin || '<p style="font-size:11px;color:var(--text-dim);text-align:center">Sin hitos</p>';
+  document.getElementById('noticias-count-fuerte').textContent = counts.fuerte;
+  document.getElementById('noticias-count-posible').textContent = counts.posible;
+  document.getElementById('noticias-count-sin').textContent = counts.sin;
 }
 
 // ══════════ COMBO BUSCABLE DE HITOS (orden alfabético) ══════════
@@ -2118,6 +2262,8 @@ function abrirEdicion(id, actividad, mes, semana, estado, descripcion) {
   set('edit-etapa-obra', h.etapa_obra);
   set('edit-bip', h.bip);
   set('edit-etapa-bip', h.etapa_bip);
+  const sinBipEl = document.getElementById('edit-sin-bip');
+  if (sinBipEl) sinBipEl.checked = !!h.sin_bip;
   set('edit-region-reconstruccion', h.region_reconstruccion);
   set('edit-qmb-20', h.qmb20);
   set('edit-fecha-exacta', h.fecha_exacta);
@@ -2210,6 +2356,7 @@ async function guardarEdicion() {
   mapIf('edit-qmb-20','fldfyWuIDpPAZoPVF');                               // Actividad 20 años QMB
   fields['fld71wCsD1sYR8mh7']=gv('edit-bip');                             // Código BIP (permite limpiar)
   mapIf('edit-etapa-bip','fld5bH5FDqMUkijTS');                            // Etapa BIP
+  fields['fldxets5oWP6KcLFo']=document.getElementById('edit-sin-bip').checked;
   mapIf('edit-fecha-exacta','fldHCAMOsbuzrwzcc');                         // Fecha hito
   mapIf('edit-periodo-inicio','fldAtW6K6s3XVxIK5');                       // Fecha inicio periodo
   mapIf('edit-periodo-fin','fldsCdv4fMJnLyzJq');                          // Fecha fin periodo
@@ -2232,6 +2379,7 @@ async function guardarEdicion() {
       h.periodo_inicio=gv('edit-periodo-inicio')||h.periodo_inicio;
       h.periodo_fin=gv('edit-periodo-fin')||h.periodo_fin;
       h.bip=gv('edit-bip'); h.etapa_bip=gv('edit-etapa-bip')||h.etapa_bip;
+      h.sin_bip=document.getElementById('edit-sin-bip').checked;
     }
     cerrarEdicion();
     btn.textContent='Guardar cambios';btn.disabled=false;
@@ -2287,6 +2435,7 @@ async function guardarHito() {
   if(bip)fields['fld71wCsD1sYR8mh7']=bip;
   const etapaBip=document.getElementById('nh-etapa-bip').value;
   if(etapaBip)fields['fld5bH5FDqMUkijTS']=etapaBip;
+  fields['fldxets5oWP6KcLFo']=document.getElementById('nh-sin-bip').checked;
   try {
     // Calculate next N°
     // Consultar el N° máximo real en Airtable justo antes de crear
@@ -2307,6 +2456,7 @@ async function guardarHito() {
     document.getElementById('nh-relevancia').value='';
     document.getElementById('nh-anio').value='';
     ['nh-programa','nh-tipo','nh-mes','nh-semana','nh-bip','nh-etapa-bip'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('nh-sin-bip').checked=false;
     btn.textContent='Guardar hito';btn.disabled=false;
     setTimeout(()=>document.getElementById('nh-success').style.display='none',3000);
     await loadData();
@@ -2485,7 +2635,7 @@ function renderKanban() {
       const fecha = h.fecha_exacta ? new Date(h.fecha_exacta+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'}) : (h.mes?(h.mes+(h.semana?' '+h.semana:'')):'Sin fecha');
       return `<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow 0.2s" onmouseenter="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.12)'" onmouseleave="this.style.boxShadow=''" onclick="abrirDesdeListaEdicion('${h.id}','${h.actividad.replace(/'/g,"\'")}','${h.mes||''}','${h.semana||''}','${h.estado}','')">
         <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;line-height:1.3">${h.actividad}</div>
-        ${h.bip ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums">BIP ${h.bip}${h.etapa_bip?' · '+h.etapa_bip:''}</div>` : ''}
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;font-family:'Outfit',sans-serif;font-variant-numeric:tabular-nums">${h.bip ? 'BIP '+h.bip+(h.etapa_bip?' · '+h.etapa_bip:'') : (h.sin_bip ? 'No asociado a BIP' : 'Sin BIP asociado')}</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
           <span class="prog-tag" style="background:${bg};color:${pc};font-size:10px">${h.programa}</span>
           ${rel}
@@ -2688,7 +2838,7 @@ function showTooltip(e, h) {
   const bg = PROG_BG[h.programa]||'#f3f4f6';
   t.innerHTML = `
     <div class="tt-title">${h.actividad||h.accion||''}</div>
-    ${h.bip ? `<div class="tt-row"><span class="tt-label">BIP</span><span>${h.bip}${h.etapa_bip?' · '+h.etapa_bip:''}</span></div>` : ''}
+    <div class="tt-row"><span class="tt-label">BIP</span><span>${h.bip ? h.bip+(h.etapa_bip?' · '+h.etapa_bip:'') : (h.sin_bip ? 'No asociado a BIP (por diseño)' : 'Sin BIP asociado')}</span></div>
     ${h.programa ? `<div class="tt-row"><span class="tt-label">Programa</span><span class="tt-badge" style="background:${bg};color:${color}">${h.programa}</span></div>` : ''}
     ${h.tipo_hito||h.tipo ? `<div class="tt-row"><span class="tt-label">Tipo</span><span>${h.tipo_hito||h.tipo}</span></div>` : ''}
     ${h.region ? `<div class="tt-row"><span class="tt-label">Región</span><span>${h.region}</span></div>` : ''}
@@ -3008,7 +3158,7 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','oportunidades','balance','comunas','reconstruccion','area-com'];
+  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','noticias','oportunidades','balance','comunas','reconstruccion','area-com','ayuda'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+tab).classList.add('active');
@@ -3381,6 +3531,10 @@ function initListaScroll() {
               <option value="">Seleccionar...</option>
               <option>Diseño</option><option>Ejecución</option><option>Terminado</option><option>Otro</option>
             </select>
+          </div>
+          <div class="form-field" style="display:flex;align-items:center;gap:6px;padding-top:18px">
+            <input type="checkbox" id="edit-sin-bip" style="width:16px;height:16px">
+            <label class="login-label" style="margin:0" for="edit-sin-bip">Hito no asociado a BIP (ej: capacitación, charla, jornada)</label>
           </div>
           <div class="form-field"><label class="login-label">Región Reconstrucción</label>
             <select class="fsel" id="edit-region-reconstruccion"><option value="">No aplica</option></select>
