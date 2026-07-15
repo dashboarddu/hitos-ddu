@@ -562,8 +562,8 @@ header { gap: 8px; }
     <div class="tab" style="color:#555" onclick="switchTab('ayuda')">❓ Ayuda</div>
       <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0;position:relative">
       <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
-      <button class="btn-sm" onclick="toggleMenuReportes()" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:#7c3aed;border-color:#7c3aed">📄 Reportes</button>
-      <div id="menu-reportes" style="display:none;position:absolute;top:calc(100% + 6px);right:60px;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
+      <button class="btn-sm" onclick="toggleMenuReportes(event)" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:#7c3aed;border-color:#7c3aed">📄 Reportes</button>
+      <div id="menu-reportes" style="display:none;position:fixed;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
         <div style="padding:6px 12px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase">Cartera de Proyectos (BIP)</div>
         <div class="reporte-item" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional</div>
         <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por región</div>
@@ -1956,9 +1956,16 @@ function mostrarDetalleComuna(comuna) {
   `;
 }
 
-function toggleMenuReportes() {
+function toggleMenuReportes(ev) {
   const m = document.getElementById('menu-reportes');
-  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  const abrir = m.style.display === 'none';
+  if (abrir) {
+    const btn = ev.currentTarget;
+    const r = btn.getBoundingClientRect();
+    m.style.top = (r.bottom + 6) + 'px';
+    m.style.left = Math.max(8, r.right - 280) + 'px';
+  }
+  m.style.display = abrir ? 'block' : 'none';
 }
 document.addEventListener('click', (e) => {
   const m = document.getElementById('menu-reportes');
