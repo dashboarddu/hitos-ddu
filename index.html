@@ -1959,9 +1959,11 @@ function renderBalance() {
     if (fuente.includes('en_ejecuci')) {
       return o.etapa === 'Ejecución';
     }
-    // Pequeñas Localidades: criterio de "en ejecución" según Minuta V6 va por el campo Estado, no Etapa
+    // Pequeñas Localidades: "en ejecución" exige Etapa=Ejecución Y Estado=En ejecución.
+    // Hay registros con Estado="En ejecución" pero Etapa="Diseño"/"Preinversión" (inconsistencia
+    // de origen); sin la Etapa, se sobre-cuentan ~58 obras que en realidad no han partido.
     if (fuente.includes('PPL_solicitud')) {
-      return PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
+      return o.etapa === 'Ejecución' && PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
     }
     // Resto de fuentes: Etapa=Ejecución, excluyendo explícitamente Estado=Terminado
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
@@ -2253,7 +2255,7 @@ function generarReporte(tipo, valor) {
     const estadoUp = (o.estado||'').toString().toUpperCase().trim();
     if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
     if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
-    if (fuente.includes('PPL_solicitud')) return PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
+    if (fuente.includes('PPL_solicitud')) return o.etapa === 'Ejecución' && PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
   };
   const enEjecucion = rows.filter(esEnEjecucion);
