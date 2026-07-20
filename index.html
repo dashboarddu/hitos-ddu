@@ -586,6 +586,7 @@ header { gap: 8px; }
           oninput="buscarGlobal(this.value)">
         <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;max-height:380px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001"></div>
       </div>
+      <button class="btn-sm" onclick="goHome()" aria-label="Ir al inicio" title="Ir al inicio" style="color:var(--accent);border-color:var(--accent)">🏠 Ir al inicio</button>
       <span class="badge-user" id="user-badge">—</span>
       <button class="btn-sm" onclick="loadData()" aria-label="Actualizar datos">↻ Actualizar</button>
       <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro">🌙</button>
@@ -595,48 +596,7 @@ header { gap: 8px; }
 
   <div class="app-shell">
     <div class="main-col">
-      <div class="page-toolbar">
-        <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
-        <button class="btn-sm" onclick="toggleMenuReportes(event)" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:var(--accent);border-color:var(--accent)">📄 Reportes</button>
-        <div id="menu-reportes" style="display:none;position:fixed;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
-          <div style="padding:6px 12px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase">Cartera de Proyectos (BIP)</div>
-          <div class="reporte-item" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional</div>
-          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por región</div>
-          <div id="menu-reportes-regiones">
-            <div class="reporte-item" onclick="generarReporte('region','Arica y Parinacota')">Arica y Parinacota</div>
-            <div class="reporte-item" onclick="generarReporte('region','Tarapacá')">Tarapacá</div>
-            <div class="reporte-item" onclick="generarReporte('region','Antofagasta')">Antofagasta</div>
-            <div class="reporte-item" onclick="generarReporte('region','Atacama')">Atacama</div>
-            <div class="reporte-item" onclick="generarReporte('region','Coquimbo')">Coquimbo</div>
-            <div class="reporte-item" onclick="generarReporte('region','Valparaíso')">Valparaíso</div>
-            <div class="reporte-item" onclick="generarReporte('region','Metropolitana')">Región Metropolitana</div>
-            <div class="reporte-item" onclick="generarReporte('region','O\'Higgins')">O'Higgins</div>
-            <div class="reporte-item" onclick="generarReporte('region','Maule')">Maule</div>
-            <div class="reporte-item" onclick="generarReporte('region','Ñuble')">Ñuble</div>
-            <div class="reporte-item" onclick="generarReporte('region','Biobío')">Biobío</div>
-            <div class="reporte-item" onclick="generarReporte('region','La Araucanía')">La Araucanía</div>
-            <div class="reporte-item" onclick="generarReporte('region','Los Ríos')">Los Ríos</div>
-            <div class="reporte-item" onclick="generarReporte('region','Los Lagos')">Los Lagos</div>
-            <div class="reporte-item" onclick="generarReporte('region','Aysén')">Aysén</div>
-            <div class="reporte-item" onclick="generarReporte('region','Magallanes')">Magallanes</div>
-          </div>
-          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por programa</div>
-          <div class="reporte-item" onclick="generarReporte('programa','Quiero Mi Barrio')">Quiero Mi Barrio</div>
-          <div class="reporte-item" onclick="generarReporte('programa','Obras Urbanas')">Obras Urbanas</div>
-          <div class="reporte-item" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades</div>
-          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Especial</div>
-          <div class="reporte-item" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos</div>
-          <div class="reporte-item" onclick="generarReporte('especial','Reconstrucción')">🏚️ Reconstrucción</div>
-        </div>
-        <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
-      </div>
-
-      <style>
-        .reporte-item { padding:7px 12px; font-size:12px; cursor:pointer; color:var(--text); }
-        .reporte-item:hover { background:var(--bg-accent); }
-      </style>
-
-      <div class="filters" id="global-filters" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
+      <div class="filters" id="global-filters" style="display:none;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
     <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-right:2px">Filtrar:</span>
     <select class="filter-select" id="fil-programa" onchange="applyFilters()" aria-label="Filtrar por programa"><option value="">Todos los programas</option></select>
     <select class="filter-select" id="fil-region" onchange="applyFilters()" aria-label="Filtrar por región"><option value="">Todas las regiones</option></select>
@@ -645,6 +605,10 @@ header { gap: 8px; }
     <select class="filter-select" id="fil-mes" onchange="applyFilters()" aria-label="Filtrar por mes"><option value="">Todos los meses</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
     <select class="filter-select" id="fil-estado" onchange="applyFilters()" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>Sin fecha</option><option>Planificado</option><option>Reprogramado</option><option>Realizado</option><option>Cancelado</option><option>Confirmado</option></select>
     <select class="filter-select" id="fil-anio" onchange="applyFilters()" aria-label="Filtrar por año"><option value="">Todos los años</option><option>2026</option><option>2027</option><option>2028</option></select>
+    <span style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
+      <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
+      <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
+    </span>
   </div>
   <div id="filter-chips" style="display:none;padding:6px 24px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;align-items:center"></div>
 
@@ -1941,6 +1905,8 @@ async function loadData(silent=false) {
       document.getElementById('loading-indicator').style.display = 'none';
       document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       document.getElementById('view-'+activeTab).classList.add('active');
+      const _gf0 = document.getElementById('global-filters');
+      if (_gf0) _gf0.style.display = (activeTab==='home') ? 'none' : 'flex';
       if(activeTab==='home') renderHome();
     }
   } catch(e) {
@@ -2210,7 +2176,7 @@ function regionCoincide(valorRegion, regionBuscada) {
 }
 
 function generarReporte(tipo, valor) {
-  document.getElementById('menu-reportes').style.display = 'none';
+  { const _mr = document.getElementById('menu-reportes'); if (_mr) _mr.style.display = 'none'; }
 
   let rows = allCartera.filter(o => o.bip && o.bip.trim() !== '');
   let titulo = 'Minuta Nacional de Obras Urbanas';
@@ -3675,6 +3641,10 @@ function switchTab(tab) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const _v=document.getElementById('view-'+tab);
   if(_v) _v.classList.add('active');
+  const _gf = document.getElementById('global-filters');
+  const _fc = document.getElementById('filter-chips');
+  if (_gf) _gf.style.display = (tab==='home') ? 'none' : 'flex';
+  if (_fc && tab==='home') _fc.style.display = 'none';
   if(tab==='home') renderHome();
   window.scrollTo({top: 0, behavior: 'smooth'});
   if(tab==='lista') setTimeout(initListaScroll, 150);
