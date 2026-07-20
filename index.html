@@ -1710,7 +1710,7 @@ const PROG_BG = {
   'PUE':'#ddd6fe'
 };
 
-let allHitos=[], allAcciones=[], filtered=[], activeTab='dashboard', editingId=null;
+let allHitos=[], allAcciones=[], filtered=[], activeTab='home', editingId=null;
 
 let _otpEmail = '';
 
@@ -1939,7 +1939,9 @@ async function loadData(silent=false) {
     buildFilters(); applyFilters();
     if(!silent){
       document.getElementById('loading-indicator').style.display = 'none';
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       document.getElementById('view-'+activeTab).classList.add('active');
+      if(activeTab==='home') renderHome();
     }
   } catch(e) {
     if(!silent) document.getElementById('loading-indicator').innerHTML = `<span style="color:var(--accent3)">Error: ${e.message}</span>`;
