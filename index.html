@@ -842,7 +842,7 @@ header { gap: 8px; }
         <div class="section-header"><span>Desglose por programa · solo proyectos con BIP</span></div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>Programa</th><th>En ejecución</th><th>Por iniciar</th></tr></thead>
+            <thead><tr><th>Programa</th><th>En ejecución</th><th>Monto ejecución (M$)</th><th>Por iniciar</th><th>Monto por iniciar (M$)</th></tr></thead>
             <tbody id="balance-programa-body"></tbody>
           </table>
         </div>
@@ -1920,7 +1920,7 @@ async function loadData(silent=false) {
       // Obras_Urbanas_por_iniciar.xlsx: proyectos que aún no arrancan por definición del archivo;
       // su Etapa/Estado no son un indicador confiable de avance real, así que nunca son "oportunidad"
       if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
-      const cumple = (typeof o.avance === 'number' && o.avance >= 0.9) || estado.includes('TERMINADO');
+      const cumple = (typeof o.avance === 'number' && o.avance >= 0.9) || estado.includes('TERMINAD');
       return o.etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(o.id);
     }).sort((a,b)=>(b.avance||0)-(a.avance||0));
     renderOportunidades();
@@ -1983,12 +1983,12 @@ function renderBalance() {
     }
     // Resto de fuentes: Etapa=Ejecución, excluyendo explícitamente Estado=Terminado
     // (el archivo de Obras Urbanas en ejecución mezcla obras Iniciadas y Terminadas bajo la misma Etapa)
-    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
+    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
   });
   const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
   const porIniciarDetalle = conBip.filter(o =>
     !idsEnEjecucion.has(o.id) &&
-    !(o.estado||'').toString().toUpperCase().includes('TERMINADO') &&
+    !(o.estado||'').toString().toUpperCase().includes('TERMINAD') &&
     !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip))
   ).sort((a,b)=>(b.monto||0)-(a.monto||0));
 
@@ -2003,7 +2003,6 @@ function renderBalance() {
   const montoTotalBIP = montoEjecucion + montoPorIniciar;
 
   stats.innerHTML = `
-    <div class="stat-card blue"><div class="stat-label">Monto total BIP 2026</div><div class="stat-value" style="font-size:22px">${fmt(montoTotalBIP)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${proyectos2026} proyectos · excluye obras ya Terminadas</div></div>
     <div class="stat-card green"><div class="stat-label">Monto en ejecución</div><div class="stat-value" style="font-size:22px">${fmt(montoEjecucion)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${proyectosMonto.length} proyectos</div></div>
     <div class="stat-card yellow"><div class="stat-label">Monto por iniciar</div><div class="stat-value" style="font-size:22px">${fmt(montoPorIniciar)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${porIniciarDetalle.length} proyectos</div></div>
   `;
@@ -2011,7 +2010,7 @@ function renderBalance() {
   function countBy(field){
     const c={};
     allCartera.forEach(o=>{
-      if ((o.estado||'').toString().toUpperCase().includes('TERMINADO')) return;
+      if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return;
       const v=o[field]||'Sin datos'; c[v]=(c[v]||0)+1;
     });
     return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));
@@ -2040,15 +2039,25 @@ function renderBalance() {
     selComuna.innerHTML = '<option value="">Buscar comuna...</option>' + comunas.map(c=>`<option>${c}</option>`).join('');
     if (actual) { selComuna.value = actual; mostrarDetalleComuna(actual); }
   }
-  const programas = [...new Set(allCartera.map(o=>o.programa).filter(esProgramaValido))].sort();
+  // Solo programas reales: excluye valores basura que se colaron desde encabezados/estados de los Excel
+  const PROGRAMAS_BASURA = ['ETAPA','INICIADO','TERMINADO','EJECUCIÓN','EJECUCION','ESTADO','PROGRAMA DE ORIGEN'];
+  const esProgramaReal = (p) => esProgramaValido(p) && !PROGRAMAS_BASURA.includes(p.trim().toUpperCase());
+  // Orden: alfabético, con Planes Urbanos Habitacionales insertado justo después de Quiero Mi Barrio
+  let programas = [...new Set(allCartera.map(o=>o.programa).filter(esProgramaReal))].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
+  const PUH_NOMBRE = programas.find(p=>/planes\s+urbano/i.test(p));
+  const QMB_NOMBRE = programas.find(p=>/quiero\s+mi\s+barrio/i.test(p));
+  if (PUH_NOMBRE && QMB_NOMBRE) {
+    programas = programas.filter(p=>p!==PUH_NOMBRE);
+    programas.splice(programas.indexOf(QMB_NOMBRE)+1, 0, PUH_NOMBRE);
+  }
   const body = document.getElementById('balance-programa-body');
   if (body) {
     body.innerHTML = programas.map(p => {
       const conBipPrograma = conBip.filter(o => o.programa===p);
-      const enEjecucion = conBipPrograma.filter(o => idsEnEjecucion.has(o.id)).length;
-      const porIniciar = conBipPrograma.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINADO') && !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip))).length;
-      return `<tr><td>${p}</td><td>${enEjecucion}</td><td>${porIniciar}</td></tr>`;
-    }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
+      const ejec = conBipPrograma.filter(o => idsEnEjecucion.has(o.id));
+      const porIni = conBipPrograma.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINAD') && !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)));
+      return `<tr><td>${p}</td><td>${ejec.length}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(ejec))}</td><td>${porIni.length}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(porIni))}</td></tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
   }
   const bodyPI = document.getElementById('balance-porIniciar-body');
   const countPI = document.getElementById('balance-porIniciar-count');
@@ -2128,7 +2137,7 @@ function mostrarDetalleComuna(comuna) {
   if (!comuna) { box.style.display = 'none'; box.innerHTML = ''; return; }
   const norm = comuna.trim().toUpperCase();
   const todas = allCartera.filter(o => (o.comuna||'').trim().toUpperCase() === norm);
-  const rows = todas.filter(o => !(o.estado||'').toString().toUpperCase().includes('TERMINADO'));
+  const rows = todas.filter(o => !(o.estado||'').toString().toUpperCase().includes('TERMINAD'));
   const terminados = todas.length - rows.length;
   const conBip = rows.filter(o => o.bip && o.bip.trim()!=='');
   const porPrograma = {};
@@ -2231,12 +2240,12 @@ function generarReporte(tipo, valor) {
     if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
     if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
     if (fuente.includes('PPL_solicitud')) return PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
-    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINADO');
+    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
   };
   const enEjecucion = rows.filter(esEnEjecucion);
   const porIniciar = rows.filter(o =>
     !esEnEjecucion(o) &&
-    !(o.estado||'').toString().toUpperCase().includes('TERMINADO') &&
+    !(o.estado||'').toString().toUpperCase().includes('TERMINAD') &&
     !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip))
   );
   const montoEjec = enEjecucion.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
