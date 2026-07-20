@@ -1946,6 +1946,11 @@ function renderBalance() {
   // BIP duplicados cross-programa: la Minuta V6 los excluye del lado Obras Urbanas porque
   // ya están contabilizados en Quiero Mi Barrio (misma obra física, reportada en dos líneas)
   const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
+  // Pequeñas Localidades: la Minuta define "por iniciar 2026" como una lista curada y específica
+  // de 6 obras (no todo el backlog sin ejecutar, que incluye ~320 registros en estados
+  // administrativos dispares de años anteriores). Fuera de estos 6 BIP + los en ejecución,
+  // el resto de PPL queda fuera de la Cartera 2026 (decisión confirmada 20/07/2026).
+  const PPL_BIP_POR_INICIAR = ['40063245-0','40032799-0','40069199-0','40032636-0','40042615-0','40073655-0'];
   const conBip = allCartera.filter(o => o.bip && o.bip.trim() !== '');
   const proyectosMonto = conBip.filter(o => {
     const fuente = o.fuente || '';
@@ -1969,11 +1974,14 @@ function renderBalance() {
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
   });
   const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
-  const porIniciarDetalle = conBip.filter(o =>
-    !idsEnEjecucion.has(o.id) &&
-    !(o.estado||'').toString().toUpperCase().includes('TERMINAD') &&
-    !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip))
-  ).sort((a,b)=>(b.monto||0)-(a.monto||0));
+  const porIniciarDetalle = conBip.filter(o => {
+    if (idsEnEjecucion.has(o.id)) return false;
+    if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
+    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
+    // Pequeñas Localidades: solo los 6 BIP confirmados por la Minuta cuentan como "por iniciar"
+    if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
+    return true;
+  }).sort((a,b)=>(b.monto||0)-(a.monto||0));
 
   const sumMonto = (arr) => arr.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
   // Cuenta obras únicas por código BIP — una obra puede tener varias líneas de contrato
@@ -2041,7 +2049,13 @@ function renderBalance() {
     body.innerHTML = programas.map(p => {
       const conBipPrograma = conBip.filter(o => o.programa===p);
       const ejec = conBipPrograma.filter(o => idsEnEjecucion.has(o.id));
-      const porIni = conBipPrograma.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINAD') && !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)));
+      const porIni = conBipPrograma.filter(o => {
+        if (idsEnEjecucion.has(o.id)) return false;
+        if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
+        if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
+        if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
+        return true;
+      });
       return `<tr><td>${p}</td><td>${countUnique(ejec)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(ejec))}</td><td>${countUnique(porIni)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(porIni))}</td></tr>`;
     }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
   }
@@ -2250,6 +2264,7 @@ function generarReporte(tipo, valor) {
 
   const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION']; // Contratación/Adjudicación/Recursos Transferidos son etapas previas a la ejecución física (ajustado 20/07/2026 según Minuta PPL)
   const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
+  const PPL_BIP_POR_INICIAR = ['40063245-0','40032799-0','40069199-0','40032636-0','40042615-0','40073655-0'];
   const esEnEjecucion = (o) => {
     const fuente = o.fuente || '';
     const estadoUp = (o.estado||'').toString().toUpperCase().trim();
@@ -2259,11 +2274,13 @@ function generarReporte(tipo, valor) {
     return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
   };
   const enEjecucion = rows.filter(esEnEjecucion);
-  const porIniciar = rows.filter(o =>
-    !esEnEjecucion(o) &&
-    !(o.estado||'').toString().toUpperCase().includes('TERMINAD') &&
-    !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip))
-  );
+  const porIniciar = rows.filter(o => {
+    if (esEnEjecucion(o)) return false;
+    if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
+    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
+    if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
+    return true;
+  });
   const montoEjec = enEjecucion.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
   const montoIni = porIniciar.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
   const fmt = (n) => n.toLocaleString('es-CL',{maximumFractionDigits:0});
