@@ -1737,7 +1737,8 @@ function cartera2026Estado(o) {
   // por iniciar es la lista curada de 6 BIP confirmados por la Minuta
   if (fuente.includes('PPL_solicitud')) {
     if (o.etapa === 'Ejecución' && CARTERA_PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s))) return 'ejecucion';
-    if (CARTERA_PPL_BIP_POR_INICIAR.includes(o.bip)) return 'por_iniciar';
+    // Excluye duplicados obsoletos (misma obra, versión vieja con Etapa=Diseño y monto vacío)
+    if (CARTERA_PPL_BIP_POR_INICIAR.includes(o.bip) && o.etapa === 'Ejecución') return 'por_iniciar';
     return null;
   }
   // Resto de programas (Quiero Mi Barrio, Parques Urbanos, Pequeñas Localidades fuera de lo anterior)
