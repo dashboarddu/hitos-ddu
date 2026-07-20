@@ -165,26 +165,14 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 }
 
 
-/* ══════════ SIDEBAR ══════════ */
-.app-shell { display:flex; align-items:stretch; }
-.sidebar { width:216px; flex-shrink:0; background:var(--white); border-right:1px solid var(--border); padding:14px 10px 24px; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; }
-.sb-title { font-family:'Fraunces',serif; font-size:14px; font-weight:600; color:var(--text); padding:4px 10px 16px; line-height:1.3; }
-.sb-title span { display:block; font-family:'Outfit',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-top:3px; }
-.sb-group { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a97a3; margin:18px 10px 6px; }
-.sidebar .tab { display:block; padding:8px 10px; font-size:13px; border-radius:8px; border-bottom:none !important; margin:0 0 2px; color:var(--text); font-weight:500; white-space:normal; }
-.sidebar .tab:hover { background:var(--bg); color:var(--text); }
-.sidebar .tab.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
-.sidebar .tab-home { font-weight:600; margin-bottom:8px; }
-.sidebar .tab-accent { color:var(--accent); }
-.main-col { flex:1; min-width:0; display:flex; flex-direction:column; }
+/* ══════════ LAYOUT — Inicio como puerta de entrada única ══════════ */
+.app-shell { display:block; }
+.main-col { width:100%; display:flex; flex-direction:column; }
 .page-toolbar { display:flex; justify-content:flex-end; gap:6px; padding:8px 24px; background:var(--white); border-bottom:1px solid var(--border); position:relative; }
-@media (max-width:900px) {
-  .app-shell { flex-direction:column; }
-  .sidebar { width:100%; height:auto; position:static; display:flex; align-items:center; flex-wrap:nowrap; overflow-x:auto; padding:8px 10px; border-right:none; border-bottom:1px solid var(--border); }
-  .sb-title { display:none; }
-  .sb-group { display:none; }
-  .sidebar .tab { white-space:nowrap; margin:0 4px 0 0; }
-}
+.header-home-link { display:flex; align-items:center; gap:8px; overflow:hidden; flex:1; min-width:0; cursor:pointer; }
+.header-home-link:hover .header-title { color:var(--accent); }
+.rep-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a97a3; margin:18px 0 8px; }
+.rep-label:first-child { margin-top:0; }
 .view { display: none; } .view.active { display: block; }
 /* ══════════ TABS AGRUPADAS ══════════ */
 .tab-sep { width:1px; height:16px; background:var(--border); margin:0 6px; flex-shrink:0; align-self:center; }
@@ -586,8 +574,8 @@ header { gap: 8px; }
 
 <div id="app">
   <header>
-    <div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;min-width:0">
-      <span class="header-logo" style="flex-shrink:0">DDU · 2026</span>
+    <div class="header-home-link" onclick="goHome()" title="Ir a Inicio">
+      <span class="header-logo" style="flex-shrink:0">🏠 DDU · 2026</span>
       <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Gestor de hitos comunicacionales DDU</span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
@@ -606,32 +594,6 @@ header { gap: 8px; }
   </header>
 
   <div class="app-shell">
-    <nav class="sidebar" id="sidebar">
-      <div class="sb-title">Gestor de Hitos<span>DDU · 2026</span></div>
-      <div class="tab tab-home active" onclick="switchTab('home')">🏠 Inicio</div>
-
-      <div class="sb-group">Consultar</div>
-      <div class="tab" onclick="switchTab('dashboard')">Vista general</div>
-      <div class="tab" onclick="switchTab('gantt')">Gantt</div>
-      <div class="tab" onclick="switchTab('kanban')">Panel</div>
-      <div class="tab" onclick="switchTab('calendario')">Calendario</div>
-      <div class="tab" onclick="switchTab('lista')">Lista</div>
-      <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
-      <div class="tab" onclick="switchTab('reconstruccion')">Reconstrucción</div>
-
-      <div class="sb-group">Cartera y análisis</div>
-      <div class="tab" onclick="switchTab('balance')">Cartera 2026</div>
-      <div class="tab" onclick="switchTab('oportunidades')">Oportunidades</div>
-      <div class="tab" onclick="switchTab('noticias')">Hitos con noticias</div>
-
-      <div class="sb-group">Comunicaciones</div>
-      <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">Área Comunicaciones</div>
-      <div class="tab tab-accent" onclick="switchTab('nuevo-hito')">＋ Ingresa hito</div>
-
-      <div class="sb-group">Apoyo</div>
-      <div class="tab" onclick="switchTab('ayuda')">Ayuda</div>
-    </nav>
-
     <div class="main-col">
       <div class="page-toolbar">
         <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
@@ -746,7 +708,7 @@ header { gap: 8px; }
           <div class="hb-head"><span class="hb-num">05</span><span class="hb-title">Apoyo</span></div>
           <div class="hb-desc">Genera reportes imprimibles y consulta el manual del gestor.</div>
           <div class="hb-links">
-            <span class="hb-link" onclick="switchTab('dashboard');setTimeout(()=>toggleMenuReportes(event),200)">Reportes <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('reportes')">Reportes <span class="tk">→</span></span>
             <span class="hb-link" onclick="switchTab('ayuda')">Ayuda <span class="tk">→</span></span>
           </div>
         </div>
@@ -1621,6 +1583,53 @@ header { gap: 8px; }
           <p style="margin:0 0 4px"><b>¿El match de "Hitos con noticias" es definitivo?</b> No — es una sugerencia por similitud de texto. Siempre revisa la noticia candidata antes de darla por confirmada.</p>
           <p style="margin:0 0 4px"><b>¿Puedo generar un informe para prensa o autoridades directo desde acá?</b> Sí — usa el botón "📄 Reportes" arriba a la derecha. Elige nacional, una región o un programa, y se abre un documento tamaño carta listo para imprimir o guardar como PDF, con cifras y obras destacadas ya redactadas.</p>
           <p style="margin:0">¿Encontraste un error o falta algo? Repórtalo directamente a quien administra el dashboard — está en desarrollo activo.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-reportes" class="view">
+      <div class="list-container">
+        <div class="section-header"><span>Reportes imprimibles — Cartera de Proyectos (BIP)</span></div>
+        <div style="padding:16px 20px 20px">
+          <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:18px">Cada opción genera un informe listo para imprimir o guardar como PDF, con cifras clave, obras destacadas y desglose de la cartera. Elige un alcance:</p>
+
+          <div class="rep-label">Nacional</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional <span class="tk">→</span></span>
+          </div>
+
+          <div class="rep-label">Por región</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="generarReporte('region','Arica y Parinacota')">Arica y Parinacota <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Tarapacá')">Tarapacá <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Antofagasta')">Antofagasta <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Atacama')">Atacama <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Coquimbo')">Coquimbo <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Valparaíso')">Valparaíso <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Metropolitana')">Región Metropolitana <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','O\'Higgins')">O'Higgins <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Maule')">Maule <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Ñuble')">Ñuble <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Biobío')">Biobío <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','La Araucanía')">La Araucanía <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Los Ríos')">Los Ríos <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Los Lagos')">Los Lagos <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Aysén')">Aysén <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('region','Magallanes')">Magallanes <span class="tk">→</span></span>
+          </div>
+
+          <div class="rep-label">Por programa</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="generarReporte('programa','Quiero Mi Barrio')">Quiero Mi Barrio <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('programa','Obras Urbanas')">Obras Urbanas <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades <span class="tk">→</span></span>
+          </div>
+
+          <div class="rep-label">Especial</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos <span class="tk">→</span></span>
+            <span class="hb-link" onclick="generarReporte('especial','Reconstrucción')">🏚️ Reconstrucción <span class="tk">→</span></span>
+          </div>
         </div>
       </div>
     </div>
