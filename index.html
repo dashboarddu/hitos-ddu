@@ -812,6 +812,16 @@ header { gap: 8px; }
         </div>
       </div>
       <div class="list-container">
+        <div class="section-header"><span>Obras Urbanas — desglose por línea de inversión</span></div>
+        <div style="overflow-x:auto">
+          <table class="list-table">
+            <thead><tr><th>Línea de inversión</th><th>En ejec. 2026 (M$)</th><th>Por iniciar (M$)</th><th>Total (M$)</th></tr></thead>
+            <tbody id="balance-linea-body"></tbody>
+            <tfoot id="balance-linea-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="list-container">
         <div class="section-header"><span>Detalle de obras por iniciar (con BIP)</span><span id="balance-porIniciar-count" style="color:var(--accent2)"></span></div>
         <div style="overflow-x:auto;max-height:340px;overflow-y:auto">
           <table class="list-table">
@@ -2032,6 +2042,36 @@ function renderBalance() {
       const porIni = conBipPrograma.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINAD') && !(o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)));
       return `<tr><td>${p}</td><td>${countUnique(ejec)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(ejec))}</td><td>${countUnique(porIni)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(porIni))}</td></tr>`;
     }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
+  }
+  // Desglose por línea de inversión — solo Obras Urbanas. Categorías y agrupamiento
+  // verificados al peso contra la Minuta V6 (9 categorías, 20/07/2026).
+  const LINEA_MAPEO = {
+    'Construcción y Conservación de Parques': ['CONSERVACION PARQUES URBANOS','CONSERVACIÓN PARQUES URBANOS','CONSTRUCCION PARQUES URBANOS','CONSTRUCCIÓN PARQUES URBANOS','PARQUE METROPOLITANO','CONSERVACIÓN PARQUE METROPOLITANO','INVERSIÓN PARQUE METROPOLITANO','MEJORAMIENTO PARQUES URBANOS'],
+    'Vialidad': ['VIALIDAD','VIALIDAD MOVILIDAD SUSTENTABLE','VIALIDAD SUSTENTABLE'],
+    'Pavimentos Participativos': ['PAVIMENTOS PARTICIPATIVOS'],
+    'Proyectos Urbanos Integrales': ['PUI','PROYECTOS PUH','PROYECTOS PUH (PUI)','PROYECTOS URBANOS INTEGRALES'],
+    'Reconstrucción de Obras Urbanas': ['REDUCCION RIESGO DE DESASTRES','REDUCCIÓN RIESGO DE DESASTRES','PLAN COSTANERA BIOBIO','INCENDIO VIÑA DEL MAR 2024','RECONSTRUCCIÓN TERREMOTO 2010','PLAN VALPARAÍSO'],
+    'Rehabilitación de Espacios Públicos': ['ESPACIOS PÚBLICOS','ESPACIOS PUBLICOS','PEQUEÑAS OBRAS BARRIALES','REHABILITACIÓN ESPACIOS PÚBLICOS','BARRIO HISTÓRICO EL ALMENDRAL'],
+    'Infraestructura Sanitaria': ['INFRAESTRUCTURA SANITARIA'],
+    'Planes Urbanos Estratégicos': ['PUE','PLANES URBANOS ESTRATÉGICOS'],
+    "Otro bajo subtítulo 31": ['ESTUDIOS BÁSICOS - ST. 31','ESTUDIOS BASICOS - ST. 31'],
+  };
+  const obrasUrbanas = conBip.filter(o => o.programa === 'Obras Urbanas');
+  const bodyLinea = document.getElementById('balance-linea-body');
+  const footLinea = document.getElementById('balance-linea-foot');
+  if (bodyLinea) {
+    let totalEjec = 0, totalIni = 0;
+    const filas = Object.entries(LINEA_MAPEO).map(([cat, claves]) => {
+      const clavesUp = claves.map(c=>c.toUpperCase());
+      const deEstaLinea = obrasUrbanas.filter(o => clavesUp.includes((o.linea||'').trim().toUpperCase()));
+      const ejecLinea = deEstaLinea.filter(o => idsEnEjecucion.has(o.id));
+      const iniLinea = deEstaLinea.filter(o => !idsEnEjecucion.has(o.id) && !(o.estado||'').toString().toUpperCase().includes('TERMINAD') && !BIP_DUPLICADOS_CROSS.includes(o.bip));
+      const mEjec = sumMonto(ejecLinea), mIni = sumMonto(iniLinea);
+      totalEjec += mEjec; totalIni += mIni;
+      return `<tr><td>${cat}</td><td style="font-variant-numeric:tabular-nums">${fmt(mEjec)}</td><td style="font-variant-numeric:tabular-nums">${fmt(mIni)}</td><td style="font-variant-numeric:tabular-nums;font-weight:600">${fmt(mEjec+mIni)}</td></tr>`;
+    });
+    bodyLinea.innerHTML = filas.join('');
+    if (footLinea) footLinea.innerHTML = `<tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL OBRAS URBANAS</td><td style="font-variant-numeric:tabular-nums">${fmt(totalEjec)}</td><td style="font-variant-numeric:tabular-nums">${fmt(totalIni)}</td><td style="font-variant-numeric:tabular-nums">${fmt(totalEjec+totalIni)}</td></tr>`;
   }
   const bodyPI = document.getElementById('balance-porIniciar-body');
   const countPI = document.getElementById('balance-porIniciar-count');
