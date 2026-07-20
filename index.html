@@ -1942,7 +1942,7 @@ function renderBalance() {
   const stats = document.getElementById('balance-stats');
   if (!stats) return;
   const esProgramaValido = (p) => p && p.trim() !== '' && p.trim() !== 'Programa de origen';
-  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
+  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION']; // Contratación/Adjudicación/Recursos Transferidos son etapas previas a la ejecución física (ajustado 20/07/2026 según Minuta PPL)
   // BIP duplicados cross-programa: la Minuta V6 los excluye del lado Obras Urbanas porque
   // ya están contabilizados en Quiero Mi Barrio (misma obra física, reportada en dos líneas)
   const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
@@ -2246,7 +2246,7 @@ function generarReporte(tipo, valor) {
     subtitulo = 'Proyectos con código BIP de las líneas de reconstrucción: incendios, riesgo de desastres y planes de reconstrucción';
   }
 
-  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION','CONTRATACIÓN','CONTRATACION','ADJUDICACIÓN','ADJUDICACION','LICITACIÓN','LICITACION','RECURSOS TRANSFERIDOS'];
+  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION']; // Contratación/Adjudicación/Recursos Transferidos son etapas previas a la ejecución física (ajustado 20/07/2026 según Minuta PPL)
   const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
   const esEnEjecucion = (o) => {
     const fuente = o.fuente || '';
