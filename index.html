@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestor de Hitos DDU 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f5f7fa; --white: #ffffff; --border: #e3e8ef;
-  --text: #16213a; --text-dim: #64748b;
-  --accent: #1d5fd6; --accent2: #0e9f6e; --accent3: #dc2f2f; --accent4: #e8920a;
-  --accent-soft: #eaf1fd; --accent2-soft: #e6f7f1; --accent3-soft: #fdeaea; --accent4-soft: #fdf3e0;
+  --bg: #f6f7f5; --white: #ffffff; --border: #e4e7e2;
+  --text: #1f3a5f; --text-dim: #5c6b7a;
+  --accent: #2f7d5b; --accent2: #2f7d5b; --accent3: #c2703d; --accent4: #b8862e;
+  --accent-soft: #e7f1ec; --accent2-soft: #e7f1ec; --accent3-soft: #f7eee7; --accent4-soft: #f6efdd;
   --radius: 12px;
-  --shadow: 0 1px 3px rgba(22,33,58,0.06), 0 4px 12px rgba(22,33,58,0.04);
-  --shadow-lift: 0 4px 12px rgba(22,33,58,0.08), 0 12px 32px rgba(22,33,58,0.07);
+  --shadow: 0 1px 2px rgba(31,58,95,0.04), 0 4px 16px rgba(31,58,95,0.05);
+  --shadow-lift: 0 6px 20px rgba(31,58,95,0.09), 0 16px 40px rgba(31,58,95,0.06);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; min-height: 100vh; }
@@ -41,7 +41,7 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .tab { padding: 8px 10px; font-size: 11px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
 .tab:hover { color: var(--text); } .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .tab.green { color: var(--accent2); } .tab.green.active { border-bottom-color: var(--accent2); color: var(--accent2); }
-.tab.purple { color: #7c3aed; } .tab.purple.active { border-bottom-color: #7c3aed; color: #7c3aed; }
+.tab.purple { color: #2f7d5b; } .tab.purple.active { border-bottom-color: #2f7d5b; color: #2f7d5b; }
 .tab.red { color: var(--accent3); } .tab.red.active { border-bottom-color: var(--accent3); color: var(--accent3); }
 .filters { padding: 10px 24px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--white); border-bottom: 1px solid var(--border); }
 .filter-select { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 12px; outline: none; cursor: pointer; }
@@ -165,7 +165,66 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 }
 
 
+/* ══════════ SIDEBAR ══════════ */
+.app-shell { display:flex; align-items:stretch; }
+.sidebar { width:216px; flex-shrink:0; background:var(--white); border-right:1px solid var(--border); padding:14px 10px 24px; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; }
+.sb-title { font-family:'Fraunces',serif; font-size:14px; font-weight:600; color:var(--text); padding:4px 10px 16px; line-height:1.3; }
+.sb-title span { display:block; font-family:'Outfit',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-top:3px; }
+.sb-group { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a97a3; margin:18px 10px 6px; }
+.sidebar .tab { display:block; padding:8px 10px; font-size:13px; border-radius:8px; border-bottom:none !important; margin:0 0 2px; color:var(--text); font-weight:500; white-space:normal; }
+.sidebar .tab:hover { background:var(--bg); color:var(--text); }
+.sidebar .tab.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+.sidebar .tab-home { font-weight:600; margin-bottom:8px; }
+.sidebar .tab-accent { color:var(--accent); }
+.main-col { flex:1; min-width:0; display:flex; flex-direction:column; }
+.page-toolbar { display:flex; justify-content:flex-end; gap:6px; padding:8px 24px; background:var(--white); border-bottom:1px solid var(--border); position:relative; }
+@media (max-width:900px) {
+  .app-shell { flex-direction:column; }
+  .sidebar { width:100%; height:auto; position:static; display:flex; align-items:center; flex-wrap:nowrap; overflow-x:auto; padding:8px 10px; border-right:none; border-bottom:1px solid var(--border); }
+  .sb-title { display:none; }
+  .sb-group { display:none; }
+  .sidebar .tab { white-space:nowrap; margin:0 4px 0 0; }
+}
 .view { display: none; } .view.active { display: block; }
+/* ══════════ TABS AGRUPADAS ══════════ */
+.tab-sep { width:1px; height:16px; background:var(--border); margin:0 6px; flex-shrink:0; align-self:center; }
+.tab-home { font-weight:600; }
+.tab-home.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-accent { color:var(--accent); font-weight:600; }
+.tab-accent.active { border-bottom-color:var(--accent); }
+/* ══════════ HOME / INICIO ══════════ */
+.home-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:8px 0 22px; margin-bottom:24px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.home-eyebrow { font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.home-title { font-family:'Fraunces',serif; font-size:32px; font-weight:600; line-height:1.1; letter-spacing:-0.01em; color:var(--text); }
+.home-title .light { color:#8a97a3; font-weight:400; }
+.home-date { font-size:13px; color:var(--text-dim); margin-top:8px; }
+.home-metrics { display:flex; gap:14px; flex-shrink:0; }
+.home-metric { background:var(--white); border:1px solid var(--border); border-radius:9px; padding:14px 18px; min-width:128px; }
+.home-metric.alert { border-color:rgba(194,112,61,0.35); background:linear-gradient(180deg,#fdf6f0,#fff); }
+.home-metric .m-num { font-family:'Fraunces',serif; font-size:30px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; color:var(--text); }
+.home-metric.accent .m-num { color:var(--accent); }
+.home-metric.alert .m-num { color:var(--accent3); }
+.home-metric .m-label { font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.07em; margin-top:7px; font-weight:500; }
+.home-blocks { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.home-block { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:22px 22px 18px; box-shadow:var(--shadow); transition:box-shadow 0.2s, transform 0.2s, border-color 0.2s; }
+.home-block.wide { grid-column:span 2; }
+.home-block:hover { box-shadow:var(--shadow-lift); }
+.hb-head { display:flex; align-items:baseline; gap:12px; margin-bottom:4px; }
+.hb-num { font-family:'Fraunces',serif; font-size:13px; font-weight:500; color:#8a97a3; font-variant-numeric:tabular-nums; }
+.hb-title { font-size:15px; font-weight:600; color:var(--text); letter-spacing:-0.01em; }
+.hb-stat { margin-left:auto; font-size:11px; color:#8a97a3; font-variant-numeric:tabular-nums; align-self:center; }
+.hb-desc { font-size:12.5px; color:var(--text-dim); margin-bottom:16px; padding-left:30px; }
+.hb-links { display:flex; flex-wrap:wrap; gap:7px; padding-left:30px; }
+.hb-link { display:inline-flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:500; color:var(--text); cursor:pointer; transition:all 0.15s; }
+.hb-link:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+.hb-link .tk { font-size:11px; color:#8a97a3; transition:transform 0.15s; }
+.hb-link:hover .tk { color:var(--accent); transform:translateX(2px); }
+.home-block.feature { background:linear-gradient(150deg,#f0f6f3,#fbfdfc 60%); border-color:rgba(47,125,91,0.28); }
+.home-block.feature .hb-title { color:var(--accent); }
+.hb-cta { display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; border:none; border-radius:999px; padding:9px 18px; font-size:13px; font-weight:600; font-family:'Outfit',sans-serif; cursor:pointer; margin-left:30px; transition:filter 0.15s, transform 0.1s; }
+.hb-cta:hover { filter:brightness(1.06); }
+.hb-cta:active { transform:scale(0.98); }
+@media (max-width:720px){ .home-head{flex-direction:column;align-items:stretch;} .home-metrics{width:100%;} .home-metric{flex:1;min-width:0;} .home-blocks{grid-template-columns:1fr;} .home-block.wide{grid-column:span 1;} .home-title{font-size:26px;} }
 .list-filter-input { width:100%;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
 .list-filter-sel { width:100%;padding:3px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:var(--bg);color:var(--text);outline:none; }
 .sub-tab { padding: 8px 14px; font-size: 12px; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
@@ -310,11 +369,11 @@ body.dark .status-canc { background: rgba(229,57,53,0.14); color: #ef5350; borde
 .combo-empty { padding: 8px 12px; font-size: 12px; color: var(--text-dim); }
 body.dark .combo-list { background: #181c27; border-color: #2a3050; }
 
-.content.tint-green { background: rgba(13,154,110,0.07) !important; }
-.content.tint-purple { background: rgba(124,58,237,0.07) !important; }
-.content.tint-red { background: rgba(229,57,53,0.07) !important; }
-.content.tint-cyan { background: rgba(8,145,178,0.07) !important; }
-.content.tint-pink { background: rgba(190,24,93,0.07) !important; }
+.content.tint-green { background: rgba(47,125,91,0.06) !important; }
+.content.tint-purple { background: rgba(47,125,91,0.06) !important; }
+.content.tint-red { background: rgba(194,112,61,0.07) !important; }
+.content.tint-cyan { background: rgba(47,125,91,0.06) !important; }
+.content.tint-pink { background: rgba(31,58,95,0.05) !important; }
 
 /* Barras clicables */
 .bar-link { border-radius: 8px; transition: background 0.15s; padding: 2px 6px; margin: 0 -6px; }
@@ -507,7 +566,7 @@ header { gap: 8px; }
   .content::before {
     content: "Gestor de hitos comunicacionales DDU · Informe generado el " attr(data-fecha);
     display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px;
-    padding-bottom: 6px; border-bottom: 2px solid #1d5fd6;
+    padding-bottom: 6px; border-bottom: 2px solid #1f3a5f;
   }
 }
 </style>
@@ -546,64 +605,76 @@ header { gap: 8px; }
     </div>
   </header>
 
-  <div class="tabs" style="display:flex;align-items:center">
-    <div class="tab active" onclick="switchTab('dashboard')">Vista general</div>
-    <div class="tab green" onclick="switchTab('nuevo-hito')">Ingresa hito</div>
-    <div class="tab" onclick="switchTab('gantt')">Gantt</div>
-    <div class="tab" style="color:#9333ea" onclick="switchTab('kanban')">Panel</div>
-    <div class="tab" onclick="switchTab('calendario')">Calendario</div>
-    <div class="tab" onclick="switchTab('lista')">Lista</div>
-    <div class="tab" style="color:#0891b2" onclick="switchTab('noticias')">📰 Hitos con noticias</div>
-<div class="tab" style="color:var(--accent2)" onclick="switchTab('oportunidades')">💡 Oportunidades</div>
-    <div class="tab" style="color:#7c3aed" onclick="switchTab('balance')">📊 Cartera 2026</div>
-    <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
-    <div class="tab" style="color:var(--accent3)" onclick="switchTab('reconstruccion')">🔴 Regiones Reconstrucción</div>
-    <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">📣 Área Comunicaciones</div>
-    <div class="tab" style="color:#555" onclick="switchTab('ayuda')">❓ Ayuda</div>
-      <div style="margin-left:auto;display:flex;gap:6px;padding-right:8px;flex-shrink:0;position:relative">
-      <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
-      <button class="btn-sm" onclick="toggleMenuReportes(event)" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:#7c3aed;border-color:#7c3aed">📄 Reportes</button>
-      <div id="menu-reportes" style="display:none;position:fixed;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
-        <div style="padding:6px 12px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase">Cartera de Proyectos (BIP)</div>
-        <div class="reporte-item" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional</div>
-        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por región</div>
-        <div id="menu-reportes-regiones">
-          <div class="reporte-item" onclick="generarReporte('region','Arica y Parinacota')">Arica y Parinacota</div>
-          <div class="reporte-item" onclick="generarReporte('region','Tarapacá')">Tarapacá</div>
-          <div class="reporte-item" onclick="generarReporte('region','Antofagasta')">Antofagasta</div>
-          <div class="reporte-item" onclick="generarReporte('region','Atacama')">Atacama</div>
-          <div class="reporte-item" onclick="generarReporte('region','Coquimbo')">Coquimbo</div>
-          <div class="reporte-item" onclick="generarReporte('region','Valparaíso')">Valparaíso</div>
-          <div class="reporte-item" onclick="generarReporte('region','Metropolitana')">Región Metropolitana</div>
-          <div class="reporte-item" onclick="generarReporte('region','O\'Higgins')">O'Higgins</div>
-          <div class="reporte-item" onclick="generarReporte('region','Maule')">Maule</div>
-          <div class="reporte-item" onclick="generarReporte('region','Ñuble')">Ñuble</div>
-          <div class="reporte-item" onclick="generarReporte('region','Biobío')">Biobío</div>
-          <div class="reporte-item" onclick="generarReporte('region','La Araucanía')">La Araucanía</div>
-          <div class="reporte-item" onclick="generarReporte('region','Los Ríos')">Los Ríos</div>
-          <div class="reporte-item" onclick="generarReporte('region','Los Lagos')">Los Lagos</div>
-          <div class="reporte-item" onclick="generarReporte('region','Aysén')">Aysén</div>
-          <div class="reporte-item" onclick="generarReporte('region','Magallanes')">Magallanes</div>
+  <div class="app-shell">
+    <nav class="sidebar" id="sidebar">
+      <div class="sb-title">Gestor de Hitos<span>DDU · 2026</span></div>
+      <div class="tab tab-home active" onclick="switchTab('home')">🏠 Inicio</div>
+
+      <div class="sb-group">Consultar</div>
+      <div class="tab" onclick="switchTab('dashboard')">Vista general</div>
+      <div class="tab" onclick="switchTab('gantt')">Gantt</div>
+      <div class="tab" onclick="switchTab('kanban')">Panel</div>
+      <div class="tab" onclick="switchTab('calendario')">Calendario</div>
+      <div class="tab" onclick="switchTab('lista')">Lista</div>
+      <div class="tab" onclick="switchTab('comunas')">Por comuna</div>
+      <div class="tab" onclick="switchTab('reconstruccion')">Reconstrucción</div>
+
+      <div class="sb-group">Cartera y análisis</div>
+      <div class="tab" onclick="switchTab('balance')">Cartera 2026</div>
+      <div class="tab" onclick="switchTab('oportunidades')">Oportunidades</div>
+      <div class="tab" onclick="switchTab('noticias')">Hitos con noticias</div>
+
+      <div class="sb-group">Comunicaciones</div>
+      <div class="tab" onclick="switchTab('area-com')" id="tab-area-com">Área Comunicaciones</div>
+      <div class="tab tab-accent" onclick="switchTab('nuevo-hito')">＋ Ingresa hito</div>
+
+      <div class="sb-group">Apoyo</div>
+      <div class="tab" onclick="switchTab('ayuda')">Ayuda</div>
+    </nav>
+
+    <div class="main-col">
+      <div class="page-toolbar">
+        <button class="btn-sm" onclick="prepararImpresion()" aria-label="Exportar vista a PDF" title="Exportar vista actual a PDF">🖨 PDF</button>
+        <button class="btn-sm" onclick="toggleMenuReportes(event)" aria-label="Generar reportes" title="Generar reportes comunicacionales" style="color:var(--accent);border-color:var(--accent)">📄 Reportes</button>
+        <div id="menu-reportes" style="display:none;position:fixed;width:280px;max-height:420px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001;padding:6px 0">
+          <div style="padding:6px 12px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase">Cartera de Proyectos (BIP)</div>
+          <div class="reporte-item" onclick="generarReporte('nacional')">🇨🇱 Minuta nacional</div>
+          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por región</div>
+          <div id="menu-reportes-regiones">
+            <div class="reporte-item" onclick="generarReporte('region','Arica y Parinacota')">Arica y Parinacota</div>
+            <div class="reporte-item" onclick="generarReporte('region','Tarapacá')">Tarapacá</div>
+            <div class="reporte-item" onclick="generarReporte('region','Antofagasta')">Antofagasta</div>
+            <div class="reporte-item" onclick="generarReporte('region','Atacama')">Atacama</div>
+            <div class="reporte-item" onclick="generarReporte('region','Coquimbo')">Coquimbo</div>
+            <div class="reporte-item" onclick="generarReporte('region','Valparaíso')">Valparaíso</div>
+            <div class="reporte-item" onclick="generarReporte('region','Metropolitana')">Región Metropolitana</div>
+            <div class="reporte-item" onclick="generarReporte('region','O\'Higgins')">O'Higgins</div>
+            <div class="reporte-item" onclick="generarReporte('region','Maule')">Maule</div>
+            <div class="reporte-item" onclick="generarReporte('region','Ñuble')">Ñuble</div>
+            <div class="reporte-item" onclick="generarReporte('region','Biobío')">Biobío</div>
+            <div class="reporte-item" onclick="generarReporte('region','La Araucanía')">La Araucanía</div>
+            <div class="reporte-item" onclick="generarReporte('region','Los Ríos')">Los Ríos</div>
+            <div class="reporte-item" onclick="generarReporte('region','Los Lagos')">Los Lagos</div>
+            <div class="reporte-item" onclick="generarReporte('region','Aysén')">Aysén</div>
+            <div class="reporte-item" onclick="generarReporte('region','Magallanes')">Magallanes</div>
+          </div>
+          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por programa</div>
+          <div class="reporte-item" onclick="generarReporte('programa','Quiero Mi Barrio')">Quiero Mi Barrio</div>
+          <div class="reporte-item" onclick="generarReporte('programa','Obras Urbanas')">Obras Urbanas</div>
+          <div class="reporte-item" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades</div>
+          <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Especial</div>
+          <div class="reporte-item" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos</div>
+          <div class="reporte-item" onclick="generarReporte('especial','Reconstrucción')">🏚️ Reconstrucción</div>
         </div>
-        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Por programa</div>
-        <div class="reporte-item" onclick="generarReporte('programa','Quiero Mi Barrio')">Quiero Mi Barrio</div>
-        <div class="reporte-item" onclick="generarReporte('programa','Obras Urbanas')">Obras Urbanas</div>
-        <div class="reporte-item" onclick="generarReporte('programa','Pequeñas Localidades')">Pequeñas Localidades</div>
-        <div style="padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Especial</div>
-        <div class="reporte-item" onclick="generarReporte('programa','Parques Urbanos')">🌳 Parques Urbanos</div>
-        <div class="reporte-item" onclick="generarReporte('especial','Reconstrucción')">🏚️ Reconstrucción</div>
+        <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
       </div>
-      <button class="btn-sm" onclick="limpiarFiltros()" aria-label="Limpiar todos los filtros" style="color:var(--accent3);border-color:var(--accent3)">✕ Filtros</button>
-    </div>
-  </div>
 
-  <style>
-    .reporte-item { padding:7px 12px; font-size:12px; cursor:pointer; color:var(--text); }
-    .reporte-item:hover { background:var(--bg-accent); }
-  </style>
+      <style>
+        .reporte-item { padding:7px 12px; font-size:12px; cursor:pointer; color:var(--text); }
+        .reporte-item:hover { background:var(--bg-accent); }
+      </style>
 
-  
-  <div class="filters" id="global-filters" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
+      <div class="filters" id="global-filters" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);align-items:center">
     <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-right:2px">Filtrar:</span>
     <select class="filter-select" id="fil-programa" onchange="applyFilters()" aria-label="Filtrar por programa"><option value="">Todos los programas</option></select>
     <select class="filter-select" id="fil-region" onchange="applyFilters()" aria-label="Filtrar por región"><option value="">Todas las regiones</option></select>
@@ -617,6 +688,70 @@ header { gap: 8px; }
 
   <div class="content">
     <div id="loading-indicator" class="loading"><div class="spinner"></div>Cargando datos...</div>
+
+    <div id="view-home" class="view active">
+      <div class="home-head">
+        <div>
+          <div class="home-eyebrow">Gestor de Hitos · DDU MINVU</div>
+          <div class="home-title" id="home-saludo">¿Por dónde partimos hoy?</div>
+          <div class="home-date" id="home-fecha"></div>
+        </div>
+        <div class="home-metrics">
+          <div class="home-metric accent">
+            <div class="m-num" id="home-total">—</div>
+            <div class="m-label">Hitos activos</div>
+          </div>
+          <div class="home-metric alert">
+            <div class="m-num" id="home-sinfecha">—</div>
+            <div class="m-label">Hitos sin fecha</div>
+          </div>
+        </div>
+      </div>
+      <div class="home-blocks">
+        <div class="home-block">
+          <div class="hb-head"><span class="hb-num">01</span><span class="hb-title">Consultar</span><span class="hb-stat" id="home-stat-consultar"></span></div>
+          <div class="hb-desc">Ver y filtrar los hitos por fecha, estado, territorio o programa.</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="switchTab('dashboard')">Vista general <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('gantt')">Gantt <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('kanban')">Panel <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('calendario')">Calendario <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('lista')">Lista <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('comunas')">Por comuna <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('reconstruccion')">Reconstrucción <span class="tk">→</span></span>
+          </div>
+        </div>
+        <div class="home-block">
+          <div class="hb-head"><span class="hb-num">02</span><span class="hb-title">Cartera y análisis</span><span class="hb-stat">con código BIP</span></div>
+          <div class="hb-desc">Inversión de obras urbanas, oportunidades de difusión y cruce con prensa.</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="switchTab('balance')">Cartera 2026 <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('oportunidades')">Oportunidades <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('noticias')">Hitos con noticias <span class="tk">→</span></span>
+          </div>
+        </div>
+        <div class="home-block feature wide">
+          <div class="hb-head"><span class="hb-num">03</span><span class="hb-title">Ingresar un hito</span></div>
+          <div class="hb-desc">Registra una nueva actividad comunicacional en la cartera.</div>
+          <button class="hb-cta" onclick="switchTab('nuevo-hito')">Ingresar hito <span>→</span></button>
+        </div>
+        <div class="home-block">
+          <div class="hb-head"><span class="hb-num">04</span><span class="hb-title">Comunicaciones</span><span class="hb-stat">gestiones y KPI</span></div>
+          <div class="hb-desc">Acciones comunicacionales vinculadas a hitos, Gantt de acciones e indicadores.</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="switchTab('area-com')">Área Comunicaciones <span class="tk">→</span></span>
+          </div>
+        </div>
+        <div class="home-block">
+          <div class="hb-head"><span class="hb-num">05</span><span class="hb-title">Apoyo</span></div>
+          <div class="hb-desc">Genera reportes imprimibles y consulta el manual del gestor.</div>
+          <div class="hb-links">
+            <span class="hb-link" onclick="switchTab('dashboard');setTimeout(()=>toggleMenuReportes(event),200)">Reportes <span class="tk">→</span></span>
+            <span class="hb-link" onclick="switchTab('ayuda')">Ayuda <span class="tk">→</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="view-dashboard" class="view">
       <div class="stats-grid">
@@ -1282,7 +1417,7 @@ header { gap: 8px; }
 
     <!-- KANBAN -->
     <div id="view-kanban" class="view">
-      <div class="section-header"><span>Panel — Hitos por estado</span><span id="kanban-count" style="color:#9333ea"></span></div>
+      <div class="section-header"><span>Panel — Hitos por estado</span><span id="kanban-count" style="color:#2f7d5b"></span></div>
       <div id="kanban-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;margin-top:8px"></div>
     </div>
     <!-- RECONSTRUCCION -->
@@ -1304,8 +1439,8 @@ header { gap: 8px; }
     <div id="view-area-com" class="view" style="min-height:400px">
       <div style="display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow-x:auto">
         <div class="sub-tab active" onclick="switchSubTab('sub-acciones')" id="subtab-sub-acciones">📊 Área Comunicaciones</div>
-        <div class="sub-tab" onclick="switchSubTab('sub-nueva-accion')" id="subtab-sub-nueva-accion" style="color:#7c3aed">➕ Ingresa gestión</div>
-        <div class="sub-tab" onclick="switchSubTab('sub-links')" id="subtab-sub-links" style="color:#0891b2">🔗 Ingresa links</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-nueva-accion')" id="subtab-sub-nueva-accion" style="color:#2f7d5b">➕ Ingresa gestión</div>
+        <div class="sub-tab" onclick="switchSubTab('sub-links')" id="subtab-sub-links" style="color:#2f7d5b">🔗 Ingresa links</div>
         <div class="sub-tab" onclick="switchSubTab('sub-gantt-acciones')" id="subtab-sub-gantt-acciones" style="color:#be185d">📅 Gantt acciones</div>
         <div class="sub-tab" onclick="switchSubTab('sub-kpi')" id="subtab-sub-kpi" style="color:#f59e0b">🎯 KPI</div>
       </div>
@@ -1317,7 +1452,7 @@ header { gap: 8px; }
           <div class="stat-card yellow" style="cursor:pointer" onclick="filtrarAcciones('Reprogramada')"><div class="stat-label" style="color:#b45309">Reprogramadas</div><div class="stat-value" id="a-repro" style="color:#b45309">0</div></div>
           <div class="stat-card green" style="cursor:pointer" onclick="filtrarAcciones('Realizada')"><div class="stat-label">Realizadas</div><div class="stat-value" id="a-real">0</div></div>
           <div class="stat-card red" style="cursor:pointer" onclick="filtrarAcciones('Cancelada')"><div class="stat-label">Canceladas</div><div class="stat-value" id="a-canc">0</div></div>
-          <div class="stat-card" style="cursor:pointer;border-color:#7c3aed33" onclick="filtrarAccionesVinculadas()"><div class="stat-label" style="color:#7c3aed">Vinculadas a hito</div><div class="stat-value" id="a-vinc" style="color:#7c3aed">0</div></div>
+          <div class="stat-card" style="cursor:pointer;border-color:rgba(47,125,91,0.2)" onclick="filtrarAccionesVinculadas()"><div class="stat-label" style="color:#2f7d5b">Vinculadas a hito</div><div class="stat-value" id="a-vinc" style="color:#2f7d5b">0</div></div>
         </div>
         <div class="list-container">
           <div class="section-header"><span>Acciones comunicacionales</span><span id="acciones-count" style="color:var(--accent)"></span></div>
@@ -1385,7 +1520,7 @@ header { gap: 8px; }
                 <select class="fsel" id="na-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
               </div>
               <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
-                <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional — si la acción abarca un rango de fechas)</label>
+                <label class="login-label" style="color:#2f7d5b">📅 Periodo (opcional — si la acción abarca un rango de fechas)</label>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
                   <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="na-periodo-inicio"></div>
                   <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="na-periodo-fin"></div>
@@ -1393,7 +1528,7 @@ header { gap: 8px; }
               </div>
               <div class="form-field full"><label class="login-label">Notas</label><textarea class="login-input" id="na-notas" rows="3" style="resize:vertical"></textarea></div>
             </div>
-            <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#7c3aed">Guardar acción</button>
+            <button class="login-btn" id="btn-na" onclick="guardarAccion()" style="background:#2f7d5b">Guardar acción</button>
           </div>
         </div>
       </div>
@@ -1412,8 +1547,8 @@ header { gap: 8px; }
               </div>
             </div>
             <div id="lk-fields" style="display:flex;flex-direction:column;gap:10px"></div>
-            <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#0891b2;border:1px solid #0891b2">+ Agregar link</button>
-            <button class="login-btn" id="btn-lk" onclick="guardarLinks()" style="background:#0891b2">Guardar links</button>
+            <button class="login-btn" onclick="addLinkRow()" style="background:var(--bg);color:#2f7d5b;border:1px solid #2f7d5b">+ Agregar link</button>
+            <button class="login-btn" id="btn-lk" onclick="guardarLinks()" style="background:#2f7d5b">Guardar links</button>
           </div>
         </div>
       </div>
@@ -1491,6 +1626,8 @@ header { gap: 8px; }
     </div>
 
 </div>
+</div><!-- /main-col -->
+</div><!-- /app-shell -->
 
 <div class="hito-tooltip" id="hito-tooltip" onmouseenter="if(window._ttHideTimer)clearTimeout(window._ttHideTimer)" onmouseleave="hideTooltip()"></div>
 <div class="success-overlay" id="success-overlay" style="display:none">
@@ -1524,21 +1661,21 @@ const PROG_COLORS = {
   'Quiero mi Barrio':'#0d9a6e',
   'Regeneración de Conjuntos':'#e53935',
   'Planes Urbanos Habitacionales':'#f59e0b',
-  'Zonas de Interés Público':'#7c3aed',
+  'Zonas de Interés Público':'#2f7d5b',
   'Unidad de Proyecto':'#ea580c',
-  'Comunicaciones DDU':'#0891b2',
+  'Comunicaciones DDU':'#2f7d5b',
   'Unidad Digitalización SU':'#6366f1',
   'Infraestructura Verde':'#16a34a',
   'Parques Urbanos - Construcción y Mejoramiento':'#15803d',
   'Parques Urbanos - Conservación':'#4ade80',
   'Pavimentación Participativa':'#78716c',
   'Espacios Públicos':'#db2777',
-  'Planificación y Normas Urbanas':'#9333ea',
+  'Planificación y Normas Urbanas':'#2f7d5b',
   'Suelo':'#b45309',
   'Vialidad urbana':'#0369a1',
   'Infraestructura sanitaria':'#0e7490',
   'Reducción de riesgos desastres y ACC':'#dc2626',
-  'PUI':'#7c3aed',
+  'PUI':'#2f7d5b',
   'PUE':'#6d28d9'
 };
 const PROG_BG = {
@@ -1859,7 +1996,7 @@ function renderBalance() {
     <div class="stat-card green"><div class="stat-label">Monto en ejecución</div><div class="stat-value" style="font-size:22px">${fmt(montoEjecucion)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${proyectosMonto.length} proyectos</div></div>
     <div class="stat-card yellow"><div class="stat-label">Monto por iniciar</div><div class="stat-value" style="font-size:22px">${fmt(montoPorIniciar)}</div><div style="font-size:10.5px;color:var(--text-dim);margin-top:2px">${porIniciarDetalle.length} proyectos</div></div>
   `;
-  const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
+  const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#2f7d5b','#ea580c','#2f7d5b','#be185d'];
   function countBy(field){
     const c={};
     allCartera.forEach(o=>{
@@ -2136,7 +2273,7 @@ function generarReporte(tipo, valor) {
     @page { size: Letter portrait; margin: 16mm; }
     * { box-sizing:border-box; }
     body { font-family: Arial, Helvetica, sans-serif; color:#1a1a1a; margin:0; padding:0; }
-    .header { border-bottom:3px solid #1d5fd6; padding-bottom:10px; margin-bottom:14px; }
+    .header { border-bottom:3px solid #1f3a5f; padding-bottom:10px; margin-bottom:14px; }
     .header .tag { font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
     .header h1 { font-size:19px; margin:4px 0 2px; color:#0d1b3e; }
     .header .sub { font-size:11px; color:#666; }
@@ -2293,9 +2430,23 @@ function quitarFiltro(selectId){
 
 function _sn(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
 function renderAll(){
-  ['renderDashboard','renderGantt','renderCalendar','renderList','renderKanban','renderComunas','renderReconstruccion','renderAcciones','renderCompletitud'].forEach(fn=>{
+  ['renderHome','renderDashboard','renderGantt','renderCalendar','renderList','renderKanban','renderComunas','renderReconstruccion','renderAcciones','renderCompletitud'].forEach(fn=>{
     try { window[fn](); } catch(e) { console.error(fn+' failed:',e.message); }
   });
+}
+function renderHome(){
+  const activos = allHitos.filter(h=>h.estado!=='Eliminado');
+  const sinFecha = activos.filter(h=>h.estado==='Sin fecha').length;
+  _sn('home-total', activos.length);
+  _sn('home-sinfecha', sinFecha);
+  const h=new Date().getHours();
+  const saludo = h<12 ? 'Buenos días' : (h<20 ? 'Buenas tardes' : 'Buenas noches');
+  const el=document.getElementById('home-saludo');
+  if(el) el.innerHTML = saludo + '.<br><span class="light">¿Por dónde partimos hoy?</span>';
+  const f=document.getElementById('home-fecha');
+  if(f){ try{ f.textContent = new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) + ' · Marcha blanca'; }catch(e){} }
+  const sc=document.getElementById('home-stat-consultar');
+  if(sc) sc.textContent = activos.length + ' hitos';
 }
 
 function renderDashboard() {
@@ -2312,7 +2463,7 @@ function renderDashboard() {
   const _csf=document.getElementById('card-sin-fecha');
   if(_csf){const _nsf=filtered.filter(h=>h.estado==='Sin fecha').length;_csf.classList.toggle('pulse',_nsf>0);}
   _sn('s-pct',pct+'%'); const _pf=document.getElementById('progress-fill');if(_pf)_pf.style.width=pct+'%';
-  const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#7c3aed','#ea580c','#0891b2','#be185d'];
+  const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#2f7d5b','#ea580c','#2f7d5b','#be185d'];
   function countBy(field){const c={};filtered.forEach(h=>{const v=h[field]||'Sin datos';c[v]=(c[v]||0)+1;});return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));}
   function renderBar(id,data,colors,filterSel,excluir=[]){
     const el=document.getElementById(id);
@@ -3032,8 +3183,8 @@ function renderGanttAcciones() {
   const TIPO_COLORS = {
     'Nota intranet': '#1565c0',
     'Contenido para redes sociales': '#be185d',
-    'Publicación externa': '#7c3aed',
-    'Comunicación interna/externa': '#0891b2',
+    'Publicación externa': '#2f7d5b',
+    'Comunicación interna/externa': '#2f7d5b',
     'Efermérride sectorial': '#ea580c',
     'Consulta pública': '#16a34a',
     'Diseño': '#db2777',
@@ -3365,7 +3516,7 @@ function goHome() {
     try{const el=document.getElementById(id);if(el)el.value='';}catch(e){}
   });
   applyFilters();
-  switchTab('dashboard');
+  switchTab('home');
 }
 function cerrarSesion() {
   localStorage.removeItem('ddu-session');
@@ -3489,10 +3640,14 @@ function switchTab(tab) {
   const _ct = document.querySelector('.content');
   const _tm = {'reconstruccion':'tint-red','nuevo-hito':'tint-green','completitud':'tint-red','nueva-accion':'tint-purple','links':'tint-cyan','gantt-acciones':'tint-pink'};
   _ct.className = 'content ' + (_tm[tab]||'');
-  const tabs=['dashboard','nuevo-hito','gantt','kanban','calendario','lista','noticias','oportunidades','balance','comunas','reconstruccion','area-com','ayuda'];
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
+  document.querySelectorAll('.tab').forEach(t=>{
+    const m=(t.getAttribute('onclick')||'').match(/switchTab\('([^']+)'\)/);
+    t.classList.toggle('active', m && m[1]===tab);
+  });
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+tab).classList.add('active');
+  const _v=document.getElementById('view-'+tab);
+  if(_v) _v.classList.add('active');
+  if(tab==='home') renderHome();
   window.scrollTo({top: 0, behavior: 'smooth'});
   if(tab==='lista') setTimeout(initListaScroll, 150);
 }
@@ -3950,7 +4105,7 @@ function initListaScroll() {
               <select class="fsel" id="edit-accion-prioridad"><option value="">Sin definir</option><option>Alta</option><option>Media</option><option>Baja</option></select>
             </div>
             <div class="form-field full" style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px">
-              <label class="login-label" style="color:#7c3aed">📅 Periodo (opcional)</label>
+              <label class="login-label" style="color:#2f7d5b">📅 Periodo (opcional)</label>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
                 <div><label class="login-label">Fecha inicio</label><input class="login-input" type="date" id="edit-accion-periodo-inicio"></div>
                 <div><label class="login-label">Fecha fin</label><input class="login-input" type="date" id="edit-accion-periodo-fin"></div>
