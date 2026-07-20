@@ -32,6 +32,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-se
 .login-hint { font-size: 11px; color: var(--text-dim); margin-top: 16px; text-align: center; }
 #app { display: none; flex-direction: column; min-height: 100vh; background: var(--bg); }
 header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+.header-home-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 1; }
+.header-home-center button { display:flex; align-items:center; gap:7px; background: var(--accent); color:#fff; border:none; border-radius:999px; padding:8px 20px; font-size:13px; font-weight:600; font-family:'Outfit',sans-serif; cursor:pointer; box-shadow:0 2px 8px rgba(47,125,91,0.28); transition:filter 0.15s, transform 0.1s; white-space:nowrap; }
+.header-home-center button:hover { filter:brightness(1.08); }
+.header-home-center button:active { transform:translateY(1px); }
+@media (max-width: 900px) { .header-home-center { display:none; } }
 .header-logo { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 12px; }
 .header-title { font-size: 15px; font-weight: 600; color: var(--text); }
 .badge-user { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-dim); }
@@ -63,6 +68,12 @@ header { background: var(--white); border-bottom: 1px solid var(--border); paddi
 .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
 .chart-title { font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
 .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bar-expand-slot:empty { display: none; }
+.bar-expand { margin: 0 0 10px; padding: 6px 8px; background: var(--bg); border-radius: 8px; max-height: 220px; overflow-y: auto; }
+.bar-expand-item { padding: 6px 8px; border-radius: 6px; font-size: 12px; cursor: default; display: flex; flex-direction: column; gap: 2px; }
+.bar-expand-item:hover { background: var(--white); }
+.bar-expand-item b { color: var(--text); font-weight: 500; }
+.bar-expand-meta { font-size: 11px; color: var(--text-dim); }
 .bar-label { font-size: 11px; color: var(--text-dim); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
 .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
@@ -578,6 +589,9 @@ header { gap: 8px; }
       <span class="header-logo" style="flex-shrink:0">🏠 DDU · 2026</span>
       <span class="header-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Gestor de hitos comunicacionales DDU</span>
     </div>
+    <div class="header-home-center">
+      <button onclick="goHome()" aria-label="Ir al inicio" title="Ir al inicio">🏠 Ir al inicio</button>
+    </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
       <div style="position:relative">
         <input id="global-search" type="text" placeholder="Buscar y editar hito ( / )" aria-label="Búsqueda global de hitos y acciones"
@@ -586,7 +600,6 @@ header { gap: 8px; }
           oninput="buscarGlobal(this.value)">
         <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:340px;max-height:380px;overflow-y:auto;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:10001"></div>
       </div>
-      <button class="btn-sm" onclick="goHome()" aria-label="Ir al inicio" title="Ir al inicio" style="color:var(--accent);border-color:var(--accent)">🏠 Ir al inicio</button>
       <span class="badge-user" id="user-badge">—</span>
       <button class="btn-sm" onclick="loadData()" aria-label="Actualizar datos">↻ Actualizar</button>
       <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro">🌙</button>
@@ -780,9 +793,10 @@ header { gap: 8px; }
     <div id="view-oportunidades" class="view">
       <div class="list-container">
         <div class="section-header"><span>Oportunidades de hito comunicable</span><span id="oportunidades-count" style="color:var(--accent2)"></span></div>
+        <div style="font-size:11.5px;color:var(--text-dim);padding:0 20px 10px">Todos los proyectos con código BIP vigentes en la Cartera 2026 (en ejecución o por iniciar) que aún no tienen un hito comunicacional ni noticia asociada.</div>
         <div style="overflow-x:auto">
           <table class="list-table">
-            <thead><tr><th>BIP</th><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Avance</th><th>Estado</th></tr></thead>
+            <thead><tr><th>BIP</th><th>Proyecto</th><th>Programa</th><th>Región</th><th>Comuna</th><th>Monto (M$)</th><th>Estado</th></tr></thead>
             <tbody id="oportunidades-body"></tbody>
           </table>
         </div>
@@ -1535,24 +1549,32 @@ header { gap: 8px; }
           <p style="margin:0 0 16px">Cuando un mismo BIP aparece en más de una etapa (por ejemplo Diseño y Ejecución), no se fusionan — son registros distintos y legítimos del mismo proyecto en distintas fases.</p>
 
           <p style="font-weight:700;margin:0 0 6px">¿Qué muestra cada pestaña?</p>
-          <p style="margin:0 0 4px"><b>Vista general</b> — resumen y estadísticas generales de hitos.</p>
+          <p style="margin:0 0 4px"><b>Vista general</b> — resumen y estadísticas generales de hitos. Las barras de "Por región" y "Por comuna" son desplegables: haz clic sobre una barra para ver el listado de hitos correspondiente sin salir de la vista (vuelve a hacer clic para cerrarlo). Las de "Por programa" y "Por tipo" te llevan directo a Lista con el filtro aplicado.</p>
           <p style="margin:0 0 4px"><b>Ingresa hito</b> — formulario para crear un hito nuevo.</p>
           <p style="margin:0 0 4px"><b>Gantt / Kanban / Calendario / Lista</b> — distintas formas de ver los mismos hitos, filtrables por programa, región, comuna, tipo, mes y estado.</p>
           <p style="margin:0 0 4px"><b>Hitos con noticias</b> — sugiere qué hitos ya tienen cobertura de prensa, agrupando por nivel de coincidencia (match automático, no oficial).</p>
-          <p style="margin:0 0 4px"><b>Oportunidades</b> — proyectos con código BIP que están en ejecución con avance alto (≥90%) o terminados, y que todavía no tienen un hito comunicacional asociado — candidatos a inauguración o nota de prensa.</p>
-          <p style="margin:0 0 4px"><b>Balance</b> — monto de inversión de la cartera (solo proyectos con BIP efectivamente en ejecución), desgloses por región, comuna y programa, un buscador de comuna con el detalle de esa comuna, y un listado completo de las obras "por iniciar" (proyecto, comuna, monto) — no solo el total agregado.</p>
+          <p style="margin:0 0 4px"><b>Oportunidades</b> — todos los proyectos con código BIP vigentes en la Cartera 2026 (en ejecución o por iniciar, con el mismo criterio que la pestaña Cartera 2026) que todavía no tienen un hito comunicacional ni una noticia asociada — candidatos a inauguración, avance de obra o nota de prensa.</p>
+          <p style="margin:0 0 4px"><b>Cartera 2026</b> — monto de inversión de la cartera vigente (solo proyectos con BIP), con desgloses por programa y por línea de inversión (Obras Urbanas), un buscador de comuna, y el listado completo de las obras "por iniciar". El criterio de "en ejecución"/"por iniciar" es el mismo para esta pestaña, los reportes PDF y Oportunidades — si un proyecto aparece en un lado, aparece igual en los otros.</p>
           <p style="margin:0 0 16px"><b>Por comuna / Regiones Reconstrucción / Área Comunicaciones</b> — vistas y gestión especializadas por esos recortes.</p>
 
+          <p style="font-weight:700;margin:0 0 6px">¿Cómo se define "en ejecución" y "por iniciar" en la Cartera 2026?</p>
+          <p style="margin:0 0 4px"><b>Obras Urbanas</b> — en ejecución: Etapa=Ejecución (el monto ya es la proyección 2026, no se excluyen las obras terminadas porque el saldo pendiente del año ya está reflejado). Por iniciar: viene de un archivo Excel dedicado y separado.</p>
+          <p style="margin:0 0 4px"><b>Pequeñas Localidades (PPL)</b> — en ejecución exige Etapa=Ejecución <i>y</i> Estado="En ejecución" a la vez (hay registros con el Estado adelantado respecto a la Etapa real, y sin este doble filtro se sobre-cuentan obras que no han partido). Por iniciar es una lista curada de obras confirmadas para 2026 — no todo el backlog sin ejecutar, que incluye cientos de proyectos en estados administrativos de años anteriores (Sin Inicio, Decreto TT, Mod. Presupuestaria) fuera del alcance de la Cartera 2026.</p>
+          <p style="margin:0 0 16px"><b>Resto de programas</b> — en ejecución: Etapa=Ejecución y Estado distinto de Terminado. Por iniciar: todo lo demás, excluyendo Terminado.</p>
+
           <p style="font-weight:700;margin:0 0 6px">Botón "📄 Reportes"</p>
-          <p style="margin:0 0 4px">Genera reportes comunicacionales imprimibles (tamaño carta) directo desde la Cartera de Proyectos con BIP, con un párrafo ejecutivo, cifras clave, obras destacadas y desglose — sin necesidad de armarlos a mano. Opciones disponibles:</p>
+          <p style="margin:0 0 4px">Genera reportes comunicacionales imprimibles (tamaño carta) directo desde la Cartera de Proyectos con BIP, con un párrafo ejecutivo, cifras clave, obras destacadas y desglose — sin necesidad de armarlos a mano. Usan exactamente el mismo criterio de "en ejecución"/"por iniciar" que la pestaña Cartera 2026, así que las cifras de un reporte siempre calzan con lo que ves ahí. Opciones disponibles:</p>
           <p style="margin:0 0 4px">• <b>Minuta nacional</b> — toda la cartera con BIP a nivel país.</p>
           <p style="margin:0 0 4px">• <b>Por región</b> — las 16 regiones, filtradas por coincidencia de nombre en el campo Región.</p>
           <p style="margin:0 0 4px">• <b>Por programa</b> — Quiero Mi Barrio, Obras Urbanas, Pequeñas Localidades.</p>
           <p style="margin:0 0 16px">• <b>Especial</b> — Parques Urbanos, como reporte dedicado aparte del resto de programas.</p>
-          <p style="margin:0 0 16px">Cada reporte se abre en una pestaña nueva lista para imprimir o guardar como PDF (Ctrl/Cmd+P si el navegador no abre el diálogo de impresión solo). Usa el mismo criterio de "en ejecución" ya validado contra la Minuta V6 — no mezcla obras terminadas ni la cartera "por iniciar" en el monto de ejecución.</p>
+          <p style="margin:0 0 16px">Cada reporte se abre en una pestaña nueva lista para imprimir o guardar como PDF (Ctrl/Cmd+P si el navegador no abre el diálogo de impresión solo).</p>
+
+          <p style="font-weight:700;margin:0 0 6px">Navegación</p>
+          <p style="margin:0 0 16px">El botón verde "🏠 Ir al inicio" en el centro del header (o hacer clic en el logo "DDU · 2026" a la izquierda) te devuelve a la pantalla de Inicio desde cualquier vista.</p>
 
           <p style="font-weight:700;margin:0 0 6px">Preguntas frecuentes</p>
-          <p style="margin:0 0 4px"><b>¿Por qué el monto de Balance no coincide exacto con una minuta oficial?</b> Puede haber diferencias menores por proyectos que la minuta excluye a propósito (ej. duplicados ya contados en otro programa). Se prioriza que el criterio sea consistente y explicado, no un calce perfecto al peso.</p>
+          <p style="margin:0 0 4px"><b>¿Por qué el monto de Cartera 2026 no coincide exacto con una minuta oficial?</b> Puede haber diferencias menores por proyectos que la minuta excluye a propósito (ej. duplicados ya contados en otro programa). Se prioriza que el criterio sea consistente y explicado, no un calce perfecto al peso — aunque en Obras Urbanas y Pequeñas Localidades sí está verificado al peso contra la minuta y el documento oficial respectivos.</p>
           <p style="margin:0 0 4px"><b>¿Qué hago si un hito no tiene BIP y debería tenerlo?</b> Edítalo y agrega el código en el campo "Código BIP" — si de verdad no corresponde a una obra, marca el check "Hito no asociado a BIP" en vez de dejarlo en blanco sin explicación.</p>
           <p style="margin:0 0 4px"><b>¿El match de "Hitos con noticias" es definitivo?</b> No — es una sugerencia por similitud de texto. Siempre revisa la noticia candidata antes de darla por confirmada.</p>
           <p style="margin:0 0 4px"><b>¿Puedo generar un informe para prensa o autoridades directo desde acá?</b> Sí — usa el botón "📄 Reportes" arriba a la derecha. Elige nacional, una región o un programa, y se abre un documento tamaño carta listo para imprimir o guardar como PDF, con cifras y obras destacadas ya redactadas.</p>
@@ -1685,6 +1707,43 @@ const PROG_BG = {
 };
 
 let allHitos=[], allAcciones=[], filtered=[], activeTab='home', editingId=null;
+
+// ══════════════════════════════════════════════════════════════════════
+// CARTERA 2026 — clasificación única de "en ejecución" / "por iniciar".
+// Usada por renderBalance, generarReporte (PDF) y el cálculo de Oportunidades,
+// para que los tres siempre muestren exactamente lo mismo. Verificado al peso
+// contra la Minuta V6 (Obras Urbanas) y el documento "PPL con código BIP"
+// (Pequeñas Localidades) el 20/07/2026.
+// ══════════════════════════════════════════════════════════════════════
+const CARTERA_BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
+const CARTERA_PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION'];
+// Pequeñas Localidades: la Minuta define "por iniciar 2026" como una lista curada de 6 obras,
+// no todo el backlog sin ejecutar (que incluye ~320 registros en estados administrativos
+// dispares de años anteriores: Sin Inicio, Decreto TT, Mod. Presupuestaria, etc.)
+const CARTERA_PPL_BIP_POR_INICIAR = ['40063245-0','40032799-0','40069199-0','40032636-0','40042615-0','40073655-0'];
+function cartera2026Estado(o) {
+  const fuente = (o.fuente || '');
+  const estadoUp = (o.estado||'').toString().toUpperCase().trim();
+  if (o.programa === 'Obras Urbanas' && CARTERA_BIP_DUPLICADOS_CROSS.includes(o.bip)) return null;
+  // Obras Urbanas — en ejecución: el Monto ya es la proyección 2026, no se excluye Terminada
+  if (fuente.includes('en_ejecuci')) {
+    return o.etapa === 'Ejecución' ? 'ejecucion' : null;
+  }
+  // Obras Urbanas — por iniciar: archivo dedicado, nunca "en ejecución"
+  if (fuente.includes('Obras_Urbanas_por_iniciar')) {
+    return estadoUp.includes('TERMINAD') ? null : 'por_iniciar';
+  }
+  // Pequeñas Localidades: en ejecución exige Etapa=Ejecución Y Estado=En ejecución;
+  // por iniciar es la lista curada de 6 BIP confirmados por la Minuta
+  if (fuente.includes('PPL_solicitud')) {
+    if (o.etapa === 'Ejecución' && CARTERA_PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s))) return 'ejecucion';
+    if (CARTERA_PPL_BIP_POR_INICIAR.includes(o.bip)) return 'por_iniciar';
+    return null;
+  }
+  // Resto de programas (Quiero Mi Barrio, Parques Urbanos, Pequeñas Localidades fuera de lo anterior)
+  if (estadoUp.includes('TERMINAD')) return null;
+  return o.etapa === 'Ejecución' ? 'ejecucion' : 'por_iniciar';
+}
 
 let _otpEmail = '';
 
@@ -1888,15 +1947,14 @@ async function loadData(silent=false) {
       }
     });
     allOportunidades = allCartera.filter(o => {
-      const estado = (o.estado||'').toString().toUpperCase();
-      const fuente = o.fuente || '';
       if (!o.bip || o.bip.trim()==='') return false;
-      // Obras_Urbanas_por_iniciar.xlsx: proyectos que aún no arrancan por definición del archivo;
-      // su Etapa/Estado no son un indicador confiable de avance real, así que nunca son "oportunidad"
-      if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
-      const cumple = (typeof o.avance === 'number' && o.avance >= 0.9) || estado.includes('TERMINAD');
-      return o.etapa === 'Ejecución' && cumple && !linkedCarteraIds.has(o.id);
-    }).sort((a,b)=>(b.avance||0)-(a.avance||0));
+      // Debe ser parte vigente de la Cartera 2026 (mismo criterio que el balance y los reportes)
+      const estadoCartera = cartera2026Estado(o);
+      if (!estadoCartera) return false;
+      // Sin hito vinculado implica también sin noticia asociada, ya que las noticias
+      // solo se cruzan contra hitos (no hay vínculo directo proyecto BIP → noticia)
+      return !linkedCarteraIds.has(o.id);
+    }).sort((a,b)=>(b.monto||0)-(a.monto||0));
     renderOportunidades();
     renderBalance();
     const nrecs = await fetchAll(TABLE_NOTICIAS);
@@ -1929,59 +1987,31 @@ function renderOportunidades() {
   const count = document.getElementById('oportunidades-count');
   if (!body) return;
   count.textContent = allOportunidades.length + ' proyectos';
-  body.innerHTML = allOportunidades.map(o => `
+  const fmtM = (n) => (typeof n === 'number') ? n.toLocaleString('es-CL',{maximumFractionDigits:0}) : '—';
+  body.innerHTML = allOportunidades.map(o => {
+    const estadoCartera = cartera2026Estado(o);
+    const tag = estadoCartera === 'ejecucion'
+      ? '<span class="status-badge status-conf">En ejecución</span>'
+      : '<span class="status-badge status-plan">Por iniciar</span>';
+    return `
     <tr>
       <td style="font-variant-numeric:tabular-nums">${o.bip||'—'}</td>
       <td>${o.nombre}</td><td>${o.programa}</td><td>${o.region}</td><td>${o.comuna}</td>
-      <td>${typeof o.avance==='number' ? Math.round(o.avance*100)+'%' : ''}</td>
-      <td>${o.estado}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim)">Sin oportunidades pendientes</td></tr>';
+      <td style="font-variant-numeric:tabular-nums">${fmtM(o.monto)}</td>
+      <td>${tag}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim)">Sin oportunidades pendientes</td></tr>';
 }
 
 function renderBalance() {
   const stats = document.getElementById('balance-stats');
   if (!stats) return;
   const esProgramaValido = (p) => p && p.trim() !== '' && p.trim() !== 'Programa de origen';
-  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION']; // Contratación/Adjudicación/Recursos Transferidos son etapas previas a la ejecución física (ajustado 20/07/2026 según Minuta PPL)
-  // BIP duplicados cross-programa: la Minuta V6 los excluye del lado Obras Urbanas porque
-  // ya están contabilizados en Quiero Mi Barrio (misma obra física, reportada en dos líneas)
-  const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
-  // Pequeñas Localidades: la Minuta define "por iniciar 2026" como una lista curada y específica
-  // de 6 obras (no todo el backlog sin ejecutar, que incluye ~320 registros en estados
-  // administrativos dispares de años anteriores). Fuera de estos 6 BIP + los en ejecución,
-  // el resto de PPL queda fuera de la Cartera 2026 (decisión confirmada 20/07/2026).
-  const PPL_BIP_POR_INICIAR = ['40063245-0','40032799-0','40069199-0','40032636-0','40042615-0','40073655-0'];
+  const BIP_DUPLICADOS_CROSS = CARTERA_BIP_DUPLICADOS_CROSS;
   const conBip = allCartera.filter(o => o.bip && o.bip.trim() !== '');
-  const proyectosMonto = conBip.filter(o => {
-    const fuente = o.fuente || '';
-    const estadoUp = (o.estado||'').toString().toUpperCase().trim();
-    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
-    // Obras_Urbanas_por_iniciar.xlsx: por definición del propio archivo, nunca cuenta como "en ejecución"
-    if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
-    // Obras Urbanas en ejecución: el Monto ya es "Inversión proyectada 2026" (recargado desde el
-    // Excel oficial), que ya refleja el saldo pendiente del año sea cual sea el estado físico de
-    // la obra (Iniciado/Terminado) — por eso aquí NO se excluye Terminada, a diferencia de otras fuentes.
-    if (fuente.includes('en_ejecuci')) {
-      return o.etapa === 'Ejecución';
-    }
-    // Pequeñas Localidades: "en ejecución" exige Etapa=Ejecución Y Estado=En ejecución.
-    // Hay registros con Estado="En ejecución" pero Etapa="Diseño"/"Preinversión" (inconsistencia
-    // de origen); sin la Etapa, se sobre-cuentan ~58 obras que en realidad no han partido.
-    if (fuente.includes('PPL_solicitud')) {
-      return o.etapa === 'Ejecución' && PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
-    }
-    // Resto de fuentes: Etapa=Ejecución, excluyendo explícitamente Estado=Terminado
-    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
-  });
+  const proyectosMonto = conBip.filter(o => cartera2026Estado(o) === 'ejecucion');
   const idsEnEjecucion = new Set(proyectosMonto.map(o=>o.id));
-  const porIniciarDetalle = conBip.filter(o => {
-    if (idsEnEjecucion.has(o.id)) return false;
-    if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
-    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
-    // Pequeñas Localidades: solo los 6 BIP confirmados por la Minuta cuentan como "por iniciar"
-    if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
-    return true;
-  }).sort((a,b)=>(b.monto||0)-(a.monto||0));
+  const porIniciarDetalle = conBip.filter(o => cartera2026Estado(o) === 'por_iniciar').sort((a,b)=>(b.monto||0)-(a.monto||0));
 
   const sumMonto = (arr) => arr.reduce((s,o)=> s + (typeof o.monto==='number'?o.monto:0), 0);
   // Cuenta obras únicas por código BIP — una obra puede tener varias líneas de contrato
@@ -2048,14 +2078,8 @@ function renderBalance() {
   if (body) {
     body.innerHTML = programas.map(p => {
       const conBipPrograma = conBip.filter(o => o.programa===p);
-      const ejec = conBipPrograma.filter(o => idsEnEjecucion.has(o.id));
-      const porIni = conBipPrograma.filter(o => {
-        if (idsEnEjecucion.has(o.id)) return false;
-        if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
-        if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
-        if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
-        return true;
-      });
+      const ejec = conBipPrograma.filter(o => cartera2026Estado(o) === 'ejecucion');
+      const porIni = conBipPrograma.filter(o => cartera2026Estado(o) === 'por_iniciar');
       return `<tr><td>${p}</td><td>${countUnique(ejec)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(ejec))}</td><td>${countUnique(porIni)}</td><td style="font-variant-numeric:tabular-nums">${fmt(sumMonto(porIni))}</td></tr>`;
     }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">Sin datos</td></tr>';
   }
@@ -2262,25 +2286,8 @@ function generarReporte(tipo, valor) {
     subtitulo = 'Proyectos con código BIP de las líneas de reconstrucción: incendios, riesgo de desastres y planes de reconstrucción';
   }
 
-  const PPL_ESTADOS_EJEC = ['EJECUCIÓN','EJECUCION']; // Contratación/Adjudicación/Recursos Transferidos son etapas previas a la ejecución física (ajustado 20/07/2026 según Minuta PPL)
-  const BIP_DUPLICADOS_CROSS = ['40073193-0','40073209-0','40073213-0','40073215-0'];
-  const PPL_BIP_POR_INICIAR = ['40063245-0','40032799-0','40069199-0','40032636-0','40042615-0','40073655-0'];
-  const esEnEjecucion = (o) => {
-    const fuente = o.fuente || '';
-    const estadoUp = (o.estado||'').toString().toUpperCase().trim();
-    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
-    if (fuente.includes('Obras_Urbanas_por_iniciar')) return false;
-    if (fuente.includes('PPL_solicitud')) return o.etapa === 'Ejecución' && PPL_ESTADOS_EJEC.some(s => estadoUp.includes(s));
-    return o.etapa === 'Ejecución' && !estadoUp.includes('TERMINAD');
-  };
-  const enEjecucion = rows.filter(esEnEjecucion);
-  const porIniciar = rows.filter(o => {
-    if (esEnEjecucion(o)) return false;
-    if ((o.estado||'').toString().toUpperCase().includes('TERMINAD')) return false;
-    if (o.programa === 'Obras Urbanas' && BIP_DUPLICADOS_CROSS.includes(o.bip)) return false;
-    if ((o.fuente||'').includes('PPL_solicitud')) return PPL_BIP_POR_INICIAR.includes(o.bip);
-    return true;
-  });
+  const enEjecucion = rows.filter(o => cartera2026Estado(o) === 'ejecucion');
+  const porIniciar = rows.filter(o => cartera2026Estado(o) === 'por_iniciar');
   const montoEjec = enEjecucion.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
   const montoIni = porIniciar.reduce((s,o)=>s+(typeof o.monto==='number'?o.monto:0),0);
   const fmt = (n) => n.toLocaleString('es-CL',{maximumFractionDigits:0});
@@ -2518,20 +2525,37 @@ function renderDashboard() {
   _sn('s-pct',pct+'%'); const _pf=document.getElementById('progress-fill');if(_pf)_pf.style.width=pct+'%';
   const palette=['#1565c0','#0d9a6e','#e53935','#f59e0b','#2f7d5b','#ea580c','#2f7d5b','#be185d'];
   function countBy(field){const c={};filtered.forEach(h=>{const v=h[field]||'Sin datos';c[v]=(c[v]||0)+1;});return Object.fromEntries(Object.entries(c).sort((a,b)=>b[1]-a[1]));}
-  function renderBar(id,data,colors,filterSel,excluir=[]){
+  function renderBar(id,data,colors,filterSel,excluir=[],expandField=null){
     const el=document.getElementById(id);
     const entries=Object.entries(data).filter(([k])=>!excluir.includes(k)).slice(0,10);
     const max=Math.max(...entries.map(([,v])=>v),1);
     el.innerHTML=entries.map(([k,v],i)=>{
       const color=colors[k]||palette[i%palette.length];
-      const click=filterSel?`onclick="filtrarYDirigir('${filterSel}','${k.replace(/'/g,"\\'")}')" style="cursor:pointer" role="button" tabindex="0" title="Ver hitos de ${k} en Lista"`:`title="${k}"`;
-      return `<div class="bar-row bar-link" ${click}><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${color}"></div></div><div class="bar-count">${v}</div></div>`;
+      const kEsc=k.replace(/'/g,"\\'");
+      const click=expandField
+        ? `onclick="toggleBarExpand(this,'${expandField}','${kEsc}')" style="cursor:pointer" role="button" tabindex="0" title="Ver listado de ${k}"`
+        : (filterSel?`onclick="filtrarYDirigir('${filterSel}','${kEsc}')" style="cursor:pointer" role="button" tabindex="0" title="Ver hitos de ${k} en Lista"`:`title="${k}"`);
+      return `<div class="bar-row bar-link" ${click}><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${color}"></div></div><div class="bar-count">${v}</div></div><div class="bar-expand-slot"></div>`;
     }).join('');
   }
   renderBar('chart-programa',countBy('programa'),PROG_COLORS,'fil-programa',['Sin datos']);
   renderBar('chart-tipo',countBy('tipo_hito'),{},'fil-tipo',['Sin datos']);
-  renderBar('chart-region',countBy('region'),{},'fil-region',['Sin datos','Nacional']);
-  renderBar('chart-comuna',countBy('comuna'),{},'fil-comuna',['Sin datos']);
+  renderBar('chart-region',countBy('region'),{},'fil-region',['Sin datos','Nacional'],'region');
+  renderBar('chart-comuna',countBy('comuna'),{},'fil-comuna',['Sin datos'],'comuna');
+}
+function toggleBarExpand(rowEl, field, value) {
+  const slot = rowEl.nextElementSibling;
+  if (!slot || !slot.classList.contains('bar-expand-slot')) return;
+  if (slot.innerHTML) { slot.innerHTML = ''; return; }
+  // Cerrar cualquier otro desplegable abierto en el mismo chart para no amontonar listas
+  const chart = rowEl.closest('[id^="chart-"]');
+  if (chart) chart.querySelectorAll('.bar-expand-slot').forEach(s => s.innerHTML='');
+  const items = filtered.filter(h => (h[field]||'Sin datos') === value);
+  slot.innerHTML = `<div class="bar-expand">` + (
+    items.length
+      ? items.map(h=>`<div class="bar-expand-item" onmouseenter="showTooltip(event,allHitos.find(x=>x.id==='${h.id}'))" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()"><b>${h.actividad}</b><span class="bar-expand-meta">${h.programa||''} · ${h.mes||'—'} · <span class="status-badge ${stCls(h.estado)}">${h.estado}</span></span></div>`).join('')
+      : '<div style="padding:8px;color:var(--text-dim);font-size:11.5px">Sin hitos</div>'
+  ) + `</div>`;
 }
 
 function renderGantt() {
